@@ -1,0 +1,24 @@
+
+
+* micro OS (event scheduler)
+
+
+ 
+* config
+  size for the timer overflow counter (16, 32 or 64 bit)
+
+* system clock
+  oscal calibration on external pulse
+
+* Timer
+  one timer is assinged as global timekeeing device
+
+
+
+* Interrupts
+  Timer interrupt 
+
+* Queues
+
+
+* Priqueue

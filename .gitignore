@@ -1,0 +1,11 @@
+*.bak
+$*
+SAVE.*
+*-cache.lib
+*.erc
+*~
+*.asm
+*.elf
+*.eep
+*.hex
+
