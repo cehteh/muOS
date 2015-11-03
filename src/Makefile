@@ -8,6 +8,8 @@ AVRDUDE = avrdude
 TARGET = muos
 MCU = atmega328p
 
+SOURCES = $(TARGET).c
+#SOURCES +=
 
 #AVRDUDE_PROGRAMMER = -c usbasp
 AVRDUDE_PROGRAMMER = -c arduino
@@ -20,21 +22,35 @@ AVRDUDE_FLAGS = $(AVRDUDE_PROGRAMMER) $(AVRDUDE_PART) $(AVRDUDE_BAUDRATE) $(AVRD
 AVRDUDE_DEFAULT_SCK = -B 8
 AVRDUDE_128kHz_SCK = -B 16
 
+CPPFLAGS = -I .
+
 CFLAGS = -std=gnu99 -mmcu=$(MCU) -g
-CFLAGS += -I .
 CFLAGS += -Wall -Wextra -Werror
 CFLAGS += -Os
 CFLAGS += -mtiny-stack
 CFLAGS += -fshort-enums
-CFLAGS += -fwhole-program
+CFLAGS += -flto
+CFLAGS += -falign-functions=2
+CFLAGS += $(CPPFLAGS)
+
+DEPFLAGS = -M -MP
 
 LDFLAGS += -mmcu=$(MCU) -Wl,--relax,--gc-sections
 
 FUSE_DEFAULT = -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 #FUSE_RELEASE = -U lfuse:w:0x64:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
-
 all: $(TARGET).hex $(TARGET).eep size
+
+%.d: %.c
+	@set -e; rm -f $@; \
+        $(CC) $(DEPFLAGS) $(CPPFLAGS) $< > $@.$$$$; \
+        sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+        rm -f $@.$$$$
+
+-include $(SOURCES:.c=.d)
+
+%.o %d: %c
 
 elf: $(TARGET).elf
 hex: $(TARGET).hex
@@ -45,8 +61,8 @@ show_asm: $(TARGET).asm
 	less $(TARGET).asm
 
 
-%.elf: $(TARGET).o Makefile
-	$(CC) $(ALL_CFLAGS) $(TARGET).o --output $@ $(LDFLAGS)
+%.elf: $(SOURCES:.c=.o) Makefile
+	$(CC) $(CFLAGS) $(SOURCES:.c=.o) --output $@ $(LDFLAGS)
 
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -j .text $< $@
@@ -62,7 +78,8 @@ size: $(TARGET).hex $(TARGET).eep
 
 
 program: all
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:w:$(TARGET).hex:i -U eeprom:w:$(TARGET).eep:i
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:w:$(TARGET).hex:i
+#-U eeprom:w:$(TARGET).eep:i
 
 read_program:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:r:$(TARGET).hex:i -U eeprom:r:$(TARGET).eep:i
@@ -79,7 +96,7 @@ reset_device:
 
 
 clean:
-	rm -rf *.elf *.a *.o
+	rm -rf *.elf *.a *.o *.d *.d.*
 
 mrproper: clean
 	rm -rf *.hex *.eep

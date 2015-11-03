@@ -8,4 +8,4 @@ SAVE.*
 *.elf
 *.eep
 *.hex
-
+*.d
