@@ -9,7 +9,8 @@ TARGET = muos
 MCU = atmega328p
 
 SOURCES = $(TARGET).c
-#SOURCES +=
+SOURCES += muos_queue.c
+
 
 #AVRDUDE_PROGRAMMER = -c usbasp
 AVRDUDE_PROGRAMMER = -c arduino
@@ -30,7 +31,6 @@ CFLAGS += -Os
 CFLAGS += -mtiny-stack
 CFLAGS += -fshort-enums
 CFLAGS += -flto
-CFLAGS += -falign-functions=2
 CFLAGS += $(CPPFLAGS)
 
 DEPFLAGS = -M -MP

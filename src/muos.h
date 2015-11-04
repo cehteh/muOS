@@ -21,6 +21,21 @@
 #ifndef MUOS_H
 #define MUOS_H
 
-#define MUOS_MAIN int main() { for(;;){} }
+#include <stdint.h>
+
+
+#define MUOS_NOINIT __attribute__ ((section (".noinit")))
+
+extern uint8_t muos_overflow_count;
+#define MUOS_OVERFLOW do { if(muos_overflow_count<255) {++muos_overflow_count;}} while(0)
+
+//#define MUOS_INIT
+
+//#define MUOS_FALIGN __attribute__ ((aligned (4)))
+
+
+//#define MUOS_RUN_QUEUES
+#define MUOS_SLEEP
+
 
 #endif
