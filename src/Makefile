@@ -59,7 +59,10 @@ all: $(TARGET).hex $(TARGET).eep size
 
 -include $(SOURCES:.c=.d)
 
+*.o: Makefile
+
 %.o %d: %c
+
 
 elf: $(TARGET).elf
 hex: $(TARGET).hex
@@ -69,8 +72,7 @@ asm: $(TARGET).asm
 show_asm: $(TARGET).asm
 	less $(TARGET).asm
 
-
-%.elf: $(SOURCES:.c=.o) Makefile
+%.elf: $(SOURCES:.c=.o)
 	$(CC) $(LDFLAGS) $(SOURCES:.c=.o) --output $@
 
 %.hex: %.elf
