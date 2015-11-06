@@ -95,10 +95,13 @@ reset_device:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_128kHz_SCK) -e $(FUSE_DEFAULT)
 
 
-clean:
-	rm -rf *.elf *.a *.o *.d *.d.*
+depclean:
+	rm -f *.d *.d.*
+
+clean: depclean
+	rm -f *.elf *.a *.o
 
 mrproper: clean
-	rm -rf *.hex *.eep
+	rm -f *.hex *.eep
 
 
