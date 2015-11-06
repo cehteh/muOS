@@ -20,10 +20,10 @@
 
 #include "muos_queue.h"
 
-// queue4
+#if MUOS_QUEUE_INDEX == 4
 
 static inline intptr_t
-muos_queue4_pop (struct muos_queue4* queue, uint8_t size)
+muos_queue_pop (struct muos_queue* queue, muos_queue_size size)
 {
   intptr_t ret = queue->queue[queue->start];
   queue->start += 1;
@@ -36,15 +36,15 @@ muos_queue4_pop (struct muos_queue4* queue, uint8_t size)
 
 
 bool
-muos_queue4_schedule (struct muos_queue4* queue, uint8_t size)
+muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 {
   if (queue->len)
     {
-      intptr_t fn = muos_queue4_pop (queue, size);
+      intptr_t fn = muos_queue_pop (queue, size);
 
       if (fn<0)
         {
-          intptr_t arg = muos_queue4_pop (queue, size);
+          intptr_t arg = muos_queue_pop (queue, size);
           ((muos_queue_function_arg)(-fn))(arg);
         }
       else
@@ -58,18 +58,18 @@ muos_queue4_schedule (struct muos_queue4* queue, uint8_t size)
 
 
 static void
-muos_queue4_prep (struct muos_queue4* queue, uint8_t size, uint8_t len)
+muos_queue_prep (struct muos_queue* queue, muos_queue_size size, uint8_t len)
 {
   while (size - queue->len < len)
     {
       MUOS_OVERFLOW;
-      muos_queue4_schedule (queue, size);
+      muos_queue_schedule (queue, size);
     }
 }
 
 
 static void
-muos_queue4_pushback_intern (struct muos_queue4* queue, uint8_t size, intptr_t value)
+muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   uint8_t index = queue->start+queue->len;
   if (index >= size)
@@ -80,25 +80,25 @@ muos_queue4_pushback_intern (struct muos_queue4* queue, uint8_t size, intptr_t v
 
 
 void
-muos_queue4_pushback (struct muos_queue4* queue, uint8_t size, muos_queue_function fn)
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue4_prep (queue, size, 1);
-  muos_queue4_pushback_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size, 1);
+  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue4_pushback_arg (struct muos_queue4* queue, uint8_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue4_prep (queue, size, 2);
-  muos_queue4_pushback_intern (queue, size, -(intptr_t) fn);
-  muos_queue4_pushback_intern (queue, size, arg);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushback_intern (queue, size, arg);
 }
 
 
 
 static void
-muos_queue4_pushfront_intern (struct muos_queue4* queue, uint8_t size, intptr_t value)
+muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   queue->start -= 1;
   queue->len += 1;
@@ -109,26 +109,26 @@ muos_queue4_pushfront_intern (struct muos_queue4* queue, uint8_t size, intptr_t 
 
 
 void
-muos_queue4_pushfront (struct muos_queue4* queue, uint8_t size, muos_queue_function fn)
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue4_prep (queue, size ,1);
-  muos_queue4_pushfront_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size ,1);
+  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue4_pushfront_arg (struct muos_queue4* queue, uint8_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue4_prep (queue, size, 2);
-  muos_queue4_pushfront_intern (queue, size, arg);
-  muos_queue4_pushfront_intern (queue, size, -(intptr_t) fn);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushfront_intern (queue, size, arg);
+  muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }
 
 
-// queue8
+#elif MUOS_QUEUE_INDEX == 8
 
 static inline intptr_t
-muos_queue8_pop (struct muos_queue8* queue, uint8_t size)
+muos_queue_pop (struct muos_queue* queue, muos_queue_size size)
 {
   intptr_t ret = queue->queue[queue->start];
   queue->start += 1;
@@ -141,15 +141,15 @@ muos_queue8_pop (struct muos_queue8* queue, uint8_t size)
 
 
 bool
-muos_queue8_schedule (struct muos_queue8* queue, uint8_t size)
+muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 {
   if (queue->len)
     {
-      intptr_t fn = muos_queue8_pop (queue, size);
+      intptr_t fn = muos_queue_pop (queue, size);
 
       if (fn<0)
         {
-          intptr_t arg = muos_queue8_pop (queue, size);
+          intptr_t arg = muos_queue_pop (queue, size);
           ((muos_queue_function_arg)(-fn))(arg);
         }
       else
@@ -163,18 +163,18 @@ muos_queue8_schedule (struct muos_queue8* queue, uint8_t size)
 
 
 static void
-muos_queue8_prep (struct muos_queue8* queue, uint8_t size, uint8_t len)
+muos_queue_prep (struct muos_queue* queue, muos_queue_size size, uint8_t len)
 {
   while (size - queue->len < len)
     {
       MUOS_OVERFLOW;
-      muos_queue8_schedule (queue, size);
+      muos_queue_schedule (queue, size);
     }
 }
 
 
 static void
-muos_queue8_pushback_intern (struct muos_queue8* queue, uint8_t size, intptr_t value)
+muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   uint8_t index = queue->start+queue->len;
   if (index >= size)
@@ -185,25 +185,25 @@ muos_queue8_pushback_intern (struct muos_queue8* queue, uint8_t size, intptr_t v
 
 
 void
-muos_queue8_pushback (struct muos_queue8* queue, uint8_t size, muos_queue_function fn)
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue8_prep (queue, size, 1);
-  muos_queue8_pushback_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size, 1);
+  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue8_pushback_arg (struct muos_queue8* queue, uint8_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue8_prep (queue, size, 2);
-  muos_queue8_pushback_intern (queue, size, -(intptr_t) fn);
-  muos_queue8_pushback_intern (queue, size, arg);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushback_intern (queue, size, arg);
 }
 
 
 
 static void
-muos_queue8_pushfront_intern (struct muos_queue8* queue, uint8_t size, intptr_t value)
+muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   queue->start -= 1;
   queue->len += 1;
@@ -214,29 +214,27 @@ muos_queue8_pushfront_intern (struct muos_queue8* queue, uint8_t size, intptr_t 
 
 
 void
-muos_queue8_pushfront (struct muos_queue8* queue, uint8_t size, muos_queue_function fn)
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue8_prep (queue, size ,1);
-  muos_queue8_pushfront_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size ,1);
+  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue8_pushfront_arg (struct muos_queue8* queue, uint8_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue8_prep (queue, size, 2);
-  muos_queue8_pushfront_intern (queue, size, arg);
-  muos_queue8_pushfront_intern (queue, size, -(intptr_t) fn);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushfront_intern (queue, size, arg);
+  muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }
 
 
 
-
-
-// q16
+#elif MUOS_QUEUE_INDEX == 16
 
 static inline intptr_t
-muos_queue16_pop (struct muos_queue16* queue, uint16_t size)
+muos_queue_pop (struct muos_queue* queue, muos_queue_size size)
 {
   intptr_t ret = queue->queue[queue->start];
   queue->start += 1;
@@ -249,15 +247,15 @@ muos_queue16_pop (struct muos_queue16* queue, uint16_t size)
 
 
 bool
-muos_queue16_schedule (struct muos_queue16* queue, uint16_t size)
+muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 {
   if (queue->len)
     {
-      intptr_t fn = muos_queue16_pop (queue, size);
+      intptr_t fn = muos_queue_pop (queue, size);
 
       if (fn<0)
         {
-          intptr_t arg = muos_queue16_pop (queue, size);
+          intptr_t arg = muos_queue_pop (queue, size);
           ((muos_queue_function_arg)(-fn))(arg);
         }
       else
@@ -271,18 +269,18 @@ muos_queue16_schedule (struct muos_queue16* queue, uint16_t size)
 
 
 static void
-muos_queue16_prep (struct muos_queue16* queue, uint16_t size, uint8_t len)
+muos_queue_prep (struct muos_queue* queue, muos_queue_size size, uint8_t len)
 {
   while (size - queue->len < len)
     {
       MUOS_OVERFLOW;
-      muos_queue16_schedule (queue, size);
+      muos_queue_schedule (queue, size);
     }
 }
 
 
 static void
-muos_queue16_pushback_intern (struct muos_queue16* queue, uint16_t size, intptr_t value)
+muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   uint8_t index = queue->start+queue->len;
   if (index >= size)
@@ -293,25 +291,25 @@ muos_queue16_pushback_intern (struct muos_queue16* queue, uint16_t size, intptr_
 
 
 void
-muos_queue16_pushback (struct muos_queue16* queue, uint16_t size, muos_queue_function fn)
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue16_prep (queue, size, 1);
-  muos_queue16_pushback_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size, 1);
+  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue16_pushback_arg (struct muos_queue16* queue, uint16_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue16_prep (queue, size, 2);
-  muos_queue16_pushback_intern (queue, size, -(intptr_t) fn);
-  muos_queue16_pushback_intern (queue, size, arg);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushback_intern (queue, size, arg);
 }
 
 
 
 static void
-muos_queue16_pushfront_intern (struct muos_queue16* queue, uint16_t size, intptr_t value)
+muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   queue->start -= 1;
   queue->len += 1;
@@ -322,22 +320,25 @@ muos_queue16_pushfront_intern (struct muos_queue16* queue, uint16_t size, intptr
 
 
 void
-muos_queue16_pushfront (struct muos_queue16* queue, uint16_t size, muos_queue_function fn)
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue16_prep (queue, size ,1);
-  muos_queue16_pushfront_intern (queue, size, (intptr_t) fn);
+  muos_queue_prep (queue, size ,1);
+  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 
 void
-muos_queue16_pushfront_arg (struct muos_queue16* queue, uint16_t size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue16_prep (queue, size, 2);
-  muos_queue16_pushfront_intern (queue, size, arg);
-  muos_queue16_pushfront_intern (queue, size, -(intptr_t) fn);
+  muos_queue_prep (queue, size, 2);
+  muos_queue_pushfront_intern (queue, size, arg);
+  muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }
 
 
+#else
+#error "illegal MUOS_QUEUE_INDEX"
+#endif
 
 
 
