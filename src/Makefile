@@ -23,19 +23,28 @@ AVRDUDE_FLAGS = $(AVRDUDE_PROGRAMMER) $(AVRDUDE_PART) $(AVRDUDE_BAUDRATE) $(AVRD
 AVRDUDE_DEFAULT_SCK = -B 8
 AVRDUDE_128kHz_SCK = -B 16
 
+# Common CC Flags
+CCFLAGS = -std=gnu99 -mmcu=$(MCU)
+CCFLAGS += -Os
+CCFLAGS += -mtiny-stack
+CCFLAGS += -fshort-enums
+CCFLAGS += -flto
+
+# Preprocessor Flags
 CPPFLAGS = -I .
 
-CFLAGS = -std=gnu99 -mmcu=$(MCU) -g
-CFLAGS += -Wall -Wextra -Werror
-CFLAGS += -Os
-CFLAGS += -mtiny-stack
-CFLAGS += -fshort-enums
-CFLAGS += -flto
+# Compile Flags
+CFLAGS = $(CCFLAGS)
 CFLAGS += $(CPPFLAGS)
+CFLAGS += -Wall -Wextra -Werror
 
+# Dependency generation Flags
 DEPFLAGS = -M -MP
 
-LDFLAGS += -mmcu=$(MCU) -Wl,--relax,--gc-sections
+# Linker flags
+LDFLAGS = $(CCFLAGS)
+LDFLAGS += -Wl,--relax,--gc-sections
+LDFLAGS += -Xlinker --no-fatal-warnings
 
 FUSE_DEFAULT = -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 #FUSE_RELEASE = -U lfuse:w:0x64:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
@@ -62,7 +71,7 @@ show_asm: $(TARGET).asm
 
 
 %.elf: $(SOURCES:.c=.o) Makefile
-	$(CC) $(CFLAGS) $(SOURCES:.c=.o) --output $@ $(LDFLAGS)
+	$(CC) $(LDFLAGS) $(SOURCES:.c=.o) --output $@
 
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -j .text $< $@
