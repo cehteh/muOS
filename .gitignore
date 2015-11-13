@@ -10,4 +10,5 @@ SAVE.*
 *.hex
 *.o
 *.d
+*.d.*
 a.out
