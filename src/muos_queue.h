@@ -148,6 +148,8 @@ muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_
 void
 muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
+//PLANNED: stowing more than one arg
+
 void
 muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
 
@@ -160,7 +162,7 @@ muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_q
 
 
 
-#define MUOS_QUEUE_SIZE(q) (sizeof((q).queue)/sizeof(intptr_t))
+#define MUOS_QUEUE_SIZE(q)  MUOS_ARRAY_ELEMENTS((q).queue)
 
 #define MUOS_QUEUE_SCHEDULE(q) muos_queue_schedule (&(q).descriptor, MUOS_QUEUE_SIZE(q))
 #define MUOS_QUEUE_PUSHBACK(q, f) muos_queue_pushback (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))
