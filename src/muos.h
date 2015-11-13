@@ -21,9 +21,15 @@
 #ifndef MUOS_H
 #define MUOS_H
 
-#include <muos_config.h>
+#include "muos_config.h"
 
 #include <stdint.h>
+
+
+#define MUOS_TYPEDEF(basetype, size, name) MUOS_TYPEDEF_(basetype, size, name)
+#define MUOS_TYPEDEF_(basetype, size, name) typedef basetype##size##_t name
+
+#define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
 
 
 #define MUOS_NOINIT __attribute__ ((section (".noinit")))

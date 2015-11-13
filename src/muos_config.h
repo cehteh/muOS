@@ -21,6 +21,7 @@
 #ifndef MUOS_CONFIG_H
 #define MUOS_CONFIG_H
 
+
 // the bits used for indexing queues
 // comes in 3 variants
 //  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
@@ -41,5 +42,48 @@
 // LSB tagging works with up to 64k flash but needs function alignment on even addresses
 //#define MUOS_QUEUE_ARGTAG ARGTAG_LSB //unimplemented due gcc bug
 #endif
+
+
+
+// The type (bitsize) used for the overflow counter of the timer.
+// together with the harware register of the timer this gives the full time.
+#ifndef MUOS_TIMER_TYPE
+//#define MUOS_TIMER_TYPE 16
+//#define MUOS_TIMER_TYPE 32
+#define MUOS_TIMER_TYPE 64
+#endif
+
+// The type (bitsize) used for shorter unsigned timespans.
+#ifndef MUOS_TIMER_SHORT_TYPE
+//#define MUOS_TIMER_SHORT_TYPE 8
+#define MUOS_TIMER_SHORT_TYPE 16
+//#define MUOS_TIMER_SHORT_TYPE 32
+//#define MUOS_TIMER_SHORT_TYPE 64
+#endif
+
+
+
+// type used for the 'priorities' if the priority queue
+// The priority queue uses a 'sliding window'.
+// Scheduler needs to be called at least half of the range provided by this type.
+#ifndef MUOS_PRIQ_TYPE
+#define MUOS_PRIQ_TYPE MUOS_TIMER_SHORT_TYPE
+//#define MUOS_PRIQ_TYPE 8
+//#define MUOS_PRIQ_TYPE 16
+//#define MUOS_PRIQ_TYPE 32
+#endif
+
+
+
+// How long is the shortest time to schedule
+// when scheduling any shorter timespan the hardware timer may be already past
+// this span and thus won't trigger an interrupt, missing a whole cycle.
+// When timer accuracy is not required, biggier values can also be used to batch
+// scheduled events together.
+// Define this as small as possible. PLANNED: determine this value automatic
+#ifndef MUOS_SCHED_MINTIME
+#define MUOS_SCHED_MINTIME 127
+#endif
+
 
 #endif
