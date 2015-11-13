@@ -1,14 +1,116 @@
+#+TITLE: micro OS (event scheduler)
 
 
-* micro OS (event scheduler)
+
+* Concept
+
+** Schedule functioncalls
+   mµOS is about events which in turn schedule functioncalls, no threads no
+   other abstractions
+
+** Work Queues
+   Most processing should be done by queueing functioncalls into one of the
+   following queues. Functions can be pushed onto this queues at the front for
+   highest priority (immediate execution) or at the back for fair scheduling.
+
+   Functions called from queues can have one additional argument of type intptr_t.
+
+*** Queue datatypes and sizes
+    There are 3 implementations for the queues from which one must be choosen
+    at compiletime
+
+    * one uses 4bit indices on a bitfield (a byte split in half),
+      allows for queue size up to 16 entries for very small microcontrollers
+      such attinys
+    * one uses byte indices, which is the default, allowing queues up to 256
+      entries.
+    * and one uses uint16_t indices for large queues (up to 64k entries).
+
+    Note that when functioncalls with one intptr_t argument are pushed on a
+    queue, it will take 2 entries (one for the functionpointer and one for the argument)
+
+    Queues can be defined to any size within their indexable range and are a
+    fixed sized array in RAM.
 
 
- 
-* config
-  size for the timer overflow counter (16, 32 or 64 bit)
+*** Default Queues
 
-* system clock
-  oscal calibration on external pulse
+**** Realtime Queue (rtq)
+     Will be processed asynchronously with highest priority (just below any
+     interrupt). Interrupts may process this queue before returning, interrupts
+     are enabled.
+
+**** Background Queue (bgq)
+     Is processed in the mainloop when nothing else (rtq) is to do. when the
+     bgq (and rtq) is empty, the mainloop goes to sleep waiting for interrupts
+     to wake up.
+
+
+
+** Interrupts
+   Should do only the most minimal work, possibly pushing further events on
+   the Work Queues. User define Interrupt handlers may call the rtq processing
+   loop at the end.
+
+
+** Priority Queue
+ * uses a sliding window implementation
+
+** Timer/Scheduler
+   One hardware timer is used to implement a global clock. Events can be
+   scheduled based on this clock. The configuration of this timer (prescaler,
+   which hardware timer to be used) is left open to the user. The timer's
+   overflow interrupt only needs to increment a global clock counter.
+
+   There is a priority queue which schedules events at a given time. This uses
+   the Compare/Match interrupts of the given Timer.
+
+*** Datatypes
+    The full time is defined by the global overflow counter and the timers
+    internal count register. The global overflow counter can be selected from
+    various unsigned integer types (16, 32, 64 bit wide), the internal timer
+    counter register extends this value by its size, enabling rather high
+    resolution clocks from 24 up to 80 bits precision. Depending on the
+    circumstances one should select a proper size so that overflows dont
+    happen or don't matter.
+
+    The priority queue uses it's own shorter datatype to save memory
+    substantially . This can be 8, 16, 32 or 64 bit wide and represents the lower
+    bits of the full time. Thus its only possible to schedule events within a
+    certain time range.
+
+*** Timer interrupts
+    the clock and timer needs 2 interrupts
+
+**** overflow
+    - increments the global counter
+    - setup comparematch value later events
+    - schedule events within short time
+
+**** comparematch
+    - setup comparematch value later events
+    - schedule events within short time
+
+*** minimum time
+    adding an scheduled event has a short latency in with the timer already
+    progresses. Too short times may become inaccurate
+
+*** Clock Spin
+
+*** basetime at 'last' event or 'now'
+    Events can be scheduled either based on the 'last' events time or on the
+    'current' time.
+    Using the 'last' time gives accurate repeatable events on fixed time
+    slots. Using the 'current' time works well for non repeating timeouts and wakeups.
+
+
+
+*** use the LSB to push a value onto the priq?
+
+
+
+
+* Queues
 
 * Timer
   one timer is assinged as global timekeeing device
@@ -18,7 +120,38 @@
 * Interrupts
   Timer interrupt 
 
-* Queues
 
 
-* Priqueue
+
+ 
+* config
+  size for the timer overflow counter (16, 32 or 64 bit)
+
+* system clock
+  oscal calibration on external pulse
+
+* Directory Structure
+
+
+* Library
+** time conversion tools
+   Hz, seconds, raw
+
+
+* HAL
+
+
+* HLD (high level drivers)
+** Serial
+** USB
+** bangbus
+** onewire
+** DCF77
+** EEprom
+** Flash
+** Fuses
+** Watchdog
+** PWM
+** OSCAL
+** CPPM
+** logfs
