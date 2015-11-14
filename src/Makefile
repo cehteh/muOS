@@ -10,6 +10,7 @@ MCU = atmega328p
 
 SOURCES = $(TARGET).c
 SOURCES += muos_queue.c
+SOURCES += muos_priq.c
 
 
 #AVRDUDE_PROGRAMMER = -c usbasp
@@ -21,7 +22,7 @@ AVRDUDE_PART = -p $(MCU)
 
 AVRDUDE_FLAGS = $(AVRDUDE_PROGRAMMER) $(AVRDUDE_PART) $(AVRDUDE_BAUDRATE) $(AVRDUDE_PORT)
 AVRDUDE_DEFAULT_SCK = -B 8
-AVRDUDE_128kHz_SCK = -B 16
+#AVRDUDE_128kHz_SCK = -B 16
 
 # Common CC Flags
 CCFLAGS = -std=gnu99 -mmcu=$(MCU)
