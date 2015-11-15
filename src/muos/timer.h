@@ -21,26 +21,19 @@
 #define MUOS_TIMER_H
 
 
-#include <avr/interrupt.h>
 
 #include "muos_config.h"
 
-
-#define MUOS_TIMER_OFF       0
-#define MUOS_TIMER_NODIV     _BV(CS00)
-#define MUOS_TIMER_DIV8      _BV(CS01)
-#define MUOS_TIMER_DIV64     _BV(CS01) | _BV(CS00)
-#define MUOS_TIMER_DIV256    _BV(CS02)
-#define MUOS_TIMER_DIV1024   _BV(CS02) | _BV(CS00)
+#include "muos/hwdef.h"
 
 
 MUOS_TYPEDEF(uint, MUOS_TIMER_TYPE, muos_timer);
 MUOS_TYPEDEF(uint, MUOS_TIMER_SHORT_TYPE, muos_shorttimer);
 
 
-#define MUOS_TIMER(hw, ...)                     \
+#define MUOS_TIMERDEF(hw, ...)                  \
   extern volatile muos_timer muos_timer_##hw;   \
-  ISR (TIMER##hw##_OVF_vect)                    \
+  ISR (MUOS_TIMER_ISRNAME_OVERFLOW(hw))         \
   {                                             \
     ++muos_timer_##hw;                          \
     (void) __VA_ARGS__;                         \
@@ -49,13 +42,12 @@ MUOS_TYPEDEF(uint, MUOS_TIMER_SHORT_TYPE, muos_shorttimer);
 
 
 #define MUOS_TIMER_INIT(hw, prescale)           \
-  TCCR##hw##B = (MUOS_TIMER_##prescale);        \
-  TIMSK##hw |= _BV(TOIE0)
+  MUOS_HW_TIMER_ISR_OVERFLOW_ENABLE(hw);        \
+  MUOS_HW_TIMER_PRESCALE_SET(hw, prescale)
 
-#define MUOS_TIMER_HARDWARE(hw) TCNT##hw
 
 #define MUOS_TIMER_NOW(hw)                                                             \
-  ((muos_timer_##hw<<(sizeof(MUOS_TIMER_HARDWARE(hw)) * 8)) + MUOS_TIMER_HARDWARE(hw))
+  ((muos_timer_##hw<<(sizeof(MUOS_HW_TIMER_REGISTER(hw)) * 8)) + MUOS_HW_TIMER_REGISTER(hw))
 
 
 //TODO: match interrupt

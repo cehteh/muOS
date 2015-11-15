@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_HW_ATMEGA328P_H
-#define MUOS_HW_ATMEGA328P_H
+#ifndef MUOS_HW_ATMEL_ATMEGA328P_H
+#define MUOS_HW_ATMEL_ATMEGA328P_H
 
 #include <muos/hw/atmel/atmega.h>
 
