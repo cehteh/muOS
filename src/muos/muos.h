@@ -21,6 +21,8 @@
 #ifndef MUOS_H
 #define MUOS_H
 
+#include <muos/hwdef.h>
+
 #include <stdint.h>
 
 

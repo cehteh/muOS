@@ -21,7 +21,7 @@
 #ifndef MUOS_QUEUE_H
 #define MUOS_QUEUE_H
 
-#include <muos.h>
+#include <muos/muos.h>
 #include "muos_config.h"
 
 #include <stdint.h>

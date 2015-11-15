@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "muos_priq.h"
+#include <muos/priq.h>
 
 void
 muos_priq_push (struct muos_priq* priq, muos_priq_priority base, muos_priq_priority when, muos_priq_function fn)

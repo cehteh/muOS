@@ -7,11 +7,13 @@ AVRDUDE = avrdude
 
 TARGET = muos
 MCU = atmega328p
+#MCU = attiny85
 
 SOURCES = $(TARGET).c
-SOURCES += muos_queue.c
-SOURCES += muos_priq.c
+SOURCES += $(wildcard muos/*.c)
+SOURCES += $(wildcard muos/hw/*.c)
 
+OBJECTS = $(SOURCES:.c=.o)
 
 #AVRDUDE_PROGRAMMER = -c usbasp
 AVRDUDE_PROGRAMMER = -c arduino
@@ -30,6 +32,7 @@ CCFLAGS += -Os
 CCFLAGS += -mtiny-stack
 CCFLAGS += -fshort-enums
 CCFLAGS += -flto
+#CCFLAGS += -mcall-prologues
 
 # Preprocessor Flags
 CPPFLAGS = -I .
@@ -73,8 +76,8 @@ asm: $(TARGET).asm
 show_asm: $(TARGET).asm
 	less $(TARGET).asm
 
-%.elf: $(SOURCES:.c=.o)
-	$(CC) $(LDFLAGS) $(SOURCES:.c=.o) --output $@
+%.elf: $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) --output $@
 
 %.hex: %.elf
 	$(OBJCOPY) -O ihex -j .text $< $@
@@ -111,7 +114,7 @@ depclean:
 	rm -f *.d *.d.*
 
 clean: depclean
-	rm -f *.elf *.a *.o
+	rm -f *.elf *.a $(OBJECTS)
 
 mrproper: clean
 	rm -f *.hex *.eep

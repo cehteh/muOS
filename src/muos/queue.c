@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "muos_queue.h"
+#include <muos/queue.h>
 
 #if MUOS_QUEUE_INDEX == 4
 

@@ -21,7 +21,7 @@
 #ifndef MUOS_PRIQ_H
 #define MUOS_PRIQ_H
 
-#include <muos.h>
+#include <muos/muos.h>
 #include "muos_config.h"
 
 #define MUOS_PRIQ_SIZE(pq) MUOS_ARRAY_ELEMENTS((pq).priq)
