@@ -18,26 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_HW_ATMEL_ATMEGA_H
-#define MUOS_HW_ATMEL_ATMEGA_H
+#ifndef MUOS_HW_ATMEL_AVR_H
+#define MUOS_HW_ATMEL_AVR_H
 
-#include <muos/hw/atmel/avr.h>
-
-#define MUOS_HW_TIMER_OFF       0
-#define MUOS_HW_TIMER_NODIV     _BV(CS00)
-#define MUOS_HW_TIMER_DIV8      _BV(CS01)
-#define MUOS_HW_TIMER_DIV64     _BV(CS01) | _BV(CS00)
-#define MUOS_HW_TIMER_DIV256    _BV(CS02)
-#define MUOS_HW_TIMER_DIV1024   _BV(CS02) | _BV(CS00)
-
-#define MUOS_HW_TIMER_ISRNAME_OVERFLOW(hw) TIMER##hw##_OVF_vect
-#define MUOS_HW_TIMER_REGISTER(hw) TCNT##hw
-
-
-#define MUOS_HW_TIMER_PRESCALE_SET(hw, prescale)  \
-  TCCR##hw##B = (MUOS_HW_TIMER_##prescale)
-
-#define MUOS_HW_TIMER_ISR_OVERFLOW_ENABLE(hw)            \
-  TIMSK##hw |= _BV(TOIE0)
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #endif
