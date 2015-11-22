@@ -1,122 +1,31 @@
-CC 	= avr-gcc
-OBJCOPY	= avr-objcopy
-OBJDUMP	= avr-objdump
-SIZE 	= avr-size
-AVRDUDE = avrdude
+# Project configuration
 
-
-TARGET = muos
+PLATFORM=atmel
 MCU = atmega328p
 #MCU = attiny85
 
-SOURCES = $(TARGET).c
-SOURCES += $(wildcard muos/*.c)
-SOURCES += $(wildcard muos/hw/*.c)
+MAIN = muos
 
-OBJECTS = $(SOURCES:.c=.o)
+PROGRAMMER=avrdude
 
-#AVRDUDE_PROGRAMMER = -c usbasp
-AVRDUDE_PROGRAMMER = -c arduino
-AVRDUDE_BAUDRATE = -b 57600
-AVRDUDE_PORT = -P /dev/ttyUSB0
-
-AVRDUDE_PART = -p $(MCU)
-
-AVRDUDE_FLAGS = $(AVRDUDE_PROGRAMMER) $(AVRDUDE_PART) $(AVRDUDE_BAUDRATE) $(AVRDUDE_PORT)
-AVRDUDE_DEFAULT_SCK = -B 8
-#AVRDUDE_128kHz_SCK = -B 16
+# loading variables, initialization and defaults
+include muos/muos.mk
 
 # Common CC Flags
-CCFLAGS = -std=gnu99 -mmcu=$(MCU)
-CCFLAGS += -Os
-CCFLAGS += -mtiny-stack
-CCFLAGS += -fshort-enums
-CCFLAGS += -flto
-#CCFLAGS += -mcall-prologues
+#CCFLAGS +=
 
 # Preprocessor Flags
-CPPFLAGS = -I .
+#CPPFLAGS +=
 
 # Compile Flags
-CFLAGS = $(CCFLAGS)
-CFLAGS += $(CPPFLAGS)
 CFLAGS += -Wall -Wextra -Werror
 
 # Dependency generation Flags
-DEPFLAGS = -M -MP
+#DEPFLAGS +=
 
 # Linker flags
-LDFLAGS = $(CCFLAGS)
 LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
-FUSE_DEFAULT = -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
-#FUSE_RELEASE = -U lfuse:w:0x64:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
-
-all: $(TARGET).hex $(TARGET).eep size
-
-%.d: %.c
-	@set -e; rm -f $@; \
-        $(CC) $(DEPFLAGS) $(CPPFLAGS) $< > $@.$$$$; \
-        sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-        rm -f $@.$$$$
-
--include $(SOURCES:.c=.d)
-
-*.o: Makefile
-
-%.o %d: %c
-
-
-elf: $(TARGET).elf
-hex: $(TARGET).hex
-eep: $(TARGET).eep
-asm: $(TARGET).asm
-
-show_asm: $(TARGET).asm
-	less $(TARGET).asm
-
-%.elf: $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) --output $@
-
-%.hex: %.elf
-	$(OBJCOPY) -O ihex -j .text $< $@
-
-%.eep: %.elf
-	$(OBJCOPY) -j .eeprom  --change-section-lma .eeprom=0 -O ihex $< $@
-
-%.asm: %.elf
-	$(OBJDUMP) -S $< >$@
-
-size: $(TARGET).hex $(TARGET).eep
-	@$(SIZE) --target=ihex $(TARGET).hex $(TARGET).eep
-
-
-program: all
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:w:$(TARGET).hex:i
-#-U eeprom:w:$(TARGET).eep:i
-
-read_program:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:r:$(TARGET).hex:i -U eeprom:r:$(TARGET).eep:i
-
-reset_fuse:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_128kHz_SCK) $(FUSE_DEFAULT)
-
-#fuse_128khz:
-#	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) $(FUSE_RELEASE)
-
-reset_device:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -e $(FUSE_DEFAULT) || \
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_128kHz_SCK) -e $(FUSE_DEFAULT)
-
-
-depclean:
-	rm -f *.d *.d.*
-
-clean: depclean
-	rm -f *.elf *.a $(OBJECTS)
-
-mrproper: clean
-	rm -f *.hex *.eep
-
+include muos/muos_rules.mk
 
