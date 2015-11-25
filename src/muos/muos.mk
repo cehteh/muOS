@@ -16,14 +16,14 @@ MAKEFILES += muos/hw/$(PLATFORM)/platform_rules.mk
 # Common CC Flags
 CCFLAGS = -std=gnu99
 
+# Dependency generation Flags
+DEPFLAGS = -mmcu=$(MCU) -M -MP
+
 # Preprocessor Flags
 CPPFLAGS = -I .
 
 # Compile Flags
 CFLAGS = $(CCFLAGS) $(CPPFLAGS)
-
-# Dependency generation Flags
-DEPFLAGS = -M -MP
 
 # Linker flags
 LDFLAGS = $(CCFLAGS)
@@ -35,4 +35,3 @@ COMPILE=
 
 include muos/$(PROGRAMMER).mk
 include muos/hw/$(PLATFORM)/platform.mk
-
