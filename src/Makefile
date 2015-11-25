@@ -6,7 +6,11 @@ MCU = atmega328p
 
 MAIN = muos
 
-PROGRAMMER=avrdude
+PROGRAMMER = avrdude
+AVRDUDE_BAUDRATE = 57600
+AVRDUDE_PORT = /dev/ttyUSB0
+#AVRDUDE_PROGRAMMER = usbasp
+AVRDUDE_PROGRAMMER = arduino
 
 # loading variables, initialization and defaults
 include muos/muos.mk
@@ -14,14 +18,14 @@ include muos/muos.mk
 # Common CC Flags
 #CCFLAGS +=
 
+# Dependency generation Flags
+#DEPFLAGS +=
+
 # Preprocessor Flags
 #CPPFLAGS +=
 
 # Compile Flags
 CFLAGS += -Wall -Wextra -Werror
-
-# Dependency generation Flags
-#DEPFLAGS +=
 
 # Linker flags
 LDFLAGS += -Wl,--relax,--gc-sections
