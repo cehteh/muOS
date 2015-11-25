@@ -23,19 +23,11 @@ depclean:
 *.o: $(MAKEFILES)
 
 
-elf: $(MAIN).elf
-
 asm: $(MAIN).asm
 
 show_asm: $(MAIN).asm
 	less $(MAIN).asm
 
-%.elf: $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) --output $@
-
-
-%.asm: %.elf
-	$(OBJDUMP) -S $< >$@
 
 size: $(COMPILE)
 	@$(SIZE) --target=ihex $(COMPILE)
