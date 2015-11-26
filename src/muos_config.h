@@ -21,6 +21,7 @@
 #ifndef MUOS_CONFIG_H
 #define MUOS_CONFIG_H
 
+//QUEUE:
 
 // the bits used for indexing queues
 // comes in 3 variants
@@ -36,11 +37,9 @@
 
 
 // How functions with arguments are tagged in queues, currently only the negate is implemened
-// Works with mpu's with up to 32k flash
+// Works with mpu's with up to 64k flash
 #ifndef MUOS_QUEUE_ARGTAG
-#define MUOS_QUEUE_ARGTAG ARGTAG_NEGATE
-// LSB tagging works with up to 64k flash but needs function alignment on even addresses
-//#define MUOS_QUEUE_ARGTAG ARGTAG_LSB //unimplemented due gcc bug
+#define MUOS_QUEUE_ARGTAG NEGATE
 #endif
 
 
@@ -61,6 +60,15 @@
 //#define MUOS_TIMER_SHORT_TYPE 64
 #endif
 
+// How many entriex the realtime Queue can hold, set to 0 to disable the rtq
+#ifndef MUOS_RTQ_LENGTH
+#define MUOS_RTQ_LENGTH 32
+#endif
+
+// How many entriex the background Queue can hold, set to 0 to disable the bgq
+#ifndef MUOS_BGQ_LENGTH
+#define MUOS_BGQ_LENGTH 32
+#endif
 
 
 // type used for the 'priorities' if the priority queue
