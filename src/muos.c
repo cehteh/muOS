@@ -21,28 +21,22 @@
 //configuration
 #define EXAMPLE
 
-#include <muos.h>
-#include <muos_queue.h>
+
+#include <muos/queue.h>
+#include <muos/timer.h>
+#include <muos/priq.h>
+#include <muos/scheduler.h>
+
 
 uint8_t muos_overflow_count;
 
-
-MUOS_QUEUE8DEF(32)      rtq;
-MUOS_QUEUE8DEF(32)      bgq;
-
-
-
-#ifdef EXAMPLE
-// example code starts here
-
-#include <avr/io.h>
 #include <util/delay_basic.h>
 
 
 void blink_led(void)
 {
   PINB = _BV(PINB5);
-  muos_queue8_pushback (&bgq.descriptor, 32, blink_led);
+  MUOS_BGQ_PUSHBACK (blink_led);
 }
 
 void wait_a_bit(intptr_t amount)
@@ -50,22 +44,38 @@ void wait_a_bit(intptr_t amount)
   for (intptr_t i = 1000; i; --i)
     _delay_loop_2(amount);
 
-  muos_queue8_pushback_arg (&bgq.descriptor, 32, wait_a_bit, amount);
+  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, amount);
 }
 
-// example code ends here
-#endif
+
 
 int main()
 {
   DDRB = _BV(PINB5);
 
-  //blink_led_n (2000);
+  MUOS_BGQ_PUSHBACK (blink_led);
+  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 10000);
+  MUOS_BGQ_PUSHBACK (blink_led);
+  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 10000);
+  MUOS_BGQ_PUSHBACK (blink_led);
+  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 1000);
+  MUOS_BGQ_PUSHBACK (blink_led);
+  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 1000);
 
+  
+  //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
+  
+  //  MUOS_SCHED_INIT (0, DIV64);
+
+  sei();
 
   for(;;)
     {
-      while(muos_queue8_schedule(&bgq.descriptor, 32)) {}
+      do {
+        while(MUOS_RTQ_SCHEDULE());
+      } while (MUOS_BGQ_SCHEDULE());
+      //      for (uint32_t i = 100000; --i;) {}
+      //blink_led_tm();
       
       //      MUOS_SLEEP;
     }
