@@ -171,6 +171,35 @@ muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_q
 #define MUOS_QUEUE_PUSHFRONT(q, f) muos_queue_pushfront (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))
 #define MUOS_QUEUE_PUSHFRONT_ARG(q, f, a) muos_queue_pushfront_arg (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f), (a))
 
+#if MUOS_RTQ_LENGTH > 0
+typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
+
+extern muos_rtq_type muos_rtq;
+
+#define MUOS_RTQ_SCHEDULE() MUOS_QUEUE_SCHEDULE(muos_rtq)
+#define MUOS_RTQ_PUSHBACK(f) MUOS_QUEUE_PUSHBACK(muos_rtq, (f))
+#define MUOS_RTQ_PUSHBACK_ARG(f, a) MUOS_QUEUE_PUSHBACK_ARG(muos_rtq, (f), (a))
+#define MUOS_RTQ_PUSHFRONT(f) MUOS_QUEUE_PUSHFRONT(muos_rtq, (f))
+#define MUOS_RTQ_PUSHFRONT_ARG(f, a) MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a))
+
+#endif
+
+#if MUOS_BGQ_LENGTH > 0
+typedef MUOS_QUEUEDEF(MUOS_BGQ_LENGTH) muos_bgq_type;
+
+extern muos_bgq_type muos_bgq;
+
+#define MUOS_BGQ_SCHEDULE() MUOS_QUEUE_SCHEDULE(muos_bgq)
+#define MUOS_BGQ_PUSHBACK(f) MUOS_QUEUE_PUSHBACK(muos_bgq, (f))
+#define MUOS_BGQ_PUSHBACK_ARG(f, a) MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a))
+#define MUOS_BGQ_PUSHFRONT(f) MUOS_QUEUE_PUSHFRONT(muos_bgq, (f))
+#define MUOS_BGQ_PUSHFRONT_ARG(f, a) MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a))
+
+#endif
+
+
+
+
 
 
 #endif
