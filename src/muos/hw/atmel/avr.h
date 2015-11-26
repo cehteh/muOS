@@ -23,5 +23,29 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
+
+#define MUOS_ATOMIC ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+#define MUOS_NONATOMIC NONATOMIC_BLOCK(NONATOMIC_RESTORESTATE)
+
+static __inline__ uint8_t
+__iOuter(const  uint8_t *__s)
+{
+    SREG = *__s;
+    __asm__ volatile ("" ::: "memory");
+    return 1;
+}
+
+#define MUOS_ATOMIC_RESTORE for ( uint8_t __restore __attribute__((__cleanup__(__iCliParam))) = 0, __ToDo = __iOuter(&sreg_save); \
+                                 __ToDo ;  __ToDo = 0 )
+
+#define MUOS_NONATOMIC_RESTORE for ( uint8_t __restore __attribute__((__cleanup__(__iSeiParam))) = 0, __ToDo = __iOuter(&sreg_save); \
+                                 __ToDo ;  __ToDo = 0 )
+
+
+#define MUOS_ATOMIC_FORCE ATOMIC_BLOCK(ATOMIC_FORCEON)
+#define MUOS_NONATOMIC_FORCE NONATOMIC_BLOCK(NONATOMIC_FORCEOFF)
+
+
 
 #endif

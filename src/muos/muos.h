@@ -21,9 +21,32 @@
 #ifndef MUOS_H
 #define MUOS_H
 
+#include <stdint.h>
 #include <muos/hwdef.h>
 
-#include <stdint.h>
+#ifndef MUOS_ATOMIC
+#error MUOS_ATOMIC lacks hardware definiton
+#endif
+
+#ifndef MUOS_NONATOMIC
+#error MUOS_NONATOMIC lacks hardware definiton
+#endif
+
+#ifndef MUOS_ATOMIC_RESTORE
+#error MUOS_ATOMIC_RESTORE lacks hardware definiton
+#endif
+
+#ifndef MUOS_NONATOMIC_RESTORE
+#error MUOS_NONATOMIC_RESTORE lacks hardware definiton
+#endif
+
+#ifndef MUOS_ATOMIC_FORCE
+#error MUOS_ATOMIC_FORCE lacks hardware definiton
+#endif
+
+#ifndef MUOS_NONATOMIC_FORCE
+#error MUOS_NONATOMIC_FORCE lacks hardware definiton
+#endif
 
 
 #define MUOS_TYPEDEF(basetype, size, name) MUOS_TYPEDEF_(basetype, size, name)
