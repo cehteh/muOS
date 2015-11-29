@@ -20,7 +20,7 @@ depclean:
 
 
 
-*.o: $(MAKEFILES)
+*.o: $(MAKEFILES) $(shell which $(CC))
 
 
 asm: $(MAIN).asm
