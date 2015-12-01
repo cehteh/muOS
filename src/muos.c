@@ -36,7 +36,7 @@ uint8_t muos_overflow_count;
 void blink_led(void)
 {
   PINB = _BV(PINB5);
-  MUOS_BGQ_PUSHBACK (blink_led);
+  muos_bgq_pushback (blink_led);
 }
 
 void wait_a_bit(intptr_t amount)
@@ -44,6 +44,7 @@ void wait_a_bit(intptr_t amount)
   for (intptr_t i = 1000; i; --i)
     _delay_loop_2(amount);
 
+  muos_bgq_pushback_arg (wait_a_bit, amount+1);
   MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, amount);
 }
 
@@ -53,14 +54,8 @@ int main()
 {
   DDRB = _BV(PINB5);
 
-  MUOS_BGQ_PUSHBACK (blink_led);
-  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 10000);
-  MUOS_BGQ_PUSHBACK (blink_led);
-  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 10000);
-  MUOS_BGQ_PUSHBACK (blink_led);
-  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 1000);
-  MUOS_BGQ_PUSHBACK (blink_led);
-  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, 1000);
+  //muos_bgq_pushback (blink_led);
+  //muos_bgq_pushback_arg (wait_a_bit, 0);
 
   
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
@@ -71,12 +66,16 @@ int main()
 
   for(;;)
     {
-      do {
-        while(MUOS_RTQ_SCHEDULE());
-      } while (MUOS_BGQ_SCHEDULE());
-      //      for (uint32_t i = 100000; --i;) {}
-      //blink_led_tm();
-      
+      do
+        {
+          do
+            {
+              // while(MUOS_SCHEDQ_SCHEDULE(muos_rtpq));
+            }
+          while(MUOS_QUEUE_SCHEDULE(muos_rtq));
+        }
+      while (MUOS_QUEUE_SCHEDULE(muos_bgq));
+
       //      MUOS_SLEEP;
     }
 }
