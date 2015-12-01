@@ -33,13 +33,6 @@ typedef void (*muos_queue_function_arg)(intptr_t);
 
 #if MUOS_QUEUE_INDEX == 4
 
-#define MUOS_QUEUEDEF(size)                     \
-struct                                          \
-{                                               \
-  struct muos_queue  descriptor;                \
-  intptr_t      queue[size];                    \
-}
-
 typedef uint8_t muos_queue_size;
 
 struct muos_queue
@@ -49,36 +42,7 @@ struct muos_queue
   volatile intptr_t     queue[];
 };
 
-static inline void
-muos_queue_init (struct muos_queue* queue)
-{
-  queue->start = 0;
-  queue->len = 0;
-}
-
-bool
-muos_queue_schedule (struct muos_queue* queue, muos_queue_size size);
-
-void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
-
-void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
-
 #elif MUOS_QUEUE_INDEX == 8
-
-#define MUOS_QUEUEDEF(size)                     \
-struct                                          \
-{                                               \
-  struct muos_queue descriptor;                 \
-  intptr_t      queue[size];                    \
-}
 
 typedef uint8_t muos_queue_size;
 
@@ -89,39 +53,7 @@ struct muos_queue
   volatile intptr_t     queue[];
 };
 
-
-static inline void
-muos_queue_init (struct muos_queue* queue)
-{
-  queue->start = 0;
-  queue->len = 0;
-}
-
-bool
-muos_queue_schedule (struct muos_queue* queue, muos_queue_size size);
-
-void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
-
-void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
-
-
 #elif MUOS_QUEUE_INDEX == 16
-
-
-#define MUOS_QUEUEDEF(size)                     \
-struct                                          \
-{                                               \
-  struct muos_queue descriptor;                 \
-  intptr_t      queue[size];                    \
-}
 
 typedef uint16_t muos_queue_size;
 
@@ -133,6 +65,28 @@ struct muos_queue
 };
 
 
+#else
+#error "illegal MUOS_QUEUE_INDEX"
+#endif
+
+
+
+
+#define MUOS_QUEUEDEF(size)                     \
+struct                                          \
+{                                               \
+  struct muos_queue descriptor;                 \
+  intptr_t      queue[size];                    \
+}
+
+
+
+
+
+
+
+
+
 static inline void
 muos_queue_init (struct muos_queue* queue)
 {
@@ -144,24 +98,47 @@ bool
 muos_queue_schedule (struct muos_queue* queue, muos_queue_size size);
 
 void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
+muos_queue_pushback_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushback_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+
+void
+muos_queue_pushfront_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
+
+void
+muos_queue_pushfront_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+
+static inline void
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
+{
+  MUOS_ATOMIC
+    muos_queue_pushback_unsafe (queue, size, fn);
+}
+
+static inline void
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+{
+  MUOS_ATOMIC
+    muos_queue_pushback_arg_unsafe (queue, size, fn, arg);
+}
+
+static inline void
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
+{
+  MUOS_ATOMIC
+    muos_queue_pushfront_unsafe (queue, size, fn);
+}
+
+static inline void
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+{
+  MUOS_ATOMIC
+    muos_queue_pushfront_arg_unsafe (queue, size, fn, arg);
+}
+
 
 //PLANNED: stowing more than one arg
-
-void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
-
-#else
-#error "illegal MUOS_QUEUE_INDEX"
-#endif
-
-
 
 #define MUOS_QUEUE_SIZE(q)  MUOS_ARRAY_ELEMENTS((q).queue)
 
@@ -175,30 +152,62 @@ muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_q
 typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
 
 extern muos_rtq_type muos_rtq;
+                                       //TODO: static inline functions
+static inline void
+muos_rtq_pushback (muos_queue_function f)
+{
+  MUOS_QUEUE_PUSHBACK(muos_rtq, (f));
+}
 
-#define MUOS_RTQ_SCHEDULE() MUOS_QUEUE_SCHEDULE(muos_rtq)
-#define MUOS_RTQ_PUSHBACK(f) MUOS_QUEUE_PUSHBACK(muos_rtq, (f))
-#define MUOS_RTQ_PUSHBACK_ARG(f, a) MUOS_QUEUE_PUSHBACK_ARG(muos_rtq, (f), (a))
-#define MUOS_RTQ_PUSHFRONT(f) MUOS_QUEUE_PUSHFRONT(muos_rtq, (f))
-#define MUOS_RTQ_PUSHFRONT_ARG(f, a) MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a))
+static inline void
+muos_rtq_pushback_arg (muos_queue_function_arg f, intptr_t a)
+{
+  MUOS_QUEUE_PUSHBACK_ARG(muos_rtq, (f), (a));
+}
 
+static inline void
+muos_rtq_pushfront (muos_queue_function f)
+{
+  MUOS_QUEUE_PUSHFRONT(muos_rtq, (f));
+}
+
+static inline void
+muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+{
+  MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a));
+}
 #endif
+
 
 #if MUOS_BGQ_LENGTH > 0
 typedef MUOS_QUEUEDEF(MUOS_BGQ_LENGTH) muos_bgq_type;
 
 extern muos_bgq_type muos_bgq;
 
-#define MUOS_BGQ_SCHEDULE() MUOS_QUEUE_SCHEDULE(muos_bgq)
-#define MUOS_BGQ_PUSHBACK(f) MUOS_QUEUE_PUSHBACK(muos_bgq, (f))
-#define MUOS_BGQ_PUSHBACK_ARG(f, a) MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a))
-#define MUOS_BGQ_PUSHFRONT(f) MUOS_QUEUE_PUSHFRONT(muos_bgq, (f))
-#define MUOS_BGQ_PUSHFRONT_ARG(f, a) MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a))
+static inline void
+muos_bgq_pushback (muos_queue_function f)
+{
+  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
+}
 
+static inline void
+muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a)
+{
+  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
+}
+
+static inline void
+muos_bgq_pushfront (muos_queue_function f)
+{
+  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
+}
+
+static inline void
+muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+{
+  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+}
 #endif
-
-
-
 
 
 

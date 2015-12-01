@@ -60,12 +60,10 @@ muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 
 
 static void
-muos_queue_prep (struct muos_queue* queue, muos_queue_size size, uint8_t len)
+muos_queue_check (struct muos_queue* queue, muos_queue_size size, uint8_t len)
 {
-  while (size - queue->len < len)
-    {
-      muos_queue_schedule (queue, size);
-    }
+  if (size - queue->len < len)
+    muos_error();
 }
 
 
@@ -81,24 +79,18 @@ muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intp
 
 
 void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
+muos_queue_pushback_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  MUOS_ATOMIC
-    {
-      muos_queue_prep (queue, size, 1);
-      muos_queue_pushback_intern (queue, size, (intptr_t) fn);
-    }
+  muos_queue_check (queue, size, 1);
+  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushback_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  MUOS_ATOMIC
-    {
-      muos_queue_prep (queue, size, 2);
-      muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
-      muos_queue_pushback_intern (queue, size, arg);
-    }
+  muos_queue_check (queue, size, 2);
+  muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushback_intern (queue, size, arg);
 }
 
 
@@ -114,26 +106,19 @@ muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, int
 
 
 void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
+muos_queue_pushfront_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  MUOS_ATOMIC
-    {
-      muos_queue_prep (queue, size ,1);
-      muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
-    }
+  muos_queue_check (queue, size ,1);
+  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushfront_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  MUOS_ATOMIC
-    {
-      muos_queue_prep (queue, size, 2);
-      muos_queue_pushfront_intern (queue, size, arg);
-      muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
-    }
+  muos_queue_check (queue, size, 2);
+  muos_queue_pushfront_intern (queue, size, arg);
+  muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }
-
 
 
 #if MUOS_RTQ_LENGTH > 0
