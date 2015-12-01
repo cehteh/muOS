@@ -1,6 +1,6 @@
 all: $(COMPILE) size
 
-include muos/$(PROGRAMMER)_rules.mk
+include muos/prg_$(PROGRAMMER)_rules.mk
 include muos/hw/$(PLATFORM)/platform_rules.mk
 
 
@@ -16,7 +16,7 @@ include muos/hw/$(PLATFORM)/platform_rules.mk
 %.o %d: %c
 
 depclean:
-	rm -f $(SOURCES:.c=.d) $(SOURCES:.c=.d).*
+	rm -f $(SOURCES:.c=.d) $(SOURCES:.c=.d.*)
 
 
 

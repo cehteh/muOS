@@ -8,8 +8,8 @@ OBJECTS = $(SOURCES:.c=.o)
 MAKEFILES = Makefile
 MAKEFILES += muos/muos.mk
 MAKEFILES += muos/muos_rules.mk
-MAKEFILES += muos/$(PROGRAMMER).mk
-MAKEFILES += muos/$(PROGRAMMER)_rules.mk
+MAKEFILES += muos/prg_$(PROGRAMMER).mk
+MAKEFILES += muos/prg_$(PROGRAMMER)_rules.mk
 MAKEFILES += muos/hw/$(PLATFORM)/platform.mk
 MAKEFILES += muos/hw/$(PLATFORM)/platform_rules.mk
 
@@ -33,5 +33,5 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 # What files must be generated for 'make all'
 COMPILE=
 
-include muos/$(PROGRAMMER).mk
+include muos/prg_$(PROGRAMMER).mk
 include muos/hw/$(PLATFORM)/platform.mk
