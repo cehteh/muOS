@@ -23,7 +23,7 @@
 
 
 #include <muos/queue.h>
-#include <muos/timer.h>
+#include <muos/clock.h>
 #include <muos/priq.h>
 #include <muos/scheduler.h>
 
@@ -62,7 +62,8 @@ int main()
   
   //  MUOS_SCHED_INIT (0, DIV64);
 
-  sei();
+  muos_clock_start ();
+  sei(); //TODO: muos_intr_enable() muos_start () (timer reset, and go)
 
   for(;;)
     {
