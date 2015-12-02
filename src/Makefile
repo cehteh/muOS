@@ -4,7 +4,7 @@ PLATFORM=atmel
 MCU = atmega328p
 #MCU = attiny85
 
-MAIN = muos
+MAIN = example
 
 PROGRAMMER = avrdude
 AVRDUDE_BAUDRATE = 57600

@@ -25,6 +25,7 @@
 #include <muos/queue.h>
 #include <muos/clock.h>
 #include <muos/spriq.h>
+//#include <muos/sched.h>
 
 
 uint8_t muos_overflow_count;
@@ -66,7 +67,6 @@ void wait_a_bit(intptr_t amount)
     _delay_loop_2(amount);
 
   muos_bgq_pushback_arg (wait_a_bit, amount+1);
-  MUOS_BGQ_PUSHBACK_ARG (wait_a_bit, amount);
 }
 
 
@@ -78,10 +78,20 @@ int main()
   //muos_bgq_pushback (blink_led);
   //muos_bgq_pushback_arg (wait_a_bit, 0);
 
-  
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
-  
+
   //  MUOS_SCHED_INIT (0, DIV64);
+  //MUOS_SCHED_START();
+
+  //MUOS_INIT(initevent);
+
+  //  muos_schedule_at (10000, blink_led_time2);
+
+  
+  //  muos_rtpq_at (10000, blink_led_time);
+
+  //TODO: bool muos_wait (fn, param, timeout)
+  //TODO: void muos_yield (count)
 
   muos_clock_start ();
   sei(); //TODO: muos_intr_enable() muos_start () (timer reset, and go)
