@@ -49,14 +49,6 @@ struct muos_spriq
 };
 
 
-#define MUOS_SPRIQDEF(size)                     \
-struct                                          \
-{                                               \
-  struct muos_spriq descriptor;                 \
-  struct muos_spriq_entry spriq[size];          \
-}
-
-
 static inline void
 muos_spriq_init (struct muos_spriq* spriq)
 {
@@ -81,7 +73,14 @@ muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event)
 
 
 #if MUOS_RTPQ_LENGTH > 0
-typedef MUOS_SPRIQDEF(MUOS_RTPQ_LENGTH) muos_rtpq_type;
+
+
+
+typedef struct
+{
+  struct muos_spriq descriptor;
+  struct muos_spriq_entry spriq[MUOS_RTPQ_LENGTH];
+} muos_rtpq_type;
 extern muos_rtpq_type muos_rtpq;
 
 bool

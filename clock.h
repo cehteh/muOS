@@ -25,8 +25,6 @@
 #include "muos/muos.h"
 #include <muos/hwdef.h>
 
-#define MUOS_CLOCK_COUNTER  MUOS_CONCAT2(muos_clock_,MUOS_CLOCK_HW)
-#define MUOS_CLOCK_ISR_OVERFLOW  MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
 
 MUOS_TYPEDEF(uint, MUOS_CLOCK_TYPE, muos_clock);
@@ -39,16 +37,8 @@ typedef struct {
 
 
 
+extern volatile muos_clock muos_clock_count;
 
-extern volatile muos_clock MUOS_CLOCK_COUNTER;
-
-#define MUOS_CLOCKDEF(...)                      \
-  MUOS_CLOCK_ISR_OVERFLOW                       \
-  {                                             \
-    ++MUOS_CLOCK_COUNTER;                       \
-    (void) __VA_ARGS__;                         \
-  }                                             \
-  volatile muos_clock MUOS_CLOCK_COUNTER
 
 
 static inline void
@@ -66,30 +56,45 @@ muos_clock_now (void)
   muos_hwclock hw;
   do
     {
-      counter = MUOS_CLOCK_COUNTER;
+      counter = muos_clock_count;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while (counter != MUOS_CLOCK_COUNTER);
+  while (counter != muos_clock_count);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
 
 static inline muos_shortclock
-muos_clock_nowshort (void)
+muos_clock_shortnow (void)
 {
   muos_shortclock counter;
   muos_hwclock hw;
   do
     {
-      counter = MUOS_CLOCK_COUNTER;
+      counter = (muos_shortclock)muos_clock_count;
+      hw = MUOS_CLOCK_REGISTER;
+    }
+  while (counter != (muos_shortclock)muos_clock_count);
+
+  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+}
+
+#if 0
+static inline muos_fullclock
+muos_clock_fullnow (void)
+{
+  muos_shortclock counter;
+  muos_hwclock hw;
+  do
+    {
+      counter = muos_shortclock;
       hw = MUOS_CLOCK_REGISTER;
     }
   while (counter != MUOS_CLOCK_COUNTER);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
-
-//TODO: now_long
+#endif
 
 //static inline void
 //muos_clock_stop (void)
