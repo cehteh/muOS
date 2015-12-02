@@ -150,9 +150,14 @@ muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_q
 
 #if MUOS_RTQ_LENGTH > 0
 typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
-
 extern muos_rtq_type muos_rtq;
-                                       //TODO: static inline functions
+
+static inline bool
+muos_rtq_schedule (void)
+{
+  return MUOS_QUEUE_SCHEDULE (muos_rtq);
+}
+
 static inline void
 muos_rtq_pushback (muos_queue_function f)
 {
@@ -181,8 +186,14 @@ muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 
 #if MUOS_BGQ_LENGTH > 0
 typedef MUOS_QUEUEDEF(MUOS_BGQ_LENGTH) muos_bgq_type;
-
 extern muos_bgq_type muos_bgq;
+
+static inline bool
+muos_bgq_schedule (void)
+{
+  return MUOS_QUEUE_SCHEDULE (muos_bgq);
+}
+
 
 static inline void
 muos_bgq_pushback (muos_queue_function f)
