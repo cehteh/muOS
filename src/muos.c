@@ -24,8 +24,7 @@
 
 #include <muos/queue.h>
 #include <muos/clock.h>
-#include <muos/priq.h>
-#include <muos/scheduler.h>
+#include <muos/spriq.h>
 
 
 uint8_t muos_overflow_count;
@@ -50,6 +49,16 @@ void blink_led(void)
   PINB = _BV(PINB5);
   muos_bgq_pushback (blink_led);
 }
+
+void blink_led_time(void)
+{
+  PINB = _BV(PINB5);
+  //muos_rtpq_repeat (1000);
+  //muos_ltpq_repeat (1000);
+  //muos_schedule_at (1000);
+}
+
+
 
 void wait_a_bit(intptr_t amount)
 {
@@ -83,7 +92,7 @@ int main()
         {
           do
             {
-              // while(MUOS_SCHEDQ_SCHEDULE(muos_rtpq));
+              while(muos_rtpq_schedule(muos_clock_now()));
             }
           while(muos_rtq_schedule ());
         }
