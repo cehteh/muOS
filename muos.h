@@ -22,6 +22,17 @@
 #define MUOS_H
 
 #include <stdint.h>
+
+
+//#define MUOS_EVAL(v) v
+#define MUOS_EVAL(v) v
+#define MUOS_CONCAT_(a,b) a##b
+#define MUOS_CONCAT2(a,b) MUOS_CONCAT_(a,b)
+#define MUOS_CONCAT3(a,b,c) MUOS_CONCAT2(a,MUOS_CONCAT_(b,c))
+#define MUOS_CONCAT4(a,b,c,d) MUOS_CONCAT2(MUOS_CONCAT_(a,b),MUOS_CONCAT_(b,c))
+#define MUOS_CONCAT5(a,b,c,d,e) MUOS_CONCAT3(MUOS_CONCAT_(a,b),MUOS_CONCAT_(c,d),e)
+
+
 #include <muos/hwdef.h>
 
 #ifndef MUOS_ATOMIC
