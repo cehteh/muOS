@@ -69,4 +69,8 @@ extern uint8_t muos_overflow_count;
 #define MUOS_SLEEP
 
 
+void muos_error (void);
+
+void muos_die (void);
+
 #endif

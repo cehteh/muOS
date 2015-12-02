@@ -33,6 +33,18 @@ uint8_t muos_overflow_count;
 #include <util/delay_basic.h>
 
 
+void muos_error (void)
+{
+  muos_die ();
+}
+
+void muos_die (void)
+{
+  cli();
+  for(;;);
+}
+
+
 void blink_led(void)
 {
   PINB = _BV(PINB5);
