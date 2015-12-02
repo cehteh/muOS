@@ -20,12 +20,13 @@
 
 #include <muos/clock.h>
 
+MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
+{
+    ++muos_clock_count;
+    //TODO: init compmatch from rtpq
+}
 
-
-MUOS_CLOCKDEF(0 /*maybe comparematch */);
-
-
-/* comparematchdef als empty interrupt*/
+volatile muos_clock muos_clock_count;
 
 
 EMPTY_INTERRUPT(TIMER0_COMPA_vect);
