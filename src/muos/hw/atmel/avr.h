@@ -47,5 +47,7 @@ __iOuter(const  uint8_t *__s)
 #define MUOS_NONATOMIC_FORCE NONATOMIC_BLOCK(NONATOMIC_FORCEOFF)
 
 
+#define MUOS_HW_ISR(what) ISR(what)
+
 
 #endif
