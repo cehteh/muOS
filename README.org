@@ -1,69 +1,83 @@
-#+TITLE: micro OS (event scheduler)
+#+TITLE: My micro OS (event scheduler)
+
+this document is WIP!
+
+* Development
+  The first WIP versions of mµOS are developed for the avr-gcc/avr-libc
+  toolchain, with some portability in mind. It is later planned to extend this
+  to other platforms like stm32 which *may* require some refinements on the
+  API's. General aim is still to stay as simple as the avr toolchain to make
+  mirgration for any programmer coming from Atmel programming to Stm32 (and
+  perhaps others) as easy as possible. Still we will make no compromises in
+  functionality where required.
+
+* Directory Structure
+  
+** src
+   - Makefile
+     Main makefile, only sets some configuration variables and includes the
+     muos/muos.mk muos/muos_rules.mk
+
+   - muos_config.h
+     Configuration for all static build parameters
+
+   - muos.c
+     the main() loop
+
+*** muos
+    - *.c *.h
+      C Source and include files
+
+    - muos.mk muos_rules.mk
+      Default variable and rules setup for building mµOS, includes all other
+      Makefiles
+
+    - prg_$(PROGRAMMER).mk prg_$(PROGRAMMER)_rules.mk
+      Default variables and rules for programmers
+
+
+
+**** hw
+     All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
+
+     - hwdef.h
+       dispatches the including of the actual (most specific) hardware
+       definiton file below
+
+***** atmel
+      hardware abstractions for atmel chips, organized from most specific chip
+      up to generic includes for the respecive platform.
+
+      - platform.mk platform_rules.mk
+        Makefile variables and rules for building this this platform
+
+      - *.h
+        Hardware specific include files,
+
+        - macros to create Hardware specific register names
+
+        - simple 'static inline' functions to operate on this registers
+
+        - abstraction of interupt handling routines
 
 
 
 * Concept
 
 ** Schedule functioncalls
-   mµOS is about events which in turn schedule functioncalls, no threads no
-   other abstractions
+   mµOS is about events and scheduling functions from different queues, no threads no
+   other abstractions.
 
-** Work Queues
-   Most processing should be done by queueing functioncalls into one of the
-   following queues. Functions can be pushed onto this queues at the front for
-   highest priority (immediate execution) or at the back for fair scheduling.
-
-   Functions called from queues can have one additional argument of type intptr_t.
-
-*** Queue datatypes and sizes
-    There are 3 implementations for the queues from which one must be choosen
-    at compiletime
-
-    * one uses 4bit indices on a bitfield (a byte split in half),
-      allows for queue size up to 16 entries for very small microcontrollers
-      such attinys
-    * one uses byte indices, which is the default, allowing queues up to 256
-      entries.
-    * and one uses uint16_t indices for large queues (up to 64k entries).
-
-    Note that when functioncalls with one intptr_t argument are pushed on a
-    queue, it will take 2 entries (one for the functionpointer and one for the argument)
-
-    Queues can be defined to any size within their indexable range and are a
-    fixed sized array in RAM.
-
-
-*** Default Queues
-
-**** Realtime Queue (rtq)
-     Will be processed asynchronously with highest priority (just below any
-     interrupt). Interrupts may process this queue before returning, interrupts
-     are enabled.
-
-**** Background Queue (bgq)
-     Is processed in the mainloop when nothing else (rtq) is to do. when the
-     bgq (and rtq) is empty, the mainloop goes to sleep waiting for interrupts
-     to wake up.
-
-
-
-** Interrupts
-   Should do only the most minimal work, possibly pushing further events on
-   the Work Queues. User define Interrupt handlers may call the rtq processing
-   loop at the end.
-
-
-** Priority Queue
- * uses a sliding window implementation
-
-** Timer/Scheduler
+** Clock
    One hardware timer is used to implement a global clock. Events can be
    scheduled based on this clock. The configuration of this timer (prescaler,
-   which hardware timer to be used) is left open to the user. The timer's
-   overflow interrupt only needs to increment a global clock counter.
+   which hardware timer to be used) is left open to the user.
 
-   There is a priority queue which schedules events at a given time. This uses
-   the Compare/Match interrupts of the given Timer.
+*** Adjustments and Skew
+    Once started the clock generally only increments, when syncronization with the real
+    time is intended one may set it once in the initialization routine and
+    later call some apis to adjust it slowly, by skipping a beat or increment
+    the counter in small increments (the api ensures that not events get lost).
 
 *** Datatypes
     The full time is defined by the global overflow counter and the timers
@@ -74,22 +88,36 @@
     circumstances one should select a proper size so that overflows dont
     happen or don't matter.
 
-    The priority queue uses it's own shorter datatype to save memory
-    substantially . This can be 8, 16, 32 or 64 bit wide and represents the lower
-    bits of the full time. Thus its only possible to schedule events within a
-    certain time range.
+    There are following types defined:
 
+    * muos_clock
+      Generic type used for modeate long timespans. Depending on configuration
+      overflows may occur rarely.
+
+      Also type for the overflow counter.
+
+    * muos_shortclock
+      Type for short time intervals. Used in the realtime priority quite for
+      events which are scheduled closely.
+
+    * muos_hwclock
+      The type of the hardware timer
+
+    * muos_fullclock
+      a structure containing the whole clock state with the high bits stored
+      as muos_clock and the low bits stored as muos_hwclock. When properly
+      configured this state should never overflow for the application runtime.
+
+      
 *** Timer interrupts
     the clock and timer needs 2 interrupts
 
 **** overflow
     - increments the global counter
     - setup comparematch value later events
-    - schedule events within short time
 
 **** comparematch
     - setup comparematch value later events
-    - schedule events within short time
 
 *** minimum time
     adding an scheduled event has a short latency in with the timer already
@@ -97,61 +125,104 @@
 
 *** Clock Spin
 
-*** basetime at 'last' event or 'now'
-    Events can be scheduled either based on the 'last' events time or on the
-    'current' time.
-    Using the 'last' time gives accurate repeatable events on fixed time
-    slots. Using the 'current' time works well for non repeating timeouts and wakeups.
-
-
-
 *** use the LSB to push a value onto the priq?
 
 
+** Queues
+   Functions in Queues running synchronously
 
-
-* Queues
-
-* Timer
-  one timer is assinged as global timekeeing device
-
-
-
-* Interrupts
-  Timer interrupt 
+*** Priority Queues
+**** ATTIC
+     The priority queue uses it's own shorter datatype to save memory
+     substantially . This can be 8, 16, 32 or 64 bit wide and represents the lower
+     bits of the full time. Thus its only possible to schedule events within a
+     certain time range.
 
 
 
 
- 
-* config
-  size for the timer overflow counter (16, 32 or 64 bit)
+**** ltpq long time queue
+     * uses longer, absolute time format (muos_clock or muos_fullclock)
+     * needs more memory
+     * handled from the rtpq (one regular job at each cycles moves elements
+       form ltpq to rtpq)
+     * optional only needed for 'calendar' like events, may be short, only as
+       much long time events the program uses at most
 
-* system clock
-  oscal calibration on external pulse
+**** rtpq short time realtime queue
+     * uses a sliding window implementation
+       more memory conserving, schedules events in near future
 
-* Directory Structure
-
-
-* Library
-** time conversion tools
-   Hz, seconds, raw
-
-
-* HAL
+*** Work Queues
+    Most processing should be done by queueing functioncalls into one of the
+    following queues. Functions can be pushed onto this queues at the front for
+    highest priority (immediate execution) or at the back for fair scheduling.
 
 
-* HLD (high level drivers)
-** Serial
-** USB
-** bangbus
-** onewire
-** DCF77
-** EEprom
-** Flash
-** Fuses
-** Watchdog
-** PWM
-** OSCAL
-** CPPM
-** logfs
+**** Queue datatypes and sizes
+     There are 3 implementations for the queues from which one must be choosen
+     at compiletime
+
+     * one uses 4bit indices on a bitfield (a byte split in half),
+       allows for queue size up to 16 entries for very small microcontrollers
+       such attinys
+     * one uses byte indices, which is the default, allowing queues up to 256
+       entries.
+     * and one uses uint16_t indices for large queues (up to 64k entries).
+
+     Note that when functioncalls with one intptr_t argument are pushed on a
+     queue, it will take 2 entries (one for the functionpointer and one for the argument)
+
+     Queues can be defined to any size within their indexable range and are a
+     fixed sized array in RAM.
+
+
+**** Default Queues
+
+***** Realtime Queue (rtq)
+      Will be processed before any bgq events
+
+***** Background Queue (bgq)
+      Is processed in the mainloop when nothing else (rtq) is to do. when the
+      bgq (and rtq) is empty, the mainloop goes to sleep waiting for interrupts
+      to wake up.
+
+
+** Interrupts
+   Should do only the most minimal work, possibly pushing further events on
+   the Work Queues. User define Interrupt handlers may call the rtq processing
+   loop at the end.
+
+*** Interrupt hooks? adding interrupt handlers dynamically
+
+
+
+
+* Planed
+** system clock
+   oscal calibration on external pulse
+
+** Library
+*** time conversion tools
+    Hz, seconds, raw
+
+
+** HAL
+
+
+** HLD (high level drivers)
+*** Serial
+*** USB
+*** bangbus
+*** onewire
+*** DCF77
+*** EEprom
+*** Flash
+*** Fuses
+*** Watchdog
+*** PWM
+*** OSCAL
+*** CPPM
+*** logfs
+
+** Debug tools
