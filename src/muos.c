@@ -72,9 +72,9 @@ int main()
             {
               // while(MUOS_SCHEDQ_SCHEDULE(muos_rtpq));
             }
-          while(MUOS_QUEUE_SCHEDULE(muos_rtq));
+          while(muos_rtq_schedule ());
         }
-      while (MUOS_QUEUE_SCHEDULE(muos_bgq));
+      while (muos_bgq_schedule ());
 
       //      MUOS_SLEEP;
     }
