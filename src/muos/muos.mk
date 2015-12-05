@@ -1,48 +1,57 @@
 
-SOURCES = $(MAIN).c
+SOURCES += $(MAIN).c
 SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/hw/*.c)
 
-OBJECTS = $(SOURCES:.c=.o)
+OBJECTS += $(SOURCES:.c=.o)
 
 # Common CC Flags
-CCFLAGS = -std=gnu99
+CCFLAGS += -std=gnu99
 
 # Dependency generation Flags
-DEPFLAGS = -mmcu=$(MCU) -M -MP -MT $*.o
+DEPFLAGS += -mmcu=$(MCU) -M -MP -MT $*.o
 
 # Preprocessor Flags
-CPPFLAGS = -I .
+CPPFLAGS += -I .
 
 # Compile Flags
-CFLAGS = $(CCFLAGS) $(CPPFLAGS)
+CFLAGS += $(CCFLAGS) $(CPPFLAGS)
 
 # Linker flags
-LDFLAGS = $(CCFLAGS)
+LDFLAGS += $(CCFLAGS)
 LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
 # What files must be generated for 'make all'
-BUILD = $(MAIN).elf
+PROGRAMS += $(MAIN).elf
 
 PRINTFMT = printf "%-60s%16s\n"
 
-MAKEFLAGS += -R -s -O -j $(shell nproc || echo 2)
+MAKEFLAGS = -R -s -O -j $(shell nproc || echo 2)
 .DEFAULT_GOAL = all
 
 .SUFFIXES:
+.PRECIOUS: .v/%
+.PHONY: clean program
+FORCE:
 
 include muos/prg_$(PROGRAMMER).mk
 include muos/hw/$(PLATFORM)/platform.mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(BUILD)
-	$(PRINTFMT) '$(BUILD)' [BUILD]
+all: $(PROGRAMS)
+	$(PRINTFMT) '$(PROGRAMS)' [PROGRAMS]
+
+# dependencies on variables, stored in .v/
+.v/%: FORCE
+	mkdir -p .v
+	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* [DEPVAR]; }
+
 
 # Dependency generation and cleanup
 
-%.d: %.c
+%.d: %.c .v/DEPFLAGS .v/CPPFLAGS .v/CC
 	$(PRINTFMT) $@ [DEPGEN]
 	$(CC) $(DEPFLAGS) $(CPPFLAGS) $< | sed 's,^$*.o,$*.o $*.d,g' > $@
 
@@ -50,26 +59,27 @@ all: $(BUILD)
 
 
 depclean:
+	$(PRINTFMT) $@ [DEPCLEAN]
 	rm -f $(SOURCES:.c=.d)
 
-%.o: %.c Makefile muos/muos.mk
+%.o: %.c .v/CFLAGS .v/CC
 	$(PRINTFMT) $@ [COMPILE]
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
 asm: $(MAIN).asm
 
-show_asm: $(MAIN).asm
-	less $(MAIN).asm
 
-
-size: $(BUILD)
-	@$(SIZE) --target=ihex $(BUILD)
+size: $(PROGRAMS) .v/SIZE
+	$(PRINTFMT) $@ [SIZE]
+	$(SIZE) --target=ihex $(PROGRAMS)
 
 clean: depclean
-	rm -f *.elf *.a $(OBJECTS)
+	$(PRINTFMT) $@ [CLEAN]
+	rm -f *.elf *.a $(OBJECTS) .v/*
 
-mrproper: clean
-	rm -f $(BUILD)
+mrproper: clean .v/PROGRAMS
+	$(PRINTFMT) $@ [MRPROPER]
+	rm -f $(PROGRAMS)
 
 #gitclean: git stash, git clean -dfx
