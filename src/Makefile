@@ -1,6 +1,6 @@
 # Project configuration
 
-PLATFORM=atmel
+PLATFORM = atmel
 MCU = atmega328p
 #MCU = attiny85
 
@@ -12,8 +12,8 @@ AVRDUDE_PORT = /dev/ttyUSB0
 #AVRDUDE_PROGRAMMER = usbasp
 AVRDUDE_PROGRAMMER = arduino
 
-# loading variables, initialization and defaults
-include muos/muos.mk
+# additional C Source file
+#SOURCES +=
 
 # Common CC Flags
 #CCFLAGS +=
@@ -31,5 +31,5 @@ CFLAGS += -Wall -Wextra -Werror
 LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
-include muos/muos_rules.mk
-
+# loading variables, initialization and defaults
+include muos/muos.mk
