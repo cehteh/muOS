@@ -26,7 +26,7 @@ CCFLAGS += -mmcu=$(MCU)
 CCFLAGS += -Os
 CCFLAGS += -mtiny-stack
 CCFLAGS += -fshort-enums
-CCFLAGS += -flto
+CCFLAGS += -flto=$(PARALLEL)
 #CCFLAGS += -mcall-prologues
 
 FUSE_DEFAULT = -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SOURCES += $(MAIN).c
+SOURCES += $(wildcard *.c)
 SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/hw/*.c)
 
@@ -44,12 +44,13 @@ PROGRAMS += $(MAIN).elf
 
 PRINTFMT = printf "%-60s%16s\n"
 
-MAKEFLAGS = -R -s -j $(shell nproc || echo 2)
+PARALLEL = $(shell nproc || echo 2)
+MAKEFLAGS = -R -s -j $(PARALLEL)
 .DEFAULT_GOAL = all
 
 .SUFFIXES:
 .PRECIOUS: .v/%
-.PHONY: clean program
+.PHONY: clean depclean program
 FORCE:
 
 include muos/prg_$(PROGRAMMER).mk
@@ -61,8 +62,10 @@ all: $(PROGRAMS)
 	$(PRINTFMT) '$(PROGRAMS)' [PROGRAMS]
 
 # dependencies on variables, stored in .v/
-.v/%: FORCE
+.v/:
 	mkdir -p .v
+
+.v/%: .v/ FORCE
 	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* [DEPVAR]; }
 
 
@@ -77,7 +80,8 @@ all: $(PROGRAMS)
 
 depclean:
 	$(PRINTFMT) $@ [DEPCLEAN]
-	rm -f $(SOURCES:.c=.d)
+	rm -rf $(SOURCES:.c=.d)	.v/*
+
 
 %.o: %.c .v/CFLAGS .v/CC
 	$(PRINTFMT) $@ [COMPILE]
@@ -93,7 +97,7 @@ size: $(PROGRAMS) .v/SIZE
 
 clean: depclean
 	$(PRINTFMT) $@ [CLEAN]
-	rm -f *.elf *.a $(OBJECTS) .v/*
+	rm -f *.elf *.a $(OBJECTS)
 
 mrproper: clean .v/PROGRAMS
 	$(PRINTFMT) $@ [MRPROPER]
