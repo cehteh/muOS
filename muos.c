@@ -18,20 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//configuration
-#define EXAMPLE
-
-
+#include "muos_config.h"
 #include <muos/queue.h>
 #include <muos/clock.h>
 #include <muos/spriq.h>
-//#include <muos/sched.h>
 
-
-uint8_t muos_overflow_count;
-
-#include <util/delay_basic.h>
-
+extern void
+MUOS_INITFN (void);
 
 void muos_error (void)
 {
@@ -45,58 +38,33 @@ void muos_die (void)
 }
 
 
-void blink_led(void)
+void
+muos_start (void)
 {
-  PINB = _BV(PINB5);
-  muos_bgq_pushback (blink_led);
+  muos_clock_start ();
+  //TODO: muos_intr_enable()
+  sei();
 }
 
-void blink_led_time(void)
+int  __attribute__((OS_main))
+main()
 {
-  PINB = _BV(PINB5);
-  //muos_rtpq_repeat (1000);
-  //muos_ltpq_repeat (1000);
-  //muos_schedule_at (1000);
-}
-
-
-
-void wait_a_bit(intptr_t amount)
-{
-  for (intptr_t i = 1000; i; --i)
-    _delay_loop_2(amount);
-
-  muos_bgq_pushback_arg (wait_a_bit, amount+1);
-}
-
-
-
-int main()
-{
-  DDRB = _BV(PINB5);
-
-  //muos_bgq_pushback (blink_led);
-  //muos_bgq_pushback_arg (wait_a_bit, 0);
-
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
-
-  //  MUOS_SCHED_INIT (0, DIV64);
-  //MUOS_SCHED_START();
-
-  //MUOS_INIT(initevent);
-
-  //  muos_schedule_at (10000, blink_led_time2);
-
-  
-  //  muos_rtpq_at (10000, blink_led_time);
-
   //TODO: bool muos_wait (fn, param, timeout)
   //TODO: void muos_yield (count)
 
-  muos_clock_start ();
-  sei(); //TODO: muos_intr_enable() muos_start () (timer reset, and go)
+#if MUOS_RTQ_LENGTH >= 2
+  muos_rtq_pushback (MUOS_INITFN);
+  muos_rtq_pushback (muos_start);
+#elif MUOS_BGQ_LENGTH >= 2
+  muos_bgq_pushback (MUOS_INITFN);
+  muos_bgq_pushback (muos_start);
+#else
+  MUOS_INITFN();
+  muos_start();
+#endif
 
-  for(;;)
+  do
     {
       do
         {
@@ -108,6 +76,7 @@ int main()
         }
       while (muos_bgq_schedule ());
 
-      //      MUOS_SLEEP;
+      //      MUOS_SLEEP; schedule
     }
+  while (1);
 }

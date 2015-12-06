@@ -23,8 +23,6 @@
 
 #include <stdint.h>
 
-
-//#define MUOS_EVAL(v) v
 #define MUOS_EVAL(v) v
 #define MUOS_CONCAT_(a,b) a##b
 #define MUOS_CONCAT2(a,b) MUOS_CONCAT_(a,b)
