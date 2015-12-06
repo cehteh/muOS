@@ -179,6 +179,11 @@
 //#define MUOS_CLOCK_SHORT_TYPE 64
 #endif
 
+// enable the muos_now() api, needs additional sizeof(muos_clock) space of ram
+#ifndef MUOS_NOW
+//#define MUOS_NOW 0
+#define MUOS_NOW 0
+#endif
 
 
 
