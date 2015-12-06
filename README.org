@@ -11,54 +11,12 @@ this document is WIP!
   perhaps others) as easy as possible. Still we will make no compromises in
   functionality where required.
 
-* Directory Structure
-  
-** src
-   - Makefile
-     Main makefile, only sets some configuration variables and includes the
-     muos/muos.mk muos/muos_rules.mk
+* Howto
+** Configuring
+** Building
 
-   - muos_config.h
-     Configuration for all static build parameters
-
-   - muos.c
-     the main() loop
-
-*** muos
-    - *.c *.h
-      C Source and include files
-
-    - muos.mk muos_rules.mk
-      Default variable and rules setup for building mµOS, includes all other
-      Makefiles
-
-    - prg_$(PROGRAMMER).mk prg_$(PROGRAMMER)_rules.mk
-      Default variables and rules for programmers
-
-
-
-**** hw
-     All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
-
-     - hwdef.h
-       dispatches the including of the actual (most specific) hardware
-       definiton file below
-
-***** atmel
-      hardware abstractions for atmel chips, organized from most specific chip
-      up to generic includes for the respecive platform.
-
-      - platform.mk platform_rules.mk
-        Makefile variables and rules for building this this platform
-
-      - *.h
-        Hardware specific include files,
-
-        - macros to create Hardware specific register names
-
-        - simple 'static inline' functions to operate on this registers
-
-        - abstraction of interupt handling routines
+   just 'make'
+   other targets
 
 
 
@@ -196,6 +154,56 @@ this document is WIP!
 *** Interrupt hooks? adding interrupt handlers dynamically
 
 
+* Directory Structure
+  
+** src
+   - Makefile
+     Main makefile, only sets some configuration variables and includes the
+     muos/muos.mk muos/muos_rules.mk
+
+   - muos_config.h
+     Configuration for all static build parameters
+
+   - muos.c
+     the main() loop
+
+*** muos
+    - *.c *.h
+      C Source and include files
+
+    - muos.mk muos_rules.mk
+      Default variable and rules setup for building mµOS, includes all other
+      Makefiles
+
+    - prg_$(PROGRAMMER).mk prg_$(PROGRAMMER)_rules.mk
+      Default variables and rules for programmers
+
+
+
+**** hw
+     All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
+
+     - hwdef.h
+       dispatches the including of the actual (most specific) hardware
+       definiton file below
+
+***** atmel
+      hardware abstractions for atmel chips, organized from most specific chip
+      up to generic includes for the respecive platform.
+
+      - platform.mk platform_rules.mk
+        Makefile variables and rules for building this this platform
+
+      - *.h
+        Hardware specific include files,
+
+        - macros to create Hardware specific register names
+
+        - simple 'static inline' functions to operate on this registers
+
+        - abstraction of interupt handling routines
+
+
 
 
 * Planed
@@ -211,6 +219,9 @@ this document is WIP!
 
 
 ** HLD (high level drivers)
+*** gpio
+    configure (in out pullup)
+    set, clear, toggle
 *** Serial
 *** USB
 *** bangbus

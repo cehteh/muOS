@@ -41,6 +41,12 @@
 //#define MUOS_EXPLICIT_INIT 1
 #endif
 
+// Name of the user-define initialization function.
+// This function is pushed on the rtq (or if not available bgq) when starting up. It is responsible
+// for initializing everything.
+#ifndef MUOS_INITFN
+#define MUOS_INITFN init
+#endif
 
 
 

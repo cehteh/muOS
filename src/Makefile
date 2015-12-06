@@ -7,6 +7,8 @@ MCU = atmega328p
 MAIN = example
 
 PROGRAMMER = avrdude
+#PROGRAMMER = micronucleus
+
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = /dev/ttyUSB0
 #AVRDUDE_PROGRAMMER = usbasp
