@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#if 0
 #include <muos/spriq.h>
 
 void
@@ -25,7 +25,7 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 {
    MUOS_ATOMIC
     {
-      muos_spriq_index i = spriq->used;
+      muos_spriq_indexsize i = spriq->used;
 
       for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
         {
@@ -39,12 +39,9 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 
 
 void
-muos_spriq_pop_unsafe (struct muos_spriq* spriq, struct muos_spriq_entry* event)
+muos_spriq_pop_unsafe (struct muos_spriq* spriq)
 {
-  muos_spriq_index i = 1;
-
-  if (event)
-    *event = spriq->spriq[0];
+  muos_spriq_size i = 1;
 
   muos_spriq_priority base = spriq->spriq[0].when;
 
@@ -59,28 +56,6 @@ muos_spriq_pop_unsafe (struct muos_spriq* spriq, struct muos_spriq_entry* event)
       spriq->spriq[i/2] = spriq->spriq[i];
     }
   spriq->spriq[i/2] = spriq->spriq[--spriq->used];
-}
-
-
-#if MUOS_RTPQ_LENGTH > 0
-muos_rtpq_type muos_rtpq;
-
-bool
-muos_rtpq_schedule (muos_spriq_priority when)
-{
-  MUOS_ATOMIC
-    {
-      if (muos_rtpq.descriptor.used &&
-          (muos_spriq_priority)(when - muos_rtpq.descriptor.spriq[0].when) < ((muos_spriq_priority)~0)/2 )
-        {
-          struct muos_spriq_entry event;
-          muos_spriq_pop_unsafe (&muos_rtpq.descriptor, &event);
-          MUOS_ATOMIC_RESTORE
-            muos_rtpq.descriptor.spriq[0].fn(&event);
-          return true;
-        }
-    }
-  return false;
 }
 
 #endif

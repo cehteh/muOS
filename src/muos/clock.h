@@ -20,9 +20,10 @@
 #ifndef MUOS_CLOCK_H
 #define MUOS_CLOCK_H
 
+
 #include <stdbool.h>
-#include "muos_config.h"
-#include "muos/muos.h"
+
+#include <muos/muos.h>
 #include <muos/hwdef.h>
 
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
