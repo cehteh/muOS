@@ -18,6 +18,7 @@
 
 SOURCES += $(wildcard *.c)
 SOURCES += $(wildcard muos/*.c)
+SOURCES += $(wildcard muos/lib/*.c)
 SOURCES += $(wildcard muos/hw/*.c)
 
 OBJECTS += $(SOURCES:.c=.o)

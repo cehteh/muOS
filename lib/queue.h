@@ -18,11 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_QUEUE_H
-#define MUOS_QUEUE_H
+#ifndef MUOS_LIB_QUEUE_H
+#define MUOS_LIB_QUEUE_H
 
 #include <muos/muos.h>
-#include "muos_config.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -71,19 +70,12 @@ struct muos_queue
 
 
 
-
 #define MUOS_QUEUEDEF(size)                     \
 struct                                          \
 {                                               \
   struct muos_queue descriptor;                 \
   intptr_t      queue[size];                    \
 }
-
-
-
-
-
-
 
 
 
@@ -147,79 +139,6 @@ muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_q
 #define MUOS_QUEUE_PUSHBACK_ARG(q, f, a) muos_queue_pushback_arg (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f), (a))
 #define MUOS_QUEUE_PUSHFRONT(q, f) muos_queue_pushfront (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))
 #define MUOS_QUEUE_PUSHFRONT_ARG(q, f, a) muos_queue_pushfront_arg (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f), (a))
-
-#if MUOS_RTQ_LENGTH > 0
-typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
-extern muos_rtq_type muos_rtq;
-
-static inline bool
-muos_rtq_schedule (void)
-{
-  return MUOS_QUEUE_SCHEDULE (muos_rtq);
-}
-
-static inline void
-muos_rtq_pushback (muos_queue_function f)
-{
-  MUOS_QUEUE_PUSHBACK(muos_rtq, (f));
-}
-
-static inline void
-muos_rtq_pushback_arg (muos_queue_function_arg f, intptr_t a)
-{
-  MUOS_QUEUE_PUSHBACK_ARG(muos_rtq, (f), (a));
-}
-
-static inline void
-muos_rtq_pushfront (muos_queue_function f)
-{
-  MUOS_QUEUE_PUSHFRONT(muos_rtq, (f));
-}
-
-static inline void
-muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
-{
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a));
-}
-#endif
-
-
-#if MUOS_BGQ_LENGTH > 0
-typedef MUOS_QUEUEDEF(MUOS_BGQ_LENGTH) muos_bgq_type;
-extern muos_bgq_type muos_bgq;
-
-static inline bool
-muos_bgq_schedule (void)
-{
-  return MUOS_QUEUE_SCHEDULE (muos_bgq);
-}
-
-
-static inline void
-muos_bgq_pushback (muos_queue_function f)
-{
-  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
-}
-
-static inline void
-muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a)
-{
-  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
-}
-
-static inline void
-muos_bgq_pushfront (muos_queue_function f)
-{
-  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
-}
-
-static inline void
-muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
-{
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
-}
-#endif
-
 
 
 #endif

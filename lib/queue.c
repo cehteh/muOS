@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <muos/queue.h>
+#include <muos/lib/queue.h>
 
 static inline intptr_t
 muos_queue_pop (struct muos_queue* queue, muos_queue_size size)
@@ -119,16 +119,6 @@ muos_queue_pushfront_arg_unsafe (struct muos_queue* queue, muos_queue_size size,
   muos_queue_pushfront_intern (queue, size, arg);
   muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }
-
-
-#if MUOS_RTQ_LENGTH > 0
-muos_rtq_type muos_rtq;
-#endif
-
-#if MUOS_BGQ_LENGTH > 0
-muos_bgq_type muos_bgq;
-#endif
-
 
 
 

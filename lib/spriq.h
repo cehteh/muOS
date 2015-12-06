@@ -18,12 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_SPRIQ_H
-#define MUOS_SPRIQ_H
+#ifndef MUOS_LIB_SPRIQ_H
+#define MUOS_LIB_SPRIQ_H
 
 #include <stdbool.h>
 
-#include "muos_config.h"
 #include <muos/muos.h>
 
 struct muos_spriq_entry;
@@ -71,21 +70,5 @@ muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event)
     muos_spriq_pop_unsafe (spriq, event);
 }
 
-
-#if MUOS_RTPQ_LENGTH > 0
-
-
-
-typedef struct
-{
-  struct muos_spriq descriptor;
-  struct muos_spriq_entry spriq[MUOS_RTPQ_LENGTH];
-} muos_rtpq_type;
-extern muos_rtpq_type muos_rtpq;
-
-bool
-muos_rtpq_schedule (muos_spriq_priority when);
-
-#endif
 
 #endif

@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "muos_config.h"
-#include <muos/queue.h>
 #include <muos/clock.h>
-#include <muos/spriq.h>
+#include <muos/rtq.h>
+#include <muos/bgq.h>
+#include <muos/rtpq.h>
 
 extern void
 MUOS_INITFN (void);
