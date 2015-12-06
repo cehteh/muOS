@@ -28,6 +28,9 @@ MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 
 volatile muos_clock muos_clock_count;
 
+#if MUOS_NOW == 1
+muos_clock muos_now_;
+#endif
 
 EMPTY_INTERRUPT(TIMER0_COMPA_vect);
 

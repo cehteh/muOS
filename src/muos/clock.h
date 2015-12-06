@@ -39,6 +39,15 @@ typedef struct {
 
 extern volatile muos_clock muos_clock_count;
 
+#if MUOS_NOW == 1
+extern muos_clock muos_now_;
+
+static inline muos_clock
+muos_now()
+{
+  return muos_now_;
+}
+#endif
 
 
 static inline void
@@ -61,7 +70,11 @@ muos_clock_now (void)
     }
   while (counter != muos_clock_count);
 
+#if MUOS_NOW == 1
+  return muos_now_ = (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+#else
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+#endif
 }
 
 static inline muos_shortclock
