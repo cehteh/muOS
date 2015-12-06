@@ -40,9 +40,9 @@ LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
 # What files must be generated for 'make all'
-PROGRAMS += $(MAIN).elf
+IMAGES += $(MAIN).elf
 
-PRINTFMT = printf "%-60s%16s\n"
+PRINTFMT = printf "%-60s[ %8s ]\n"
 
 PARALLEL = $(shell nproc || echo 2)
 MAKEFLAGS = -R -s -j $(PARALLEL)
@@ -58,49 +58,49 @@ include muos/hw/$(PLATFORM)/platform.mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(PROGRAMS)
-	$(PRINTFMT) '$(PROGRAMS)' [PROGRAMS]
+all: $(IMAGES)
+	$(PRINTFMT) '$(IMAGES)' IMAGES
 
 # dependencies on variables, stored in .v/
 .v/:
 	mkdir -p .v
 
 .v/%: .v/ FORCE
-	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* [DEPVAR]; }
+	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* DEPVAR; }
 
 
 # Dependency generation and cleanup
 
 %.d: %.c .v/DEPFLAGS .v/CPPFLAGS .v/CC
-	$(PRINTFMT) $@ [DEPGEN]
+	$(PRINTFMT) $@ DEPGEN
 	$(CC) $(DEPFLAGS) $(CPPFLAGS) $< | sed 's,^$*.o,$*.o $*.d,g' > $@
 
 %.o: %.d
 
 
 depclean:
-	$(PRINTFMT) $@ [DEPCLEAN]
+	$(PRINTFMT) $@ DEPCLEAN
 	rm -rf $(SOURCES:.c=.d)	.v/*
 
 
 %.o: %.c .v/CFLAGS .v/CC
-	$(PRINTFMT) $@ [COMPILE]
+	$(PRINTFMT) $@ COMPILE
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
 asm: $(MAIN).asm
 
 
-size: $(PROGRAMS) .v/SIZE
-	$(PRINTFMT) $@ [SIZE]
-	$(SIZE) --target=ihex $(PROGRAMS)
+size: $(IMAGES) .v/SIZE
+	$(PRINTFMT) $@ SIZE
+	$(SIZE) --target=ihex $(IMAGES)
 
 clean: depclean
-	$(PRINTFMT) $@ [CLEAN]
+	$(PRINTFMT) $@ CLEAN
 	rm -f *.elf *.a $(OBJECTS)
 
-mrproper: clean .v/PROGRAMS
-	$(PRINTFMT) $@ [MRPROPER]
-	rm -f $(PROGRAMS)
+mrproper: clean .v/IMAGES
+	$(PRINTFMT) $@ MRPROPER
+	rm -f $(IMAGES)
 
 #gitclean: git stash, git clean -dfx
