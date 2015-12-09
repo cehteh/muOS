@@ -60,9 +60,6 @@
 #endif
 
 
-#define MUOS_TYPEDEF(basetype, size, name) MUOS_TYPEDEF_(basetype, size, name)
-#define MUOS_TYPEDEF_(basetype, size, name) typedef basetype##size##_t name
-
 #define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
 
 

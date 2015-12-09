@@ -28,8 +28,8 @@
 
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
 
-MUOS_TYPEDEF(uint, MUOS_CLOCK_TYPE, muos_clock);
-MUOS_TYPEDEF(uint, MUOS_CLOCK_SHORT_TYPE, muos_shortclock);
+typedef MUOS_CLOCK_TYPE muos_clock;
+typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 typedef struct {
   muos_clock high;
@@ -44,7 +44,7 @@ extern volatile muos_clock muos_clock_count;
 extern muos_clock muos_now_;
 
 static inline muos_clock
-muos_now()
+muos_now ()
 {
   return muos_now_;
 }

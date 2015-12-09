@@ -31,8 +31,8 @@ typedef void (*muos_spriq_function)(const struct muos_spriq_entry*);
 
 #define MUOS_SPRIQ_SIZE(spq) MUOS_ARRAY_ELEMENTS((spq).spriq)
 
-MUOS_TYPEDEF(uint, MUOS_SPRIQ_TYPE, muos_spriq_priority);
-MUOS_TYPEDEF(uint, MUOS_SPRIQ_INDEX, muos_spriq_index);
+typedef MUOS_SPRIQ_TYPE muos_spriq_priority;
+typedef MUOS_SPRIQ_INDEX muos_spriq_index;
 
 
 struct muos_spriq_entry
