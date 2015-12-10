@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-SOURCES += $(wildcard *.c)
 SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/lib/*.c)
 SOURCES += $(wildcard muos/hw/*.c)
@@ -46,7 +45,12 @@ IMAGES += $(MAIN).elf
 PRINTFMT = printf "%-60s[ %8s ]\n"
 
 PARALLEL = $(shell nproc || echo 2)
-MAKEFLAGS = -R -s -j $(PARALLEL)
+ifndef DEBUG
+	MAKEFLAGS = -R -s -j $(PARALLEL)
+else
+	MAKEFLAGS = -R
+endif
+
 .DEFAULT_GOAL = all
 
 .SUFFIXES:
@@ -67,14 +71,13 @@ all: $(IMAGES)
 	mkdir -p .v
 
 .v/%: .v/ FORCE
-	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* DEPVAR; }
-
+	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* DEPVAR;}
 
 # Dependency generation and cleanup
 
-%.d: %.c .v/DEPFLAGS .v/CPPFLAGS .v/CC
+%.d: %.c .v/DEPFLAGS .v/CPPFLAGS .v/CC .v/MUOS_CONFIG
 	$(PRINTFMT) $@ DEPGEN
-	$(CC) $(DEPFLAGS) $(CPPFLAGS) $< | sed 's,^$*.o,$*.o $*.d,g' > $@
+	$(CC) $(DEPFLAGS) $(CPPFLAGS) $(MUOS_CONFIG) $< | sed 's,^$*.o,$*.o $*.d,g' > $@
 
 %.o: %.d
 
@@ -83,10 +86,9 @@ depclean:
 	$(PRINTFMT) $@ DEPCLEAN
 	rm -rf $(SOURCES:.c=.d)	.v/*
 
-
-%.o: %.c .v/CFLAGS .v/CC
+%.o: %.c .v/CFLAGS .v/CC .v/MUOS_CONFIG
 	$(PRINTFMT) $@ COMPILE
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(MUOS_CONFIG) -c $< -o $@
 
 
 asm: $(MAIN).asm

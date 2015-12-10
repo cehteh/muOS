@@ -21,8 +21,6 @@
 #ifndef MUOS_H
 #define MUOS_H
 
-#include "muos_config.h"
-
 #include <stdint.h>
 
 #define MUOS_EVAL(v) v
