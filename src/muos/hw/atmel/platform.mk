@@ -36,7 +36,7 @@ IMAGES += $(MAIN).hex $(MAIN).eep
 
 elf: $(MAIN).elf
 
-%.elf: $(OBJECTS) .v/LDFLAGS .v/CC
+%.elf: $(OBJECTS) .v/LDFLAGS .v/CC .v/SOURCES
 	$(PRINTFMT) $@ LINK
 	$(CC) $(LDFLAGS) $(OBJECTS) --output $@ 2>&1 | sed 'h;:b;$b;N;N;/appears to be a misspelled signal handler/{N;d};$b;D'
 

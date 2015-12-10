@@ -18,7 +18,7 @@
 
 SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/lib/*.c)
-SOURCES += $(wildcard muos/hw/*.c)
+SOURCES += $(wildcard muos/hw/$(PLATFORM)/*.c)
 
 OBJECTS += $(SOURCES:.c=.o)
 
@@ -26,7 +26,7 @@ OBJECTS += $(SOURCES:.c=.o)
 CCFLAGS += -std=gnu99
 
 # Dependency generation Flags
-DEPFLAGS += -mmcu=$(MCU) -M -MP -MT $*.o
+DEPFLAGS += $(CCFLAGS) -M -MP -MT $*.o
 
 # Preprocessor Flags
 CPPFLAGS += -I .
