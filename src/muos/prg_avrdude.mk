@@ -35,12 +35,13 @@ eep: $(MAIN).eep
 	$(PRINTFMT) $@ EEP
 	$(OBJCOPY) -j .eeprom  --change-section-lma .eeprom=0 -O ihex $< $@ 2>/dev/null
 
-program: all .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
-	$(PRINTFMT) $(MAIN) PROGRAM
+upload: all .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
+	$(PRINTFMT) $(MAIN) UPLOAD
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:w:$(MAIN).hex:i
 #-U eeprom:w:$(MAIN).eep:i
 
-read_program: .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
+download: .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
+	$(PRINTFMT) $(MAIN) DOWNLOAD
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:r:$(MAIN).hex:i -U eeprom:r:$(MAIN).eep:i
 
 #reset_fuse:
