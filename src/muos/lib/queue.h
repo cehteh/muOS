@@ -90,44 +90,17 @@ bool
 muos_queue_schedule (struct muos_queue* queue, muos_queue_size size);
 
 void
-muos_queue_pushback_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushback_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
 void
-muos_queue_pushfront_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushfront_arg_unsafe (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
-static inline void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
-{
-  MUOS_ATOMIC
-    muos_queue_pushback_unsafe (queue, size, fn);
-}
-
-static inline void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
-{
-  MUOS_ATOMIC
-    muos_queue_pushback_arg_unsafe (queue, size, fn, arg);
-}
-
-static inline void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
-{
-  MUOS_ATOMIC
-    muos_queue_pushfront_unsafe (queue, size, fn);
-}
-
-static inline void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
-{
-  MUOS_ATOMIC
-    muos_queue_pushfront_arg_unsafe (queue, size, fn, arg);
-}
 
 
 //PLANNED: stowing more than one arg

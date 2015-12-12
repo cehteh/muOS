@@ -20,45 +20,45 @@
 
 #include <muos/lib/spriq.h>
 
+//TODO: error handling
+
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
-   MUOS_ATOMIC
+  muos_spriq_index i = spriq->used;
+
+  for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
     {
-      muos_spriq_index i = spriq->used;
-
-      for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
-        {
-          spriq->spriq[i] = spriq->spriq[i/2];
-        }
-
-      spriq->spriq[i] = (struct muos_spriq_entry){(muos_spriq_priority)(when + base), fn};
-      ++spriq->used;
+      spriq->spriq[i] = spriq->spriq[i/2];
     }
+
+  spriq->spriq[i] = (struct muos_spriq_entry){(muos_spriq_priority)(when + base), fn};
+  ++spriq->used;
 }
 
 
 void
-muos_spriq_pop_unsafe (struct muos_spriq* spriq, struct muos_spriq_entry* event)
+muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event)
 {
-  muos_spriq_index i = 1;
+  muos_spriq_priority base = spriq->spriq[0].when;
+  muos_spriq_index i;
 
   if (event)
     *event = spriq->spriq[0];
 
-  muos_spriq_priority base = spriq->spriq[0].when;
+  --spriq->used;
 
-  for (; i < spriq->used-1; i=2*i)
+  for (i = 1; i < spriq->used; i=i*2+1)
     {
       if ((muos_spriq_priority)(spriq->spriq[i].when - base) > (muos_spriq_priority)(spriq->spriq[i+1].when - base))
-        ++i;
+         ++i;
 
-      if ((muos_spriq_priority)(spriq->spriq[spriq->used-1].when - base) < (muos_spriq_priority)(spriq->spriq[i].when - base))
+      if ((muos_spriq_priority)(spriq->spriq[i].when - base) > (muos_spriq_priority)(spriq->spriq[spriq->used].when - base) )
         break;
 
-      spriq->spriq[i/2] = spriq->spriq[i];
+      spriq->spriq[(i-1)/2] = spriq->spriq[i];
     }
-  spriq->spriq[i/2] = spriq->spriq[--spriq->used];
+  spriq->spriq[(i-1)/2] = spriq->spriq[spriq->used];
 }
 
 

@@ -60,15 +60,8 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 
 
 void
-muos_spriq_pop_unsafe (struct muos_spriq* spriq, struct muos_spriq_entry* event);
+muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event);
 
-
-static inline void
-muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event)
-{
-  MUOS_ATOMIC
-    muos_spriq_pop_unsafe (spriq, event);
-}
 
 
 #endif

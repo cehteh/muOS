@@ -33,7 +33,7 @@ void muos_error (void)
 
 void muos_die (void)
 {
-  cli();
+  muos_interrupt_disable ();
   for(;;);
 }
 
@@ -42,8 +42,7 @@ void
 muos_start (void)
 {
   muos_clock_start ();
-  //TODO: muos_intr_enable()
-  sei();
+  muos_interrupt_enable ();
 }
 
 int  __attribute__((OS_main))
