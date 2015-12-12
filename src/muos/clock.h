@@ -27,13 +27,13 @@
 #include <muos/hwdef.h>
 
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
+typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
 typedef MUOS_CLOCK_TYPE muos_clock;
 typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
-typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 typedef struct {
-  muos_clock high;
-  muos_hwclock low;
+  muos_clock coarse;
+  muos_hwclock fine;
 } muos_fullclock;
 
 
@@ -71,11 +71,7 @@ muos_clock_now (void)
     }
   while (counter != muos_clock_count);
 
-#if MUOS_NOW == 1
-  return muos_now_ = (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
-#else
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
-#endif
 }
 
 static inline muos_shortclock
@@ -93,25 +89,21 @@ muos_clock_shortnow (void)
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
 
-#if 0
+
 static inline muos_fullclock
 muos_clock_fullnow (void)
 {
-  muos_shortclock counter;
-  muos_hwclock hw;
+  muos_fullclock clock;
   do
     {
-      counter = muos_shortclock;
-      hw = MUOS_CLOCK_REGISTER;
+      clock.coarse = muos_clock_count;
+      clock.fine = MUOS_CLOCK_REGISTER;
     }
-  while (counter != MUOS_CLOCK_COUNTER);
+  while (clock.coarse != muos_clock_count);
 
-  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+  return clock;
 }
-#endif
 
-//static inline void
-//muos_clock_stop (void)
 
 
 
