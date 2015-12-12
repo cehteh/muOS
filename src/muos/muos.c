@@ -21,7 +21,7 @@
 #include <muos/clock.h>
 #include <muos/rtq.h>
 #include <muos/bgq.h>
-#include <muos/rtpq.h>
+#include <muos/clpq.h>
 
 extern void
 MUOS_INITFN (void);
@@ -70,9 +70,9 @@ main()
         {
           do
             {
-              while(muos_rtpq_schedule(muos_clock_now()));
+              while (muos_clpq_schedule (muos_clock_now ()));
             }
-          while(muos_rtq_schedule ());
+          while (muos_rtq_schedule ());
         }
       while (muos_bgq_schedule ());
 

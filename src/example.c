@@ -8,7 +8,7 @@
 #include <muos/muos.h>
 #include <muos/rtq.h>
 #include <muos/bgq.h>
-#include <muos/rtpq.h>
+#include <muos/clpq.h>
 
 // define events, no main here
 
