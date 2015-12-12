@@ -144,9 +144,9 @@ MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=MUOS_CLOCK_TYPE
 MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 
 
-#:MUOS_RTPQ_LENGTH
-#: How many entriex the scheduling Queue can hold, set to 0 to disable the rtpq
-MUOS_CONFIG += -DMUOS_RTPQ_LENGTH=32
+#:MUOS_CLPQ_LENGTH
+#: How many entriex the scheduling Queue can hold, set to 0 to disable the clpq
+MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
 
 
 

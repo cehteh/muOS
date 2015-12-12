@@ -102,12 +102,12 @@ this document is WIP!
 **** ltpq long time queue
      * uses longer, absolute time format (muos_clock or muos_fullclock)
      * needs more memory
-     * handled from the rtpq (one regular job at each cycles moves elements
-       form ltpq to rtpq)
+     * handled from the clpq (one regular job at each cycles moves elements
+       form ltpq to clpq)
      * optional only needed for 'calendar' like events, may be short, only as
        much long time events the program uses at most
 
-**** rtpq short time realtime queue
+**** clpq short time realtime queue
      * uses a sliding window implementation
        more memory conserving, schedules events in near future
 
