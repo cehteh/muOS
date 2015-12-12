@@ -18,27 +18,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <muos/rtpq.h>
+#ifndef MUOS_CLPQ_H
+#define MUOS_CLPQ_H
 
-#if MUOS_RTPQ_LENGTH > 0
-muos_rtpq_type muos_rtpq;
+#include <muos/muos.h>
+
+#if MUOS_CLPQ_LENGTH > 0
+
+#include <muos/lib/spriq.h>
+
+typedef struct
+{
+  struct muos_spriq descriptor;
+  struct muos_spriq_entry spriq[MUOS_CLPQ_LENGTH];
+} muos_clpq_type;
+extern muos_clpq_type muos_clpq;
 
 bool
-muos_rtpq_schedule (muos_spriq_priority when)
-{
-  MUOS_ATOMIC
-    {
-      if (muos_rtpq.descriptor.used &&
-          (muos_spriq_priority)(when - muos_rtpq.descriptor.spriq[0].when) < ((muos_spriq_priority)~0)/2 )
-        {
-          struct muos_spriq_entry event;
-          muos_spriq_pop_unsafe (&muos_rtpq.descriptor, &event);
-          MUOS_ATOMIC_RESTORE
-            muos_rtpq.descriptor.spriq[0].fn(&event);
-          return true;
-        }
-    }
-  return false;
-}
+muos_clpq_schedule (muos_spriq_priority when);
 
+void
+muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
+
+#endif
 #endif
