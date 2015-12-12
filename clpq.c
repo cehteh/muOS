@@ -31,37 +31,38 @@ muos_clpq_type muos_clpq;
 
 
 #endif
-
+          //(muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2
 
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
-  MUOS_ATOMIC
+  muos_interrupt_disable ();
+  if (muos_clpq.descriptor.used
+      &&
+      (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2)
+      //muos_clpq.descriptor.spriq[0].when <= when
+      )
     {
-      if (muos_clpq.descriptor.used
-          //&&
-          //          (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2)
-          //when < muos_clpq.descriptor.spriq[0].when
-        )
-        {
-          (void) when;
-          struct muos_spriq_entry event;
-          muos_spriq_pop_unsafe (&muos_clpq.descriptor, &event);
-          MUOS_ATOMIC_RESTORE
-            event.fn (&event);
-          return true;
-        }
+      (void) when;
+      struct muos_spriq_entry event;
+      muos_spriq_pop (&muos_clpq.descriptor, &event);
+      muos_interrupt_enable ();
+      event.fn (&event);
+      return true;
     }
-  return false;
+  else
+    {
+      muos_interrupt_enable ();
+      return false;
+    }
 }
 
 void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
-  MUOS_ATOMIC
-    {
-      muos_spriq_push (&muos_clpq.descriptor, base, when, what);
-    }
+  muos_interrupt_disable ();
+  muos_spriq_push (&muos_clpq.descriptor, base, when, what);
+  muos_interrupt_enable ();
 }
 
 #endif
