@@ -189,23 +189,5 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
 
 
-
-#:MUOS_NOW
-#: enable the muos_now() api, needs additional sizeof(muos_clock) space of ram
-#MUOS_CONFIG += -DMUOS_NOW=0
-MUOS_CONFIG += -DMUOS_NOW=1
-
-
-
-#:MUOS_SCHED_MINTIME
-#: How long is the shortest time to schedule
-#: when scheduling any shorter timespan the hardware timer may be already past
-#: this span and thus won't trigger an interrupt, missing a whole cycle.
-#: When timer accuracy is not required, biggier values can also be used to batch
-#: scheduled events together.
-#: Define this as small as possible, the default might be way to big.
-#PLANNED: determine this value automatic
-MUOS_CONFIG += -DMUOS_SCHED_MINTIME=127
-
 # now load the main makefile
 include muos/muos.mk
