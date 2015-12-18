@@ -22,10 +22,9 @@
 #define MUOS_RTQ_H
 
 #include <muos/muos.h>
+#include <muos/lib/queue.h>
 
 #if MUOS_RTQ_LENGTH > 0
-
-#include <muos/lib/queue.h>
 
 typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
 extern muos_rtq_type muos_rtq;
@@ -60,5 +59,13 @@ muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
   MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a));
 }
 
+#else
+// stub for the schedule loop
+static inline bool
+muos_rtq_schedule (void)
+{
+  return false;
+}
 #endif
+
 #endif
