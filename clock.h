@@ -25,6 +25,10 @@
 #include <muos/muos.h>
 #include <muos/hwdef.h>
 
+
+#define MUOS_CLOCK_SECONDS(s)  ((s)*F_CPU/MUOS_CLOCK_PRESCALER)
+#define MUOS_CLOCK_MILLISECONDS(s) ((s)*F_CPU/MUOS_CLOCK_PRESCALER/1000)
+
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
