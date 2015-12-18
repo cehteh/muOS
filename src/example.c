@@ -14,29 +14,26 @@
 
 // define events, no main here
 
-void blink_led (void)
-{
-  PINB = _BV(PINB5) |  _BV(PINB4);
-  muos_bgq_pushback (blink_led);
-}
 
-
-void toggle_red_timed (const struct muos_spriq_entry* event)
+void
+toggle_red_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND2);
-  muos_clpq_at (event->when, 250, toggle_red_timed);
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (500));
 }
 
-void toggle_yellow_timed (const struct muos_spriq_entry* event)
+void
+toggle_yellow_timed (const struct muos_spriq_entry* event)
 {
   PINB = _BV(PINB5);
-  muos_clpq_at (event->when, 240, toggle_yellow_timed);
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (125));
 }
 
-void toggle_green_timed (const struct muos_spriq_entry* event)
+void
+toggle_green_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND3);
-  muos_clpq_at (event->when, 232, toggle_green_timed);
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
 }
 
 

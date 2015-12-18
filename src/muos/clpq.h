@@ -39,6 +39,13 @@ muos_clpq_schedule (muos_spriq_priority when);
 void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
+static inline void
+muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when)
+{
+  muos_clpq_at (event->when, when, event->fn);
+}
+
+
 void
 muos_clpq_set_compmatch (void);
 
