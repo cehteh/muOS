@@ -22,10 +22,9 @@
 #define MUOS_CLPQ_H
 
 #include <muos/muos.h>
+#include <muos/lib/spriq.h>
 
 #if MUOS_CLPQ_LENGTH > 0
-
-#include <muos/lib/spriq.h>
 
 typedef struct
 {
@@ -40,5 +39,9 @@ muos_clpq_schedule (muos_spriq_priority when);
 void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
+void
+muos_clpq_set_compmatch (void);
+
 #endif
+
 #endif

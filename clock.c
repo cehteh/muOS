@@ -19,22 +19,18 @@
  */
 
 #include <muos/clock.h>
+#include <muos/clpq.h>
 
-volatile muos_clock muos_clock_count;
-
-#if MUOS_NOW == 1
+volatile muos_clock muos_clock_count_;
 muos_clock muos_now_;
-#endif
 
 MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
-    ++muos_clock_count;
-    //TODO: init compmatch from clpq
+  ++muos_clock_count_;
 }
 
-
-EMPTY_INTERRUPT(TIMER0_COMPA_vect);
-
+// compmatch interrupt is only used to wake the mainloop
+MUOS_HW_EMPTY_ISR(MUOS_HW_CLOCK_ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
 
 
 
