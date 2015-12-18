@@ -44,9 +44,6 @@
 
 #define MUOS_HW_CLOCK_ISRNAME_COMPMATCH(tmhw,cmhw) MUOS_CONCAT5(TIMER,tmhw,_COMP,cmhw,_vect)
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLED(clockhw, cmhw)  \
-  MUOS_CONCAT2(TIMSK,clockhw) & _BV(MUOS_CONCAT3(OCIE,clockhw,cmhw))
-
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(tmhw, cmhw, at)   \
   MUOS_CONCAT3(OCR,tmhw,cmhw) = at;                          \
   MUOS_CONCAT2(TIMSK,tmhw) |= _BV(MUOS_CONCAT3(OCIE,tmhw,cmhw))

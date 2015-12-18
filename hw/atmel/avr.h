@@ -24,8 +24,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
+#include <avr/sleep.h>
 
 #define MUOS_HW_ISR(what) ISR(what)
+#define MUOS_HW_EMPTY_ISR(what) EMPTY_INTERRUPT(what)
 
 static inline void
 muos_interrupt_enable ()
@@ -36,7 +38,21 @@ muos_interrupt_enable ()
 static inline void
 muos_interrupt_disable ()
 {
-  sei ();
+  cli ();
 }
+
+static inline void
+muos_sleep (void)
+{
+  //TODO: configureable mode
+  cli();
+  set_sleep_mode (SLEEP_MODE_IDLE);
+  sleep_enable();
+  sei();
+  sleep_cpu();
+  sleep_disable();
+}
+
+
 
 #endif
