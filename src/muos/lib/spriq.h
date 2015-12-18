@@ -60,7 +60,7 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 
 
 void
-muos_spriq_pop (struct muos_spriq* spriq, struct muos_spriq_entry* event);
+muos_spriq_pop (struct muos_spriq* spriq);
 
 
 
