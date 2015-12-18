@@ -40,16 +40,16 @@ muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
     {
       intptr_t fn = muos_queue_pop (queue, size);
 
-      if (fn<0)
+      if (fn>0)
+        {
+          muos_interrupt_enable ();
+          ((muos_queue_function)(fn))();
+        }
+      else
         {
           intptr_t arg = muos_queue_pop (queue, size);
           muos_interrupt_enable ();
           ((muos_queue_function_arg)(-fn))(arg);
-        }
-      else
-        {
-          muos_interrupt_enable ();
-          ((muos_queue_function)(fn))();
         }
       return true;
     }

@@ -22,10 +22,9 @@
 #define MUOS_BGQ_H
 
 #include <muos/muos.h>
+#include <muos/lib/queue.h>
 
 #if MUOS_BGQ_LENGTH > 0
-
-#include <muos/lib/queue.h>
 
 typedef MUOS_QUEUEDEF(MUOS_BGQ_LENGTH) muos_bgq_type;
 extern muos_bgq_type muos_bgq;
@@ -59,6 +58,13 @@ static inline void
 muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 {
   MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+}
+#else
+// stub for the schedule loop
+static inline bool
+muos_bgq_schedule (void)
+{
+  return false;
 }
 #endif
 
