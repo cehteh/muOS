@@ -20,7 +20,6 @@
 #ifndef MUOS_CLOCK_H
 #define MUOS_CLOCK_H
 
-
 #include <stdbool.h>
 
 #include <muos/muos.h>
@@ -31,16 +30,15 @@ typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
 typedef MUOS_CLOCK_TYPE muos_clock;
 typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
+
 typedef struct {
   muos_clock coarse;
   muos_hwclock fine;
 } muos_fullclock;
 
 
+extern volatile muos_clock muos_clock_count_;
 
-extern volatile muos_clock muos_clock_count;
-
-#if MUOS_NOW == 1
 extern muos_clock muos_now_;
 
 static inline muos_clock
@@ -48,8 +46,6 @@ muos_now ()
 {
   return muos_now_;
 }
-#endif
-
 
 static inline void
 muos_clock_start (void)
@@ -66,10 +62,10 @@ muos_clock_now (void)
   muos_hwclock hw;
   do
     {
-      counter = muos_clock_count;
+      counter = muos_clock_count_;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while (counter != muos_clock_count);
+  while (counter != muos_clock_count_);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -81,10 +77,10 @@ muos_clock_shortnow (void)
   muos_hwclock hw;
   do
     {
-      counter = (muos_shortclock)muos_clock_count;
+      counter = (muos_shortclock)muos_clock_count_;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while (counter != (muos_shortclock)muos_clock_count);
+  while (counter != (muos_shortclock)muos_clock_count_);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -96,49 +92,12 @@ muos_clock_fullnow (void)
   muos_fullclock clock;
   do
     {
-      clock.coarse = muos_clock_count;
+      clock.coarse = muos_clock_count_;
       clock.fine = MUOS_CLOCK_REGISTER;
     }
-  while (clock.coarse != muos_clock_count);
+  while (clock.coarse != muos_clock_count_);
 
   return clock;
 }
-
-
-
-
-
-
-
-#if 0
-#define MUOS_CLOCK_ISR_COMPMATCH  MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH))
-
-#define MUOS_CLOCK_COMPMATCHDEF(...)               \
-  MUOS_CLOCK_ISR_COMPMATCH \
-  {                                                     \
-    (void) __VA_ARGS__;                                 \
-  }
-
-
-static inline void
-muos_clock_isr_compmatch_enable (muos_clock_hwtype at)
-{
-  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH, at);
-}
-
-static inline void
-muos_clock_isr_compmatch_disable (void)
-{
-  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH);
-}
-
-
-static inline bool
-muos_clock_isr_compmatch_enabled (void)
-{
-  return MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLED(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH);
-}
-#endif
-
 
 #endif

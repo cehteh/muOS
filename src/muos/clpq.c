@@ -25,29 +25,44 @@
 
 muos_clpq_type muos_clpq;
 
-#if 0
-
-          muos_clpq.descriptor.spriq[0].when < when
-
-
-#endif
-          //(muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2
 
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
   muos_interrupt_disable ();
-  if (muos_clpq.descriptor.used
-      &&
-      (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2)
-      //muos_clpq.descriptor.spriq[0].when <= when
-      )
+  if (muos_clpq.descriptor.used &&
+      (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2))
     {
-      (void) when;
-      struct muos_spriq_entry event;
-      muos_spriq_pop (&muos_clpq.descriptor, &event);
+      if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* static evaluated */
+        {
+          // no need for time barrier
+          muos_interrupt_enable ();
+          muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
+          muos_interrupt_disable ();
+          muos_spriq_pop (&muos_clpq.descriptor);
+        }
+      else
+        {
+          // with time barrier for the sliding window
+          if (muos_clpq.descriptor.spriq[0].fn)
+            {
+              muos_interrupt_enable ();
+              muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
+              muos_interrupt_disable ();
+            }
+
+          if (muos_clpq.descriptor.used > 1)
+            {
+              muos_spriq_pop (&muos_clpq.descriptor);
+            }
+          else
+            {
+              muos_clpq.descriptor.spriq[0].fn = 0;
+              muos_clpq.descriptor.spriq[0].when += (muos_spriq_priority)-1/2-1;
+            }
+        }
+
       muos_interrupt_enable ();
-      event.fn (&event);
       return true;
     }
   else
@@ -63,6 +78,22 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
   muos_interrupt_disable ();
   muos_spriq_push (&muos_clpq.descriptor, base, when, what);
   muos_interrupt_enable ();
+}
+
+
+void
+muos_clpq_set_compmatch (void)
+{
+  muos_spriq_priority diff = muos_clpq.descriptor.spriq[0].when - (muos_clock_count_<<8) ;
+
+  if (diff > MUOS_CLOCK_REGISTER && diff < 255)
+    {
+      MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH, diff);
+    }
+  else
+    {
+      MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH);
+    }
 }
 
 #endif

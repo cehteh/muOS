@@ -37,6 +37,13 @@ void muos_die (void)
   for(;;);
 }
 
+static inline void
+muos_sleep (void)
+{
+  muos_hw_sleep_prepare ();
+  muos_clpq_set_compmatch ();
+  muos_hw_sleep ();
+}
 
 void
 muos_start (void)
@@ -45,7 +52,9 @@ muos_start (void)
   muos_interrupt_enable ();
 }
 
-int  __attribute__((OS_main))
+
+
+int __attribute__((OS_main))
 main()
 {
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
@@ -59,23 +68,22 @@ main()
   muos_bgq_pushback (MUOS_INITFN);
   muos_bgq_pushback (muos_start);
 #else
-  MUOS_INITFN();
-  muos_start();
+  MUOS_INITFN ();
+  muos_start ();
 #endif
-
   do
     {
       do
         {
           do
             {
-              while (muos_clpq_schedule (muos_clock_now ()));
+              while (muos_clpq_schedule (muos_now_ = muos_clock_now ()));
             }
           while (muos_rtq_schedule ());
         }
       while (muos_bgq_schedule ());
 
-      //      MUOS_SLEEP; schedule
+      muos_sleep ();
     }
   while (1);
 }

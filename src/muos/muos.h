@@ -33,46 +33,11 @@
 
 #include <muos/hwdef.h>
 
-#ifndef MUOS_ATOMIC
-#error MUOS_ATOMIC lacks hardware definiton
-#endif
-
-#ifndef MUOS_NONATOMIC
-#error MUOS_NONATOMIC lacks hardware definiton
-#endif
-
-#ifndef MUOS_ATOMIC_RESTORE
-#error MUOS_ATOMIC_RESTORE lacks hardware definiton
-#endif
-
-#ifndef MUOS_NONATOMIC_RESTORE
-#error MUOS_NONATOMIC_RESTORE lacks hardware definiton
-#endif
-
-#ifndef MUOS_ATOMIC_FORCE
-#error MUOS_ATOMIC_FORCE lacks hardware definiton
-#endif
-
-#ifndef MUOS_NONATOMIC_FORCE
-#error MUOS_NONATOMIC_FORCE lacks hardware definiton
-#endif
-
-
 #define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
 
 
 #define MUOS_NOINIT __attribute__ ((section (".noinit")))
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT
-
-
-//#define MUOS_INIT
-
-//#define MUOS_FALIGN __attribute__ ((aligned (4)))
-
-
-//#define MUOS_RUN_QUEUES
-#define MUOS_SLEEP
-
 
 void muos_error (void);
 
