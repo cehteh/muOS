@@ -88,6 +88,15 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
 
 
+#:MUOS_ERROR_LOG_LENGTH
+#: if 1 then only one error code is kept in memory
+#: if greater than 1 a circular log of recent errors is kept in memory (prefer powers of 2)
+#: if 0 then error storing is disabled, muos_error_set() is a nop, muos_error() fails
+MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=0
+#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=1
+#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=8
+
+
 
 #:MUOS_RTQ_LENGTH
 #: How many entries the realtime queue can hold, set to 0 to disable the rtq
