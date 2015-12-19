@@ -39,8 +39,5 @@
 #define MUOS_NOINIT __attribute__ ((section (".noinit")))
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT
 
-void muos_error (void);
-
-void muos_die (void);
 
 #endif

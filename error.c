@@ -38,6 +38,9 @@ muos_error_set (enum muos_errorcode error)
     ++muos_error_.index;
 
   muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] = error;
+
+  if (error > MUOS_ERROR)
+    muos_die ();
 }
 
 #endif

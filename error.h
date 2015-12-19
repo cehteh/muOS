@@ -31,8 +31,10 @@
 //   fuba
 #define muos_errordefs                          \
   error(SUCCESS, "no error")                    \
-  error(WARNING, "undefined warning")           \
+  error(WARN_SCHED_DEPTH, "scheduler depth")    \
+  error(WARN, "undefined warning")              \
   error(ERROR, "undefined error")               \
+  error(FATAL_QUEUE_SPACE, "queue overrun")     \
   error(FATAL, "undefined fatal error")
 
 
@@ -82,6 +84,10 @@ muos_error (void)
 
 void
 muos_error_set (enum muos_errorcode error);
+
+void
+muos_die (void) __attribute__ ((weak));
+
 
 #endif
 

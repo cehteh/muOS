@@ -42,11 +42,11 @@ muos_interrupt_disable ()
 }
 
 static inline void
-muos_hw_sleep_prepare (void)
+muos_hw_sleep_prepare (const uint8_t mode)
 {
   //TODO: configureable mode
   cli();
-  set_sleep_mode (SLEEP_MODE_IDLE);
+  set_sleep_mode (mode);
   sleep_enable();
   sei();
 }
@@ -55,6 +55,11 @@ static inline void
 muos_hw_sleep (void)
 {
   sleep_cpu();
+}
+
+static inline void
+muos_hw_sleep_done (void)
+{
   sleep_disable();
 }
 

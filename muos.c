@@ -26,23 +26,20 @@
 extern void
 MUOS_INITFN (void);
 
-void muos_error (void)
+
+static inline void
+muos_sleep (void)
 {
-  muos_die ();
+  muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
+  muos_clpq_set_compmatch ();
+  muos_hw_sleep ();
+  muos_hw_sleep_done ();
 }
 
 void muos_die (void)
 {
   muos_interrupt_disable ();
-  for(;;);
-}
-
-static inline void
-muos_sleep (void)
-{
-  muos_hw_sleep_prepare ();
-  muos_clpq_set_compmatch ();
-  muos_hw_sleep ();
+  muos_hw_shutdown ();
 }
 
 void
