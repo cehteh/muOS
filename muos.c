@@ -53,13 +53,89 @@ muos_start (void)
 }
 
 
+static uint8_t sched_depth_;
+
+typedef bool (*muos_wait_fn)(intptr_t);
+
+static bool
+muos_sched_enter (void)
+{
+  if (sched_depth_ >= MUOS_SCHED_DEPTH)
+    {
+      muos_error_set (MUOS_WARN_SCHED_DEPTH);
+      return false;
+    }
+  return true;
+}
+
+bool
+muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
+{
+  if (!muos_sched_enter ())
+    return false;
+
+  muos_clock end = muos_now_ + timeout;
+
+  ++sched_depth_;
+  while (muos_now_ < end)
+    {
+      do
+        {
+          do
+            {
+               while (muos_clpq_schedule (muos_now_ = muos_clock_now ()));
+            }
+          while (muos_rtq_schedule ());
+        }
+      while (muos_bgq_schedule ());
+
+      if (fn)
+        {
+          if (fn (param))
+            {
+              --sched_depth_;
+              return true;
+            }
+        }
+
+      muos_sleep ();
+    }
+  --sched_depth_;
+  return false;
+}
+
+
+// count must be <254
+void
+muos_yield (uint8_t count)
+{
+  if (!muos_sched_enter ())
+    return;
+
+  ++sched_depth_;
+  ++count;
+  do
+    {
+      do
+        {
+          do
+            {
+              --count;
+            }
+          while (count && muos_clpq_schedule (muos_now_ = muos_clock_now ()));
+        }
+      while (count && muos_rtq_schedule ());
+    }
+  while (count && muos_bgq_schedule ());
+  --sched_depth_;
+}
+
+
 
 int __attribute__((OS_main))
 main()
 {
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
-  //TODO: bool muos_wait (fn, param, timeout)
-  //TODO: void muos_yield (count)
 
 #if MUOS_RTQ_LENGTH >= 2
   muos_rtq_pushback (MUOS_INITFN);
@@ -71,7 +147,8 @@ main()
   MUOS_INITFN ();
   muos_start ();
 #endif
-  do
+
+  while (1)
     {
       do
         {
@@ -85,5 +162,4 @@ main()
 
       muos_sleep ();
     }
-  while (1);
 }
