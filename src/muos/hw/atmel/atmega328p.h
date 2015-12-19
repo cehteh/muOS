@@ -23,5 +23,18 @@
 
 #include <muos/hw/atmel/atmega.h>
 
+static inline void
+muos_hw_shutdown (void)
+{
+  MCUCR |= _BV(PUD);
+  DDRB = 0;
+  DDRC = 0;
+  DDRD = 0;
+  muos_hw_sleep_prepare (SLEEP_MODE_PWR_DOWN);
+  for (;;)
+    {
+      muos_hw_sleep ();
+    }
+}
 
 #endif

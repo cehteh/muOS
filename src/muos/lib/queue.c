@@ -19,6 +19,7 @@
  */
 
 #include <muos/lib/queue.h>
+#include <muos/error.h>
 
 static inline intptr_t
 muos_queue_pop (struct muos_queue* queue, muos_queue_size size)
@@ -62,7 +63,7 @@ static void
 muos_queue_check (struct muos_queue* queue, muos_queue_size size, uint8_t len)
 {
   if (size - queue->len < len)
-    muos_error();
+    muos_error_set (MUOS_FATAL_QUEUE_SPACE);
 }
 
 
