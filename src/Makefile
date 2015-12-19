@@ -103,6 +103,11 @@ MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
 
+#:MUOS_SCHED_SLEEP
+#: Set sleep mode for the main loop if supported
+MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
+
+
 
 #:MUOS_RTQ_LENGTH
 #: How many entries the realtime queue can hold, set to 0 to disable the rtq
