@@ -87,7 +87,6 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
 
-
 #:MUOS_ERROR_LOG_LENGTH
 #: if 1 then only one error code is kept in memory
 #: if greater than 1 a circular log of recent errors is kept in memory (prefer powers of 2)
@@ -95,6 +94,13 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=0
 #MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=1
 #MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=8
+
+
+
+#:MUOS_SCHED_DEPTH
+#: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield())
+MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
+
 
 
 
