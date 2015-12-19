@@ -1,6 +1,8 @@
 #+TITLE: My micro OS (event scheduler)
 
 this document is WIP!
+* Why
+  Because we can..
 
 * Development
   The first WIP versions of mµOS are developed for the avr-gcc/avr-libc
@@ -13,18 +15,26 @@ this document is WIP!
 
 * Howto
 ** Configuring
+   edit Makefile
+** Includes
+** Programming
+   * dont use 'main()'
+   * initialization is in 'void init(void)' by default
+     * init runs with interrupts still disabled and clock stopped
+     * init() should setup hardware
+     * push functions on the queues to do the work
+     * interrupts are enabled and timer starts just after init()
+
 ** Building
 
    just 'make'
    other targets
 
 
-
 * Concept
 
 ** Schedule functioncalls
-   mµOS is about events and scheduling functions from different queues, no threads no
-   other abstractions.
+   mµOS is about events and scheduling functions from different queues.
 
 ** Clock
    One hardware timer is used to implement a global clock. Events can be
@@ -32,10 +42,12 @@ this document is WIP!
    which hardware timer to be used) is left open to the user.
 
 *** Adjustments and Skew
-    Once started the clock generally only increments, when syncronization with the real
-    time is intended one may set it once in the initialization routine and
-    later call some apis to adjust it slowly, by skipping a beat or increment
-    the counter in small increments (the api ensures that not events get lost).
+    Once started the clock generally only increments.
+
+    PLANNED: when syncronization with the real time is intended one may set it
+    once in the initialization routine and later call some apis to adjust it
+    slowly, by skipping a beat or increment the counter in small increments
+    (the api ensures that not events get lost).
 
 *** Datatypes
     The full time is defined by the global overflow counter and the timers
@@ -50,7 +62,7 @@ this document is WIP!
 
     * muos_clock
       Generic type used for modeate long timespans. Depending on configuration
-      overflows may occur rarely.
+      overflows may occur rarely (or preferably never).
 
       Also type for the overflow counter.
 
@@ -66,40 +78,22 @@ this document is WIP!
       as muos_clock and the low bits stored as muos_hwclock. When properly
       configured this state should never overflow for the application runtime.
 
-      
 *** Timer interrupts
     the clock and timer needs 2 interrupts
 
 **** overflow
-    - increments the global counter
-    - setup comparematch value later events
+    increments the global counter, wakes mainloop
 
 **** comparematch
-    - setup comparematch value later events
-
-*** minimum time
-    adding an scheduled event has a short latency in with the timer already
-    progresses. Too short times may become inaccurate
-
-*** Clock Spin
-
-*** use the LSB to push a value onto the priq?
+    only wakes mainloop
 
 
 ** Queues
    Functions in Queues running synchronously
 
 *** Priority Queues
-**** ATTIC
-     The priority queue uses it's own shorter datatype to save memory
-     substantially . This can be 8, 16, 32 or 64 bit wide and represents the lower
-     bits of the full time. Thus its only possible to schedule events within a
-     certain time range.
 
-
-
-
-**** ltpq long time queue
+**** PLANNED ltpq long time queue
      * uses longer, absolute time format (muos_clock or muos_fullclock)
      * needs more memory
      * handled from the clpq (one regular job at each cycles moves elements
@@ -107,7 +101,7 @@ this document is WIP!
      * optional only needed for 'calendar' like events, may be short, only as
        much long time events the program uses at most
 
-**** clpq short time realtime queue
+**** DONE clpq short time realtime queue
      * uses a sliding window implementation
        more memory conserving, schedules events in near future
 
@@ -118,8 +112,8 @@ this document is WIP!
 
 
 **** Queue datatypes and sizes
-     There are 3 implementations for the queues from which one must be choosen
-     at compiletime
+     one can select one of 3 implementations for the queues from which at
+     compiletime.
 
      * one uses 4bit indices on a bitfield (a byte split in half),
        allows for queue size up to 16 entries for very small microcontrollers
@@ -137,13 +131,22 @@ this document is WIP!
 
 **** Default Queues
 
-***** Realtime Queue (rtq)
+***** DONE Realtime Queue (rtq)
       Will be processed before any bgq events
 
-***** Background Queue (bgq)
+***** DONE Background Queue (bgq)
       Is processed in the mainloop when nothing else (rtq) is to do. when the
       bgq (and rtq) is empty, the mainloop goes to sleep waiting for interrupts
       to wake up.
+
+
+** Error log
+   table of last errors
+   SUCCESS gets overwritten
+   otherwise same errors get merged
+
+   later: read/write error log to serial and eeprom
+
 
 
 ** Interrupts
@@ -151,33 +154,43 @@ this document is WIP!
    the Work Queues. User define Interrupt handlers may call the rtq processing
    loop at the end.
 
-*** Interrupt hooks? adding interrupt handlers dynamically
+*** PLANNED Interrupt hooks? adding interrupt handlers dynamically
 
+
+* Q&A Common Problems
+  - lto related problems
+    like lto1: fatal error: errors during merging of translation units
+    * gives poor error messages
+    * saves a *lot* space
+  - collect2: error: ld returned 1 exit status
+    * Symbol defined multiple times
 
 * Directory Structure
-  
+  Only notably files are mentioned
+
 ** src
    - Makefile
-     Main makefile, only sets some configuration variables and includes the
-     muos/muos.mk muos/muos_rules.mk
+     sets some configuration variables and includes the
+     muos/muos.mk Main Makefile
 
-   - muos_config.h
-     Configuration for all static build parameters
 
+*** muos
    - muos.c
      the main() loop
 
-*** muos
-    - *.c *.h
-      C Source and include files
+   - *.c *.h
+     C Source and include files
 
-    - muos.mk muos_rules.mk
-      Default variable and rules setup for building mµOS, includes all other
-      Makefiles
+   - muos.mk
+     Main Makefile variable and rules setup for building mµOS, will include all other
+     Makefiles.
 
-    - prg_$(PROGRAMMER).mk prg_$(PROGRAMMER)_rules.mk
-      Default variables and rules for programmers
+   - prg_$(PROGRAMMER).mk
+     Default variables and rules for programmers
 
+**** lib
+     Library routines used by other facilities.
+     Usually don't handle interupt disable/enable unless specifically required.
 
 
 **** hw
@@ -191,8 +204,8 @@ this document is WIP!
       hardware abstractions for atmel chips, organized from most specific chip
       up to generic includes for the respecive platform.
 
-      - platform.mk platform_rules.mk
-        Makefile variables and rules for building this this platform
+      - platform.mk
+        Makefile for building this this platform
 
       - *.h
         Hardware specific include files,
@@ -203,17 +216,20 @@ this document is WIP!
 
         - abstraction of interupt handling routines
 
+* Planned
 
+** watchdog
+   timeout for rtq, bgq
+   how to detect timeouts on clq?
 
+** PLANNED Indirect jump tables for queues
+   register all 'callable' functions in one array. The queues can then
+   index this table by uint8_t or shorter.
 
-* Planed
 ** system clock
    oscal calibration on external pulse
 
 ** Library
-*** time conversion tools
-    Hz, seconds, raw
-
 
 ** HAL
 
@@ -235,5 +251,5 @@ this document is WIP!
 *** OSCAL
 *** CPPM
 *** logfs
-
+*** PID++
 ** Debug tools
