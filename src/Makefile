@@ -48,9 +48,18 @@ SOURCES += $(wildcard *.c)
 
 # Compile Flags
 CFLAGS += -Wall -Wextra -Werror
-#CFLAGS += -DF_CPU=16000000UL
-CFLAGS += -DF_CPU=62500UL	# with clkdiv 256 for slow debuging
+#CFLAGS += -DF_CPU=62500UL
+#CFLAGS += -DF_CPU=125000UL
+#CFLAGS += -DF_CPU=250000UL
+#CFLAGS += -DF_CPU=500000UL
+#CFLAGS += -DF_CPU=1000000UL
+#CFLAGS += -DF_CPU=2000000UL
+#CFLAGS += -DF_CPU=4000000UL
+#CFLAGS += -DF_CPU=8000000UL
+CFLAGS += -DF_CPU=16000000UL
+
 #CFLAGS += -DUART_BAUD=9600
+
 
 # Linker flags
 LDFLAGS += -Wl,--relax,--gc-sections
@@ -68,6 +77,7 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 MUOS_CONFIG += -DMUOS_INITFN=init
 
 
+
 #:MUOS_EXPLICIT_INIT
 #: when set to 1, then all static initialization of muos internal datastructures is disabled
 #: initialization will then be done explicitly in init sections or in main before any of these
@@ -77,23 +87,13 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 
 
 
-#:MUOS_QUEUE_INDEX
-#: the bits used for indexing queues
-#: comes in 3 variants
-#:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
-#:  8 bits allow queues for up to 256 functions
-#:  16 bits allow huge queues, use only when really required
-#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
-MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
-#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
-
 #:MUOS_ERROR_LOG_LENGTH
 #: if 1 then only one error code is kept in memory
 #: if greater than 1 a circular log of recent errors is kept in memory (prefer powers of 2)
 #: if 0 then error storing is disabled, muos_error_set() is a nop, muos_error() fails
-MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=0
+#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=0
 #MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=1
-#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=8
+MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=8
 
 
 
@@ -109,14 +109,28 @@ MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 
 
 
+#:MUOS_QUEUE_INDEX
+#: the bits used for indexing queues
+#: comes in 3 variants
+#:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
+#:  8 bits allow queues for up to 256 functions
+#:  16 bits allow huge queues, use only when really required
+#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
+MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
+#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
+
+
+
 #:MUOS_RTQ_LENGTH
 #: How many entries the realtime queue can hold, set to 0 to disable the rtq
+#MUOS_CONFIG += -DMUOS_RTQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_RTQ_LENGTH=32
 
 
 
 #:MUOS_BGQ_LENGTH
 #: How many entries the background queue can hold, set to 0 to disable the bgq
+#MUOS_CONFIG += -DMUOS_BGQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 
 
@@ -125,7 +139,6 @@ MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 # : How functions with arguments are tagged in queues, currently only the 'negate is implemened
 # : Works with mpu's with up to 64k flash
 #MUOS_CONFIG += -DMUOS_QUEUE_ARGTAG=NEGATE
-##endif
 
 
 
@@ -164,6 +177,7 @@ MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=MUOS_CLOCK_TYPE
 MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 
 
+
 #:MUOS_CLPQ_LENGTH
 #: How many entriex the scheduling Queue can hold, set to 0 to disable the clpq
 MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
@@ -181,7 +195,12 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW=0
 
 #:MUOS_CLOCK_HW_PRESCALER
 #: Prescaler from some hardware defined master clock
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=256
 MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
+
 
 
 #:MUOS_CLOCK_HW_COMPAREMATCH

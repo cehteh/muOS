@@ -218,6 +218,10 @@ this document is WIP!
 
 * Planned
 
+** Testing
+
+*** other types for timer (16 bit, different sizes)
+
 ** watchdog
    timeout for rtq, bgq
    how to detect timeouts on clq?
@@ -226,7 +230,7 @@ this document is WIP!
    register all 'callable' functions in one array. The queues can then
    index this table by uint8_t or shorter.
 
-** system clock
+** PLANNED system clock
    oscal calibration on external pulse
 
 ** Library
@@ -239,15 +243,16 @@ this document is WIP!
     configure (in out pullup)
     set, clear, toggle
 *** Serial
-*** USB
-*** bangbus
-*** onewire
-*** DCF77
+*** PWM
 *** EEprom
 *** Flash
 *** Fuses
 *** Watchdog
-*** PWM
+
+*** USB
+*** bangbus
+*** onewire
+*** DCF77
 *** OSCAL
 *** CPPM
 *** logfs

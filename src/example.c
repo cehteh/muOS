@@ -7,6 +7,7 @@
 
 
 #include <muos/muos.h>
+#include <muos/error.h>
 #include <muos/rtq.h>
 #include <muos/bgq.h>
 #include <muos/clpq.h>
