@@ -23,18 +23,15 @@
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
-   MUOS_ATOMIC
+  muos_spriq_indexsize i = spriq->used;
+
+  for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
     {
-      muos_spriq_indexsize i = spriq->used;
-
-      for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
-        {
-          spriq->spriq[i] = spriq->spriq[i/2];
-        }
-
-      spriq->spriq[i] = (struct muos_spriq_entry){(muos_spriq_priority)(when + base), fn};
-      ++spriq->used;
+      spriq->spriq[i] = spriq->spriq[i/2];
     }
+
+  spriq->spriq[i] = (struct muos_spriq_entry){(muos_spriq_priority)(when + base), fn};
+  ++spriq->used;
 }
 
 

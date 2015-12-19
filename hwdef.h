@@ -29,4 +29,8 @@
 #include <muos/hw/atmel/attiny85.h>
 #endif
 
+#ifdef MUOS_LINUX
+#include <muos/hw/linux/linux.h>
+#endif
+
 #endif
