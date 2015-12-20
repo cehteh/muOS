@@ -32,6 +32,7 @@ MUOS_INITFN (void);
 static inline void
 muos_sleep (void)
 {
+  //TODO: select sleed mode depending on active hardware (adc, usart)
   muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
   muos_clpq_set_compmatch ();
   muos_hw_sleep ();
@@ -99,14 +100,28 @@ muos_sched_enter (void)
 bool
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 {
+  if (fn && fn (param))
+    {
+      return true;
+    }
+
   if (!muos_sched_enter ())
     return false;
 
+  bool overflow = false;
   muos_clock end = muos_now_ + timeout;
 
+  if (end < muos_now_)
+    overflow = true;
+
   ++sched_depth_;
-  while (muos_now_ < end)
+  while (overflow || muos_now_<end)
     {
+      if (overflow && muos_now_<end)
+        {
+          overflow = false;
+        }
+
       do
         {
           do
@@ -117,13 +132,10 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
         }
       while (muos_bgq_schedule ());
 
-      if (fn)
+      if (fn && fn (param))
         {
-          if (fn (param))
-            {
-              --sched_depth_;
-              return true;
-            }
+          --sched_depth_;
+          return true;
         }
 
       muos_sleep ();
