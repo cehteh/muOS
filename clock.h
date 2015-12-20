@@ -69,7 +69,7 @@ muos_clock_now (void)
       counter = muos_clock_count_;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while (counter != muos_clock_count_);
+  while ((uint8_t)counter != (uint8_t)muos_clock_count_);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -84,7 +84,7 @@ muos_clock_shortnow (void)
       counter = (muos_shortclock)muos_clock_count_;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while (counter != (muos_shortclock)muos_clock_count_);
+  while ((uint8_t)counter != (uint8_t)muos_clock_count_);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -99,7 +99,7 @@ muos_clock_fullnow (void)
       clock.coarse = muos_clock_count_;
       clock.fine = MUOS_CLOCK_REGISTER;
     }
-  while (clock.coarse != muos_clock_count_);
+  while ((uint8_t)clock.coarse != (uint8_t)muos_clock_count_);
 
   return clock;
 }
