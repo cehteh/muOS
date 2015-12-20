@@ -215,8 +215,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW_COMPAREMATCH=A
 #: The type used for the overflow counter of the clock.
 #: together with the harware register of the clock this gives the full time.
 #MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint16_t
-#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
-MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
+MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
+#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 
 
