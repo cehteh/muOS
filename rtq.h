@@ -27,7 +27,7 @@
 #if MUOS_RTQ_LENGTH > 0
 
 typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
-extern muos_rtq_type muos_rtq;
+extern volatile muos_rtq_type muos_rtq;
 
 static inline bool
 muos_rtq_schedule (void)

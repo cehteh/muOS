@@ -35,6 +35,7 @@
   error(WARN, "undefined warning")              \
   error(ERROR, "undefined error")               \
   error(FATAL_QUEUE_SPACE, "queue overrun")     \
+  error(FATAL_BUFFER_SPACE, "buffer overrun")   \
   error(FATAL, "undefined fatal error")
 
 
@@ -55,7 +56,7 @@ enum muos_errorcode
 // to be handled at a higher level (conditional in users code)
 
 #elif MUOS_ERROR_LOG_LENGTH == 1
-extern uint8_t muos_error_;
+extern volatile uint8_t muos_error_;
 
 static inline uint8_t
 muos_error (void)
@@ -63,15 +64,15 @@ muos_error (void)
   return muos_error_;
 }
 
-static inline void
+static inline enum muos_errorcode
 muos_error_set (enum muos_errorcode error)
 {
-  muos_error_ = error;
+  return muos_error_ = error;
 }
 
 
 #elif MUOS_ERROR_LOG_LENGTH > 1
-extern struct muos_error_log {
+extern volatile struct muos_error_log {
   uint8_t index;
   uint8_t errors[MUOS_ERROR_LOG_LENGTH];
 } muos_error_;
@@ -82,7 +83,7 @@ muos_error (void)
   return muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH];
 }
 
-void
+enum muos_errorcode
 muos_error_set (enum muos_errorcode error);
 
 void

@@ -20,11 +20,11 @@
 
 #include <muos/lib/spriq.h>
 
-//TODO: error handling
 
 void
-muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
+muos_spriq_push (muos_spriq_vptr spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
+  //TODO: error handling
   muos_spriq_index i = spriq->used;
 
   for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
@@ -38,7 +38,7 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 
 
 void
-muos_spriq_pop (struct muos_spriq* spriq)
+muos_spriq_pop (muos_spriq_vptr spriq)
 {
   muos_spriq_priority base = spriq->spriq[0].when;
   muos_spriq_index i;
