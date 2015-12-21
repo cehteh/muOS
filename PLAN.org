@@ -269,10 +269,24 @@ this document is WIP!
 
 ** HLD (high level drivers)
 *** Serial
-**** Tagged queue
+**** TX
+***** buffered
+***** non buffered
+***** Tagged queue
+**** RX
+***** Lineedit
+****** simple (backspace only)
+****** cursor
+****** history
+****** completion
+******* tab for text
+******* pgup/pgdown for values
 *** gpio
     configure (in out pullup)
     set, clear, toggle
+**** Buttons
+**** encoder
+
 *** PWM
 *** EEprom
 *** Flash
