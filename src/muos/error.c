@@ -23,24 +23,26 @@
 //PLANNED: generate error description table in progmem
 
 #if MUOS_ERROR_LOG_LENGTH == 1
-uint8_t muos_error_;
+volatile uint8_t muos_error_;
 
 #elif MUOS_ERROR_LOG_LENGTH > 1
-struct muos_error_log muos_error_;
+volatile struct muos_error_log muos_error_;
 
-void
+enum muos_errorcode
 muos_error_set (enum muos_errorcode error)
 {
-  if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] == error)
-    return;
+  if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] != error)
+    {
 
-  if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH])
-    ++muos_error_.index;
+      if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH])
+        ++muos_error_.index;
 
-  muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] = error;
+      muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] = error;
 
-  if (error > MUOS_ERROR)
-    muos_die ();
+      if (error > MUOS_ERROR)
+        muos_die ();
+    }
+  return error;
 }
 
 #endif

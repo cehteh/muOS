@@ -43,24 +43,25 @@ struct muos_spriq_entry
 
 struct muos_spriq
 {
-  volatile muos_spriq_index used;
-  volatile struct muos_spriq_entry spriq[];
+  muos_spriq_index used;
+  struct muos_spriq_entry spriq[];
 };
 
+typedef volatile struct muos_spriq* muos_spriq_vptr;
 
 static inline void
-muos_spriq_init (struct muos_spriq* spriq)
+muos_spriq_init (muos_spriq_vptr spriq)
 {
   spriq->used = 0;
 }
 
 
 void
-muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
+muos_spriq_push (muos_spriq_vptr spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
 
 
 void
-muos_spriq_pop (struct muos_spriq* spriq);
+muos_spriq_pop (muos_spriq_vptr spriq);
 
 
 

@@ -28,7 +28,7 @@
 
 typedef struct
 {
-  struct muos_spriq descriptor;
+  volatile struct muos_spriq descriptor;
   struct muos_spriq_entry spriq[MUOS_CLPQ_LENGTH];
 } muos_clpq_type;
 extern muos_clpq_type muos_clpq;

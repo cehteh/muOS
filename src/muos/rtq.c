@@ -21,7 +21,7 @@
 #include <muos/rtq.h>
 
 #if MUOS_RTQ_LENGTH > 0
-muos_rtq_type muos_rtq;
+volatile muos_rtq_type muos_rtq;
 #endif
 
 
