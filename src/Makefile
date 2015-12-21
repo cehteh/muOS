@@ -30,7 +30,7 @@ PROGRAMMER = avrdude
 #PROGRAMMER = micronucleus
 
 AVRDUDE_BAUDRATE = 57600
-AVRDUDE_PORT = /dev/ttyUSB0
+AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
 #AVRDUDE_PROGRAMMER = usbasp
 AVRDUDE_PROGRAMMER = arduino
 
@@ -57,8 +57,6 @@ CFLAGS += -Wall -Wextra -Werror
 #CFLAGS += -DF_CPU=4000000UL
 #CFLAGS += -DF_CPU=8000000UL
 CFLAGS += -DF_CPU=16000000UL
-
-#CFLAGS += -DUART_BAUD=9600
 
 
 # Linker flags
@@ -226,6 +224,88 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
 MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
+
+
+
+#:MUOS_BUFFER_INDEX
+#: type used to the buffer length and indexing
+MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
+#MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint16_t
+
+
+
+#:MUOS_SERIAL_BAUD
+#: Baudrate for the serial interface
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=1200
+MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=115200
+
+
+
+#PLANNED: parity bits stoppbits flowcontrol
+
+
+
+#:MUOS_SERIAL_TXBUFFER
+#: length of the transmission buffer
+#: 0 disables sending data
+#: 1 uses only what the hardware offers
+#: >1 creates a buffer of that size
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=1
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
+
+
+
+#:MUOS_SERIAL_TXQUEUE
+#: PLANNED!
+#: use a tagged queue for TX requests.
+#: A tagged queue can store data as references and in binary
+#: format. This may reduce the memory needed for queueing
+#: massivly and improve latency. The TX buffer can be much smaller
+#:
+#: Format:
+#:  The queue is a stream of uint8_t values.
+#:  0-127 are printed as verbatim ASCII values
+#:  128-191 the following 1-64 characters are printed verbatim,
+#:          including values bigger than 127
+#:  192-255 are tags followed few byte parameters binary data
+#:	    each tag is associated with a function which interprets
+#:	    this data. Printing a string from PROGMEM only takes
+#:          3 bytes on the queue for example.
+#:
+#: 0 disables the queue
+#: >0 creates a queue of that size
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
+
+
+
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
+
+
+
+#:MUOS_SERIAL_RXBUFFER
+#: length of the receive buffer
+#: 0 disables receiving data
+#: 1 uses only what the hardware offers
+#: >1 creates a buffer of that size
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
+
+
+
+#PLANNED
+#MUOS_SERIAL_RXLINEEDIT
+# 0 = off
+# 1 = simple
+# 2 = cursor
+#MUOS_SERIAL_LINEHIST
+# keep lineedit history
+#MUOS_SERIAL_LINECOMPETE
+# completion engine
 
 
 # now load the main makefile
