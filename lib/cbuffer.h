@@ -34,11 +34,11 @@ struct muos_cbuffer
   uint8_t                cbuffer[];
 };
 
-#define MUOS_CBUFFERDEF(size)                    \
+#define MUOS_CBUFFERDEF(size)                   \
 struct                                          \
 {                                               \
-  struct muos_cbuffer descriptor;                \
-  uint8_t       cbuffer[size];                   \
+  struct muos_cbuffer descriptor;               \
+  uint8_t       cbuffer[size];                  \
 }
 
 typedef volatile struct muos_cbuffer* muos_cbuffer_vptr;

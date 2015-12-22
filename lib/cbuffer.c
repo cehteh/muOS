@@ -28,9 +28,9 @@ muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uin
   if (cbuffer->len >= size)
     muos_error_set (MUOS_FATAL_CBUFFER_SPACE);
 
-  ++cbuffer->len;
   muos_cbuffer_index index = cbuffer->start + cbuffer->len;
-  if (index > size)
+  ++cbuffer->len;
+  if (index >= size)
     index -= size;
   cbuffer->cbuffer[index] = value;
 }
