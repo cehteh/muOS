@@ -29,7 +29,7 @@ eep: $(MAIN).eep
 
 %.hex: %.elf .v/OBJCOPY
 	$(PRINTFMT) $@ HEX
-	$(OBJCOPY) -O ihex -j .text $< $@
+	$(OBJCOPY) -O ihex  $< $@
 
 %.eep: %.elf .v/OBJCOPY
 	$(PRINTFMT) $@ EEP
