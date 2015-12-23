@@ -25,9 +25,6 @@
 void
 muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uint8_t value)
 {
-  if (cbuffer->len >= size)
-    muos_error_set (MUOS_FATAL_CBUFFER_SPACE);
-
   muos_cbuffer_index index = cbuffer->start + cbuffer->len;
   ++cbuffer->len;
   if (index >= size)
@@ -39,9 +36,6 @@ muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uin
 uint8_t
 muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
 {
-  if (cbuffer->len == 0)
-    muos_error_set (MUOS_FATAL_CBUFFER_SPACE);
-
   uint8_t ret = cbuffer->cbuffer[cbuffer->start];
   ++cbuffer->start;
   if (cbuffer->start >= size)
@@ -52,3 +46,12 @@ muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
 }
 
 
+void
+muos_cbuffer_reserve (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index need)
+{
+  if (size-(cbuffer->start+cbuffer->len) < need)
+    {
+      memmove (cbuffer->cbuffer, cbuffer->start, cbuffer->len);
+      cbuffer->start = 0;
+    }
+}
