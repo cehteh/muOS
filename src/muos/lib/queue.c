@@ -59,13 +59,6 @@ muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
 }
 
 
-static void
-muos_queue_check (muos_queue_vptr queue, muos_queue_size size, uint8_t len)
-{
-  if (size - queue->len < len)
-    muos_error_set (MUOS_FATAL_QUEUE_SPACE);
-}
-
 
 static void
 muos_queue_pushback_intern (muos_queue_vptr queue, muos_queue_size size, intptr_t value)
@@ -81,14 +74,12 @@ muos_queue_pushback_intern (muos_queue_vptr queue, muos_queue_size size, intptr_
 void
 muos_queue_pushback (muos_queue_vptr queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue_check (queue, size, 1);
   muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 void
 muos_queue_pushback_arg (muos_queue_vptr queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue_check (queue, size, 2);
   muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
   muos_queue_pushback_intern (queue, size, arg);
 }
@@ -108,14 +99,12 @@ muos_queue_pushfront_intern (muos_queue_vptr queue, muos_queue_size size, intptr
 void
 muos_queue_pushfront (muos_queue_vptr queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue_check (queue, size ,1);
   muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 void
 muos_queue_pushfront_arg (muos_queue_vptr queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue_check (queue, size, 2);
   muos_queue_pushfront_intern (queue, size, arg);
   muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
 }

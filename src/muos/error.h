@@ -23,7 +23,9 @@
 #include <stdint.h>
 
 // insert:
-// warnings before WARNING
+// debug messages before DEBUG
+//   only for logging when debugging is on
+// warnings before WARN
 //   just informal, everything goes on
 // errors before ERROR
 //   something broken, action needed
@@ -31,11 +33,10 @@
 //   fuba
 #define muos_errordefs                          \
   error(SUCCESS, "no error")                    \
+  error(DEBUG, "debug log")                     \
   error(WARN_SCHED_DEPTH, "scheduler depth")    \
   error(WARN, "undefined warning")              \
   error(ERROR, "undefined error")               \
-  error(FATAL_QUEUE_SPACE, "queue overrun")     \
-  error(FATAL_BUFFER_SPACE, "buffer overrun")   \
   error(FATAL, "undefined fatal error")
 
 
