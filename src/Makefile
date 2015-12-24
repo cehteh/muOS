@@ -227,10 +227,10 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 
 
 
-#:MUOS_CBUFFER_INDEX
+#:MUOS_BUFFER_INDEX
 #: type used to the cyclic buffer length and indexing
-MUOS_CONFIG += -DMUOS_CBUFFER_INDEX=uint8_t
-#MUOS_CONFIG += -DMUOS_CBUFFER_INDEX=uint16_t
+MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
+#MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint16_t
 
 
 
@@ -258,8 +258,8 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600UL
 #: >1 creates a buffer of that size
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=1
-#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
-MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 
 
 
@@ -268,7 +268,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #: use a tagged queue for TX requests.
 #: A tagged queue can store data as references and in binary
 #: format. This may reduce the memory needed for queueing
-#: massivly and improve latency. The TX buffer can be much smaller
+#: massivly and improve latency. The TX buffer above can then be smaller.
 #:
 #: Format:
 #:  The queue is a stream of uint8_t values.
@@ -283,7 +283,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #: 0 disables the queue
 #: >0 creates a queue of that size
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
-MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
 
 
 
@@ -297,19 +297,26 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
 #: 0 disables receiving data
 #: 1 uses only what the hardware offers
 #: >1 creates a buffer of that size
-MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=1
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=128
 
 
 
-#PLANNED
-#MUOS_SERIAL_RXLINEEDIT
+#:MUOS_SERIAL_RXCALLBACK
+#: function to be called from rtq when a character is received
+MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
+
+
+
+#PLANNED .. handled by the callback function
 # 0 = off
 # 1 = simple
-# 2 = cursor
-#MUOS_SERIAL_LINEHIST
-# keep lineedit history
-#MUOS_SERIAL_LINECOMPETE
-# completion engine
+# 2 = simple
+# 3 = cursor
 
 
 # now load the main makefile
