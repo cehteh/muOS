@@ -52,8 +52,68 @@
   MUOS_CONCAT2(TIMSK,tmhw) &= ~_BV(MUOS_CONCAT3(OCIE,tmhw,cmhw))
 
 
+/*
+  Serial
+*/
 
+#define MUOS_HW_SERIAL_ISRNAME_TX_READY(hw) USART_UDRE_vect
+#define MUOS_HW_SERIAL_ISRNAME_RX_AVAILABLE(hw) USART_RX_vect
 
+#define MUOS_HW_SERIAL_TX_REGISTER(hw) MUOS_CONCAT2(UDR,hw)
+
+#define MUOS_HW_SERIAL_RX_REGISTER(hw) MUOS_CONCAT2(UDR,hw)
+
+static inline void
+muos_hw_serial_init (void)
+{
+  #define BAUD MUOS_SERIAL_BAUD
+#include <util/setbaud.h>
+  UBRR0H = UBRRH_VALUE;
+  UBRR0L = UBRRL_VALUE;
+#if USE_2X
+  UCSR0A |= _BV(U2X0);
+#else
+  UCSR0A &= ~_BV(U2X0);
+#endif
+
+  UCSR0C = _BV(UCSZ01)| _BV(UCSZ00);
+}
+
+static inline void
+muos_hw_tx_enable (void)
+{
+  UCSR0B |= _BV(TXEN0);
+}
+
+static inline void
+muos_hw_rx_enable (void)
+{
+  UCSR0B |= _BV(RXEN0) | _BV(RXCIE0);
+}
+
+static inline void
+muos_hw_serial_rx_run (void)
+{
+  UCSR0B |= _BV(RXCIE0);
+}
+
+static inline void
+muos_hw_serial_rx_stop (void)
+{
+  UCSR0B &= ~_BV(RXCIE0);
+}
+
+static inline void
+muos_hw_serial_tx_run (void)
+{
+  UCSR0B |= _BV(UDRIE0);
+}
+
+static inline void
+muos_hw_serial_tx_stop (void)
+{
+  UCSR0B &= ~_BV(UDRIE0);
+}
 
 
 #endif

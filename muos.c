@@ -25,11 +25,10 @@
 #include <muos/bgq.h>
 #include <muos/clpq.h>
 
-extern void
-MUOS_INITFN (void);
 
+volatile struct muos_status_flags muos_status;
 
-static inline void
+void
 muos_sleep (void)
 {
   //TODO: select sleed mode depending on active hardware (adc, usart)

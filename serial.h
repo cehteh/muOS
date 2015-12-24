@@ -18,40 +18,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_H
-#define MUOS_H
+#ifndef MUOS_SERIAL_H
+#define MUOS_SERIAL_H
 
 #include <stdint.h>
-
-#define MUOS_EVAL(v) v
-#define MUOS_CONCAT_(a,b) a##b
-#define MUOS_CONCAT2(a,b) MUOS_CONCAT_(a,b)
-#define MUOS_CONCAT3(a,b,c) MUOS_CONCAT2(a,MUOS_CONCAT_(b,c))
-#define MUOS_CONCAT4(a,b,c,d) MUOS_CONCAT2(MUOS_CONCAT_(a,b),MUOS_CONCAT_(b,c))
-#define MUOS_CONCAT5(a,b,c,d,e) MUOS_CONCAT3(MUOS_CONCAT_(a,b),MUOS_CONCAT_(c,d),e)
-
-
-#include <muos/hwdef.h>
+#include <stdbool.h>
+#include <muos/lib/cbuffer.h>
+#include <muos/lib/buffer.h>
 
 void
-muos_sleep (void);
+muos_serial_init (void);
+
+void
+muos_serial_tx_byte (uint8_t b);
 
 
-extern void
-MUOS_INITFN (void);
-
-#define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
+bool
+muos_serial_rx_pending (void);
 
 
-#define MUOS_NOINIT __attribute__ ((section (".noinit")))
-//#define MUOS_EXPLICIT_INIT MUOS_NOINIT
+#if MUOS_SERIAL_TXBUFFER > 1
+typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXBUFFER) muos_txbuffer_type;
+extern muos_txbuffer_type muos_txbuffer;
+#endif
 
-// stash some status bits together
-extern volatile struct muos_status_flags
-{
-  uint8_t serial_txqueue_pending:1;
-  uint8_t serial_rxrtq_pending:1;
-} muos_status;
 
+#if MUOS_SERIAL_RXBUFFER > 1
+typedef MUOS_BUFFERDEF(MUOS_SERIAL_RXBUFFER) muos_rxbuffer_type;
+extern muos_rxbuffer_type muos_rxbuffer;
+#endif
+
+#define MUOS_SERIAL_TX_REGISTER MUOS_HW_SERIAL_TX_REGISTER(MUOS_SERIAL_HW)
+#define MUOS_SERIAL_RX_REGISTER MUOS_HW_SERIAL_RX_REGISTER(MUOS_SERIAL_HW)
 
 #endif
