@@ -18,30 +18,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <muos/lib/cbuffer.h>
+#include <string.h>
+
+#include <muos/lib/buffer.h>
 
 
 void
-muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uint8_t value)
+muos_buffer_push (muos_buffer_vptr buffer, const uint8_t value)
 {
-  muos_cbuffer_index index = cbuffer->start + cbuffer->len;
-  ++cbuffer->len;
-  if (index >= size)
-    index -= size;
-  cbuffer->cbuffer[index] = value;
+  buffer->buffer[buffer->len] = value;
+  ++buffer->len;
 }
 
 
-uint8_t
-muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
+void
+muos_buffer_pop (muos_buffer_vptr buffer, muos_buffer_index n)
 {
-  uint8_t ret = cbuffer->cbuffer[cbuffer->start];
-  ++cbuffer->start;
-  if (cbuffer->start >= size)
-    cbuffer->start -= size;
-
-  --cbuffer->len;
-  return ret;
+  buffer->len -= n;
+  memmove ((void*)buffer->buffer, (void*)buffer->buffer+n, buffer->len);
 }
 
 

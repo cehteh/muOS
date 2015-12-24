@@ -25,13 +25,13 @@
 
 #include <stdint.h>
 
-typedef MUOS_CBUFFER_INDEX muos_cbuffer_index;
+typedef MUOS_BUFFER_INDEX muos_cbuffer_index;
 
 struct muos_cbuffer
 {
   muos_cbuffer_index      start;
   muos_cbuffer_index      len;
-  uint8_t                cbuffer[];
+  uint8_t                 cbuffer[];
 };
 
 #define MUOS_CBUFFERDEF(size)                   \
@@ -67,7 +67,6 @@ muos_cbuffer_reserve (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_c
 #define MUOS_CBUFFER_SIZE(b)  MUOS_ARRAY_ELEMENTS((b).cbuffer)
 
 #define MUOS_CBUFFER_FREE(b) MUOS_CBUFFER_SIZE(b) - (b).descriptor.len
-#define MUOS_CBUFFER_RESERVE(b, s) muos_cbuffer_reserve (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (s))
 #define MUOS_CBUFFER_PUSH(b, v) muos_cbuffer_push (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (v))
 #define MUOS_CBUFFER_POP(b) muos_cbuffer_pop (&(b).descriptor, MUOS_CBUFFER_SIZE(b))
 
