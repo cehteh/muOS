@@ -67,6 +67,15 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 #configuration:
 #: detailed configuration
 
+
+#:MUOS_DEBUG
+#: Turn on Debugging facilities
+#: if 1 then debugging is enabled and pushes messages on the error log
+#MUOS_CONFIG += -DMUOS_ENABLE_DEBUG=0
+MUOS_CONFIG += -DMUOS_ENABLE_DEBUG=1
+
+
+
 #:MUOS_INITFN
 #: Name of the user-defined initialization function.
 #: This function is pushed on the rtq (or, if not available the bgq) when starting up. It is
@@ -234,11 +243,17 @@ MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
 
 
 
+#:MUOS_SERIAL_HW
+#: Which serial hardware to use
+MUOS_CONFIG += -DMUOS_SERIAL_HW=0
+
+
+
 #:MUOS_SERIAL_BAUD
 #: Baudrate for the serial interface
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=1200UL
-#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
-MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600UL
+MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600UL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=115200UL
 
 
@@ -260,6 +275,8 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600UL
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=1
 MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
 
 
 
@@ -289,6 +306,14 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
+
+
+
+#:MUOS_SERIAL_TXDEBUG
+#: When debugging and serial TX is enabled then debugging infos are send over the serial
+#: interface (note that this mixes into the serial datastream)
+#MUOS_CONFIG += -DMUOS_SERIAL_TXDEBUG=0
+MUOS_CONFIG += -DMUOS_SERIAL_TXDEBUG=1
 
 
 
