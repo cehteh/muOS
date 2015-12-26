@@ -47,34 +47,8 @@ muos_serial_init (void)
 }
 
 
-extern void
-MUOS_SERIAL_RXCALLBACK (void);
 
 
-MUOS_HW_ISR(MUOS_HW_SERIAL_ISRNAME_TX_READY(MUOS_SERIAL_HW))
-{
-  if (muos_txbuffer.descriptor.len)
-    {
-      MUOS_SERIAL_TX_REGISTER = MUOS_CBUFFER_POP (muos_txbuffer);
-      if (!muos_txbuffer.descriptor.len)
-        muos_hw_serial_tx_stop ();
-    }
-}
-
-
-MUOS_HW_ISR(MUOS_HW_SERIAL_ISRNAME_RX_AVAILABLE(MUOS_SERIAL_HW))
-{
-  if (MUOS_BUFFER_FREE(muos_rxbuffer))
-    {
-      //TODO: errorhandling
-      MUOS_BUFFER_PUSH (muos_rxbuffer, MUOS_SERIAL_RX_REGISTER);
-      if (!muos_status.serial_rxrtq_pending)
-        {
-          muos_status.serial_rxrtq_pending = true;
-          muos_rtq_pushback (MUOS_SERIAL_RXCALLBACK);
-        }
-    }
-}
 
 static
 void wait_for_tx (muos_cbuffer_index requested)

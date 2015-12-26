@@ -32,52 +32,60 @@
 #define MUOS_HW_CLOCK_DIV256   _BV(CS02)
 #define MUOS_HW_CLOCK_DIV1024  _BV(CS02) | _BV(CS00)
 
-#define MUOS_HW_CLOCK_ISRNAME_OVERFLOW(hw) MUOS_CONCAT3(TIMER,hw,_OVF_vect)
 
-#define MUOS_HW_CLOCK_REGISTER(hw) MUOS_CONCAT2(TCNT,hw)
+#define MUOS_HW_CLOCK_REGISTER_(hw) TCNT##hw
+#define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_(hw)
 
-#define MUOS_HW_CLOCK_PRESCALE_SET(hw, prescale)  \
-  MUOS_CONCAT3(TCCR, hw,B) = MUOS_CONCAT2(MUOS_HW_CLOCK_DIV,prescale)
+
+#define MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)  \
+  TCCR##hw##B = MUOS_HW_CLOCK_DIV##prescale
+
+#define MUOS_HW_CLOCK_PRESCALE_SET(hw, prescale)   \
+  MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)
+
+
+#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)  \
+  TIMSK##hw |= _BV(TOIE##hw)
 
 #define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE(hw)   \
-  MUOS_CONCAT2(TIMSK,hw) |= _BV(MUOS_CONCAT2(TOIE,hw))
+  MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)
 
-#define MUOS_HW_CLOCK_ISRNAME_COMPMATCH(tmhw,cmhw) MUOS_CONCAT5(TIMER,tmhw,_COMP,cmhw,_vect)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)     \
+  OCR##tmhw##cmhw = at;                                        \
+  TIMSK##tmhw |= _BV(OCIE##tmhw##cmhw)
 
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(tmhw, cmhw, at)   \
-  MUOS_CONCAT3(OCR,tmhw,cmhw) = at;                          \
-  MUOS_CONCAT2(TIMSK,tmhw) |= _BV(MUOS_CONCAT3(OCIE,tmhw,cmhw))
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)
+
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)       \
+  TIMSK##tmhw &= ~_BV(OCIE##tmhw##cmhw)
 
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(tmhw, cmhw)       \
-  MUOS_CONCAT2(TIMSK,tmhw) &= ~_BV(MUOS_CONCAT3(OCIE,tmhw,cmhw))
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)
 
 
 /*
   Serial
 */
 
-#define MUOS_HW_SERIAL_ISRNAME_TX_READY(hw) USART_UDRE_vect
-#define MUOS_HW_SERIAL_ISRNAME_RX_AVAILABLE(hw) USART_RX_vect
 
-#define MUOS_HW_SERIAL_TX_REGISTER(hw) MUOS_CONCAT2(UDR,hw)
+#define MUOS_HW_SERIAL_TX_REGISTER_(hw) UDR##hw
 
-#define MUOS_HW_SERIAL_RX_REGISTER(hw) MUOS_CONCAT2(UDR,hw)
+#define MUOS_HW_SERIAL_TX_REGISTER(hw)                  \
+  MUOS_HW_SERIAL_TX_REGISTER_(hw)
 
-static inline void
-muos_hw_serial_init (void)
-{
-  #define BAUD MUOS_SERIAL_BAUD
-#include <util/setbaud.h>
-  UBRR0H = UBRRH_VALUE;
-  UBRR0L = UBRRL_VALUE;
-#if USE_2X
-  UCSR0A |= _BV(U2X0);
-#else
-  UCSR0A &= ~_BV(U2X0);
-#endif
 
-  UCSR0C = _BV(UCSZ01)| _BV(UCSZ00);
-}
+#define MUOS_HW_SERIAL_RX_REGISTER_(hw) UDR##hw
+
+#define MUOS_HW_SERIAL_RX_REGISTER(hw)                  \
+  MUOS_HW_SERIAL_RX_REGISTER_(hw)
+
+
+void
+muos_hw_serial_init (void);
+
 
 static inline void
 muos_hw_tx_enable (void)

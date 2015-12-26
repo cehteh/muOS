@@ -24,14 +24,5 @@
 volatile muos_clock muos_clock_count_;
 muos_clock muos_now_;
 
-MUOS_HW_ISR(MUOS_HW_CLOCK_ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
-{
-  ++muos_clock_count_;
-}
-
-// compmatch interrupt is only used to wake the mainloop
-MUOS_HW_EMPTY_ISR(MUOS_HW_CLOCK_ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
-
-
 
 

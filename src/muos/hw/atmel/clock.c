@@ -18,37 +18,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_H
-#define MUOS_H
+#include <muos/clock.h>
 
-#include <stdint.h>
+#ifdef __AVR_ATmega328P__
 
+#define ISRNAME_OVERFLOW_(hw) TIMER##hw##_OVF_vect
+#define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_(hw)
 
-#include <muos/hwdef.h>
-
-void
-muos_sleep (void);
-
-
-extern void
-MUOS_INITFN (void);
-
-#define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
-
-
-#define MUOS_NOINIT __attribute__ ((section (".noinit")))
-
-
-
-
-//#define MUOS_EXPLICIT_INIT MUOS_NOINIT
-
-// stash some status bits together
-extern volatile struct muos_status_flags
+ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
-  uint8_t serial_txqueue_pending:1;
-  uint8_t serial_rxrtq_pending:1;
-} muos_status;
+  ++muos_clock_count_;
+}
 
+#define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect
+#define ISRNAME_COMPMATCH(tmhw,cmhw) ISRNAME_COMPMATCH_(tmhw,cmhw)
+
+// compmatch interrupt is only used to wake the mainloop
+EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
 
 #endif
+
+
