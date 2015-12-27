@@ -85,7 +85,7 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
     }
   else
     {
-      MUOS_ERROR_SET (clpq_overflow);
+      MUOS_ERROR_SET (error_clpq_overflow);
     }
   muos_interrupt_enable ();
 }
