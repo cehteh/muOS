@@ -22,6 +22,7 @@
 #define MUOS_BGQ_H
 
 #include <muos/muos.h>
+#include <muos/error.h>
 #include <muos/lib/queue.h>
 
 #if MUOS_BGQ_LENGTH > 0
@@ -35,29 +36,62 @@ muos_bgq_schedule (void)
   return MUOS_QUEUE_SCHEDULE (muos_bgq);
 }
 
+static inline bool
+muos_bgq_check (uint8_t need)
+{
+  if (MUOS_QUEUE_FREE (muos_bgq) >= need)
+    {
+      return true;
+    }
+  else
+    {
+      MUOS_ERROR_SET (bgq_overflow);
+      return false;
+    }
+}
 
 static inline void
 muos_bgq_pushback (muos_queue_function f)
 {
-  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
+  muos_interrupt_disable ();
+  if (muos_bgq_check (1))
+    {
+      MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
+    }
+  muos_interrupt_enable ();
 }
 
 static inline void
 muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a)
 {
-  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
+  muos_interrupt_disable ();
+  if (muos_bgq_check (2))
+    {
+      MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
+    }
+  muos_interrupt_enable ();
 }
 
 static inline void
 muos_bgq_pushfront (muos_queue_function f)
 {
-  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
+  muos_interrupt_disable ();
+  if (muos_bgq_check (1))
+    {
+      MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
+    }
+  muos_interrupt_enable ();
 }
 
 static inline void
 muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 {
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+  muos_interrupt_disable ();
+  if (muos_bgq_check (2))
+    {
+      MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+    }
+  muos_interrupt_enable ();
 }
 #else
 // stub for the schedule loop
