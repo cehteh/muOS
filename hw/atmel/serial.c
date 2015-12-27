@@ -61,13 +61,13 @@ ISR(USART_UDRE_vect)
 ISR(USART_RX_vect)
 {
   if (UCSR0A & _BV(FE0))
-    MUOS_ERROR_SET (rx_frame_error);
+    MUOS_ERROR_SET (error_rx_frame);
 
   if (UCSR0A & _BV(DOR0))
-    MUOS_ERROR_SET (rx_overrun_error);
+    MUOS_ERROR_SET (error_rx_overrun);
 
   if (UCSR0A & _BV(UPE0))
-    MUOS_ERROR_SET (rx_parity_error);
+    MUOS_ERROR_SET (error_rx_parity);
 
   if (MUOS_BUFFER_FREE(muos_rxbuffer))
     {
@@ -80,7 +80,7 @@ ISR(USART_RX_vect)
     }
   else
     {
-      MUOS_ERROR_SET (rx_buffer_overflow);
+      MUOS_ERROR_SET (error_rx_buffer_overflow);
     }
 }
 

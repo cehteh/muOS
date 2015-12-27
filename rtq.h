@@ -46,7 +46,7 @@ muos_rtq_check (uint8_t need)
     }
   else
     {
-      MUOS_ERROR_SET (rtq_overflow);
+      MUOS_ERROR_SET (error_rtq_overflow);
       return false;
     }
 }

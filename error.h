@@ -22,23 +22,23 @@
 
 #include <stdint.h>
 
+#define MUOS_ERRORS                             \
+  MUOS_ERROR(warn_sched_depth)                  \
+  MUOS_ERROR(warn_tx_buffer_wait)               \
+  MUOS_ERROR(error_clpq_overflow)               \
+  MUOS_ERROR(error_bgq_overflow)                \
+  MUOS_ERROR(error_rtq_overflow)                \
+  MUOS_ERROR(error_rx_buffer_overflow)          \
+  MUOS_ERROR(error_rx_frame)                    \
+  MUOS_ERROR(error_rx_overrun)                  \
+  MUOS_ERROR(error_rx_parity)
+
+
 extern volatile struct muos_errorflags
   {
-    //uint8_t :1;
-    //uint8_t :1;
-    //uint8_t :1;
-    //uint8_t :1;
-    //uint8_t :1;
-    //uint8_t :1;
-    uint8_t sched_depth_warning:1;
-    uint8_t clpq_overflow:1;
-    uint8_t bgq_overflow:1;
-    uint8_t rtq_overflow:1;
-    uint8_t tx_buffer_wait:1;
-    uint8_t rx_buffer_overflow:1;
-    uint8_t rx_frame_error:1;
-    uint8_t rx_overrun_error:1;
-    uint8_t rx_parity_error:1;
+#define MUOS_ERROR(name) uint8_t name:1;
+    MUOS_ERRORS
+#undef MUOS_ERROR
   } muos_errors_;
 
 #define MUOS_ERROR_SET(name) muos_errors_.name = true
@@ -48,8 +48,8 @@ extern volatile struct muos_errorflags
 #define MUOS_ERROR_CHECK(name)                          \
   ({                                                    \
     muos_interrupt_disable();                           \
-    bool r = rmuos_errors.name;                         \
-    rmuos_errors.name = false;                          \
+    bool r = muos_errors_.name;                         \
+    muos_errors_.name = false;                          \
     muos_interrupt_enable();                            \
     r;                                                  \
   })
