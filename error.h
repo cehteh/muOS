@@ -22,76 +22,37 @@
 
 #include <stdint.h>
 
-// insert:
-// debug messages before DEBUG
-//   only for logging when debugging is on
-// warnings before WARN
-//   just informal, everything goes on
-// errors before ERROR
-//   something broken, action needed
-// fatal errors before FATAL
-//   fuba
-#define muos_errordefs                          \
-  error(SUCCESS, "no error")                    \
-  error(DEBUG, "debug log")                     \
-  error(WARN_SCHED_DEPTH, "scheduler depth")    \
-  error(WARN, "undefined warning")              \
-  error(ERROR, "undefined error")               \
-  error(FATAL, "undefined fatal error")
-
-
-enum muos_errorcode
+extern volatile struct muos_errorflags
   {
-#define error(symbol, description) MUOS_##symbol,
-    muos_errordefs
-#undef error
-  };
+    //uint8_t :1;
+    //uint8_t :1;
+    //uint8_t :1;
+    //uint8_t :1;
+    //uint8_t :1;
+    //uint8_t :1;
+    uint8_t sched_depth_warning:1;
+    uint8_t clpq_overflow:1;
+    uint8_t bgq_overflow:1;
+    uint8_t rtq_overflow:1;
+    uint8_t tx_buffer_wait:1;
+    uint8_t rx_buffer_overflow:1;
+    uint8_t rx_frame_error:1;
+    uint8_t rx_overrun_error:1;
+    uint8_t rx_parity_error:1;
+  } muos_errors_;
 
+#define MUOS_ERROR_SET(name) muos_errors_.name = true
 
-#if MUOS_ERROR_LOG_LENGTH == 0
+#define MUOS_ERROR_PEEK(name) muos_errors.name
 
-// setting errors becomes a nop when the error log api is disabled
-#define muos_error_set(_) /*nop*/
-
-// whereas muos_error() for querying is undedfind because this needs
-// to be handled at a higher level (conditional in users code)
-
-#elif MUOS_ERROR_LOG_LENGTH == 1
-extern volatile uint8_t muos_error_;
-
-static inline uint8_t
-muos_error (void)
-{
-  return muos_error_;
-}
-
-static inline enum muos_errorcode
-muos_error_set (enum muos_errorcode error)
-{
-  return muos_error_ = error;
-}
-
-
-#elif MUOS_ERROR_LOG_LENGTH > 1
-extern volatile struct muos_error_log {
-  uint8_t index;
-  uint8_t errors[MUOS_ERROR_LOG_LENGTH];
-} muos_error_;
-
-static inline uint8_t
-muos_error (void)
-{
-  return muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH];
-}
-
-enum muos_errorcode
-muos_error_set (enum muos_errorcode error);
-
-void
-muos_die (void) __attribute__ ((weak));
-
-
-#endif
+#define MUOS_ERROR_CHECK(name)                          \
+  ({                                                    \
+    muos_interrupt_disable();                           \
+    bool r = rmuos_errors.name;                         \
+    rmuos_errors.name = false;                          \
+    muos_interrupt_enable();                            \
+    r;                                                  \
+  })
 
 
 #endif
