@@ -20,6 +20,7 @@
 
 #include <muos/clpq.h>
 #include <muos/clock.h>
+#include <muos/error.h>
 
 #if MUOS_CLPQ_LENGTH > 0
 
@@ -72,11 +73,20 @@ muos_clpq_schedule (muos_spriq_priority when)
     }
 }
 
+
+
 void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
   muos_interrupt_disable ();
-  muos_spriq_push (&muos_clpq.descriptor, base, when, what);
+  if (muos_clpq.descriptor.used < MUOS_SPRIQ_SIZE(muos_clpq))
+    {
+      muos_spriq_push (&muos_clpq.descriptor, base, when, what);
+    }
+  else
+    {
+      MUOS_ERROR_SET (clpq_overflow);
+    }
   muos_interrupt_enable ();
 }
 

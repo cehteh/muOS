@@ -28,10 +28,6 @@ MUOS_SERIAL_RXCALLBACK (void);
 
 #ifdef __AVR_ATmega328P__
 
-//TODO: errorhandling
-
-#define ISRNAME_TX_READY(hw) USART_UDRE_vect
-
 
 void
 muos_hw_serial_init (void)
@@ -51,7 +47,7 @@ muos_hw_serial_init (void)
 
 
 
-ISR(ISRNAME_TX_READY(MUOS_SERIAL_HW))
+ISR(USART_UDRE_vect)
 {
   if (muos_txbuffer.descriptor.len)
     {
@@ -61,19 +57,30 @@ ISR(ISRNAME_TX_READY(MUOS_SERIAL_HW))
     }
 }
 
-#define ISRNAME_RX_AVAILABLE(hw) USART_RX_vect
 
-ISR(ISRNAME_RX_AVAILABLE(MUOS_SERIAL_HW))
+ISR(USART_RX_vect)
 {
+  if (UCSR0A & _BV(FE0))
+    MUOS_ERROR_SET (rx_frame_error);
+
+  if (UCSR0A & _BV(DOR0))
+    MUOS_ERROR_SET (rx_overrun_error);
+
+  if (UCSR0A & _BV(UPE0))
+    MUOS_ERROR_SET (rx_parity_error);
+
   if (MUOS_BUFFER_FREE(muos_rxbuffer))
     {
-      //TODO: errorhandling
       MUOS_BUFFER_PUSH (muos_rxbuffer, MUOS_SERIAL_RX_REGISTER);
       if (!muos_status.serial_rxrtq_pending)
         {
           muos_status.serial_rxrtq_pending = true;
-          muos_rtq_pushback (MUOS_SERIAL_RXCALLBACK);
+          muos_rtq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK);
         }
+    }
+  else
+    {
+      MUOS_ERROR_SET (rx_buffer_overflow);
     }
 }
 

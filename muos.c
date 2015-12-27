@@ -90,7 +90,7 @@ muos_sched_enter (void)
 {
   if (sched_depth_ >= MUOS_SCHED_DEPTH)
     {
-      muos_error_set (MUOS_WARN_SCHED_DEPTH);
+      MUOS_ERROR_SET (sched_depth_warning);
       return false;
     }
   return true;
