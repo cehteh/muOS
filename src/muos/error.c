@@ -20,29 +20,4 @@
 
 #include <muos/error.h>
 
-//PLANNED: generate error description table in progmem
-
-#if MUOS_ERROR_LOG_LENGTH == 1
-volatile uint8_t muos_error_;
-
-#elif MUOS_ERROR_LOG_LENGTH > 1
-volatile struct muos_error_log muos_error_;
-
-enum muos_errorcode
-muos_error_set (enum muos_errorcode error)
-{
-  if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] != error)
-    {
-
-      if (muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH])
-        ++muos_error_.index;
-
-      muos_error_.errors[muos_error_.index%MUOS_ERROR_LOG_LENGTH] = error;
-
-      if (error > MUOS_ERROR)
-        muos_die ();
-    }
-  return error;
-}
-
-#endif
+volatile struct muos_errorflags muos_errors_;
