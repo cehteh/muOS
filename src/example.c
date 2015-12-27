@@ -15,6 +15,7 @@
 #include <muos/clock.h>
 #include <muos/serial.h>
 #include <muos/io.h>
+#include <muos/error.h>
 
 // define events, no main here
 
@@ -24,7 +25,6 @@ toggle_red_timed (const struct muos_spriq_entry* event)
   PIND = _BV(PIND2);
   muos_output_cstr ("foobar");
   muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (1));
-  (void) event;
 }
 
 void
@@ -39,6 +39,22 @@ toggle_green_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND3);
   muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
+}
+
+
+void
+serial_printerr (const struct muos_spriq_entry* event)
+{
+#define MUOS_ERROR(name)                                                \
+  if (MUOS_ERROR_CHECK (name))                                          \
+    {                                                                   \
+      muos_output_cstr ((const __flash char*)"\r\n***"#name"***\r\n");      \
+    }
+
+  MUOS_ERRORS;
+#undef MUOS_ERROR
+
+  muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (2));
 }
 
 void
@@ -63,6 +79,7 @@ init (void)
 
   //muos_clpq_at (0, 0, toggle_green_timed);
   muos_clpq_at (0, 0, toggle_red_timed);
+  muos_clpq_at (0, MUOS_CLOCK_SECONDS (2), serial_printerr);
   //muos_clpq_at (0, 0, toggle_yellow_timed);
 }
 
