@@ -20,10 +20,16 @@
 // define events, no main here
 
 void
+serial_ping (const struct muos_spriq_entry* event)
+{
+  muos_output_char ('.');
+  muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (1));
+}
+
+void
 toggle_red_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND2);
-  muos_output_cstr ("foobar");
   muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (1));
 }
 
@@ -38,7 +44,7 @@ void
 toggle_green_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND3);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (500));
 }
 
 
@@ -82,10 +88,11 @@ init (void)
 
   muos_serial_init ();
 
-  //muos_clpq_at (0, 0, toggle_green_timed);
-  muos_clpq_at (0, 0, toggle_red_timed);
-  muos_clpq_at (0, MUOS_CLOCK_SECONDS (2), serial_printerr);
+  //muos_clpq_at (0, 0, toggle_red_timed);
   //muos_clpq_at (0, 0, toggle_yellow_timed);
+  muos_clpq_at (0, 0, toggle_green_timed);
+  muos_clpq_at (0, 0, serial_ping);
+  muos_clpq_at (0, MUOS_CLOCK_SECONDS (2), serial_printerr);
 }
 
 
