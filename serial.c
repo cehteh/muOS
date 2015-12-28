@@ -47,28 +47,20 @@ muos_serial_init (void)
 }
 
 
-
-
-
-static
-void wait_for_tx (muos_cbuffer_index requested)
-{
-  while (MUOS_CBUFFER_FREE (muos_txbuffer) < requested)
-    {
-      muos_error_set (muos_warn_tx_buffer_wait);
-      muos_hw_serial_tx_run ();
-      muos_sleep ();
-      muos_hw_serial_tx_stop ();
-    }
-}
-
-
 void
 muos_serial_tx_byte (uint8_t b)
 {
   muos_hw_serial_tx_stop ();
-  wait_for_tx (1);
-  MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+
+  if (MUOS_CBUFFER_FREE (muos_txbuffer) > 0)
+    {
+      MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+    }
+  else
+    {
+      muos_error_set (muos_error_tx_buffer_overflow);
+    }
+
   muos_hw_serial_tx_run ();
 }
 
