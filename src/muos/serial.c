@@ -55,7 +55,7 @@ void wait_for_tx (muos_cbuffer_index requested)
 {
   while (MUOS_CBUFFER_FREE (muos_txbuffer) < requested)
     {
-      MUOS_ERROR_SET (warn_tx_buffer_wait);
+      muos_error_set (muos_warn_tx_buffer_wait);
       muos_hw_serial_tx_run ();
       muos_sleep ();
       muos_hw_serial_tx_stop ();

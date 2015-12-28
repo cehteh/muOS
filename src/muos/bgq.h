@@ -45,7 +45,7 @@ muos_bgq_check (uint8_t need)
     }
   else
     {
-      MUOS_ERROR_SET (error_bgq_overflow);
+      muos_error_set_unsafe (muos_error_bgq_overflow);
       return false;
     }
 }
