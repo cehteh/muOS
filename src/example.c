@@ -45,14 +45,19 @@ toggle_green_timed (const struct muos_spriq_entry* event)
 void
 serial_printerr (const struct muos_spriq_entry* event)
 {
-#define MUOS_ERROR(name)                                                \
-  if (MUOS_ERROR_CHECK (name))                                          \
-    {                                                                   \
-      muos_output_cstr ((const __flash char*)"\r\n***"#name"***\r\n");      \
-    }
+  if (muos_error_pending ())
+    {
+#define MUOS_ERROR(name)                                         \
+      if (muos_error_check (muos_##name))                        \
+        {                                                        \
+          muos_output_cstr ((const __flash char*)"\r\nE:");      \
+          muos_output_uint8 (muos_##name);                       \
+          muos_output_cstr ((const __flash char*)"\r\n");        \
+        }
 
   MUOS_ERRORS;
 #undef MUOS_ERROR
+    }
 
   muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (2));
 }
