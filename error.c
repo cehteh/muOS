@@ -18,6 +18,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
+#include <muos/muos.h>
 #include <muos/error.h>
 
-volatile struct muos_errorflags muos_errors_;
+volatile uint8_t muos_errors_pending_;
+volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
+
+void
+muos_error_set_unsafe (enum muos_errorcode err)
+{
+  if (!(muos_errors_[err/8] & 1<<(err%8)))
+      {
+        muos_errors_[err/8] |= 1<<(err%8);
+        ++muos_errors_pending_;
+      }
+}
+
+void
+muos_error_set (enum muos_errorcode err)
+{
+  cli ();
+  muos_error_set_unsafe (err);
+  sei ();
+}
+
+
+bool
+muos_error_check (enum muos_errorcode err)
+{
+  muos_interrupt_disable();
+  bool ret = muos_errors_[err/8] & 1<<(err%8);
+  if(ret)
+    --muos_errors_pending_;
+  muos_errors_[err/8] &= ~(1<<(err%8));
+  muos_interrupt_enable();
+  return ret;
+}
+
+

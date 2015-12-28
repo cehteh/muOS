@@ -21,6 +21,7 @@
 #define MUOS_ERROR_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MUOS_ERRORS                             \
   MUOS_ERROR(warn_sched_depth)                  \
@@ -34,25 +35,38 @@
   MUOS_ERROR(error_rx_parity)
 
 
-extern volatile struct muos_errorflags
+enum muos_errorcode
   {
-#define MUOS_ERROR(name) uint8_t name:1;
+    muos_success,
+#define MUOS_ERROR(name) muos_##name,
     MUOS_ERRORS
 #undef MUOS_ERROR
-  } muos_errors_;
+    muos_errors_end,
+  };
 
-#define MUOS_ERROR_SET(name) muos_errors_.name = true
+extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
+extern volatile uint8_t muos_errors_pending_;
 
-#define MUOS_ERROR_PEEK(name) muos_errors.name
 
-#define MUOS_ERROR_CHECK(name)                          \
-  ({                                                    \
-    muos_interrupt_disable();                           \
-    bool r = muos_errors_.name;                         \
-    muos_errors_.name = false;                          \
-    muos_interrupt_enable();                            \
-    r;                                                  \
-  })
+static inline uint8_t
+muos_error_pending (void)
+{
+  return muos_errors_pending_;
+}
 
+void
+muos_error_set_unsafe (enum muos_errorcode err);
+
+void
+muos_error_set (enum muos_errorcode err);
+
+static inline bool
+muos_error_peek (enum muos_errorcode err)
+{
+  return muos_errors_[err/8] & 1<<(err%8);
+}
+
+bool
+muos_error_check (enum muos_errorcode err);
 
 #endif
