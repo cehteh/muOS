@@ -71,13 +71,14 @@ serial_printerr (const struct muos_spriq_entry* event)
 void
 serial_echo (void)
 {
-  while (muos_serial_rx_pending ())
+  uint8_t data = muos_serial_rx_byte ();
+
+  if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-      muos_serial_tx_byte (muos_rxbuffer.buffer[0]);
-      muos_hw_serial_rx_stop ();
-      MUOS_BUFFER_POP (muos_rxbuffer, 1);
-      muos_hw_serial_rx_run ();
+      muos_output_char (data);
     }
+
+  muos_serial_rxrtq_again (serial_echo);
 }
 
 void

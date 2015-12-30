@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <muos/lib/cbuffer.h>
-#include <muos/lib/buffer.h>
+#include <muos/lib/queue.h>
 
 void
 muos_serial_init (void);
@@ -32,10 +32,11 @@ muos_serial_init (void);
 void
 muos_serial_tx_byte (uint8_t b);
 
+uint8_t
+muos_serial_rx_byte (void);
 
-bool
-muos_serial_rx_pending (void);
-
+void
+muos_serial_rxrtq_again (muos_queue_function f);
 
 #if MUOS_SERIAL_TXBUFFER > 1
 typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXBUFFER) muos_txbuffer_type;
@@ -44,7 +45,7 @@ extern muos_txbuffer_type muos_txbuffer;
 
 
 #if MUOS_SERIAL_RXBUFFER > 1
-typedef MUOS_BUFFERDEF(MUOS_SERIAL_RXBUFFER) muos_rxbuffer_type;
+typedef MUOS_CBUFFERDEF(MUOS_SERIAL_RXBUFFER) muos_rxbuffer_type;
 extern muos_rxbuffer_type muos_rxbuffer;
 #endif
 
