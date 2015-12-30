@@ -69,9 +69,9 @@ ISR(USART_RX_vect)
   if (UCSR0A & _BV(UPE0))
     muos_error_set_unsafe (muos_error_rx_parity);
 
-  if (MUOS_BUFFER_FREE(muos_rxbuffer))
+  if (MUOS_CBUFFER_FREE(muos_rxbuffer))
     {
-      MUOS_BUFFER_PUSH (muos_rxbuffer, MUOS_SERIAL_RX_REGISTER);
+      MUOS_CBUFFER_PUSH (muos_rxbuffer, MUOS_SERIAL_RX_REGISTER);
       if (!muos_status.serial_rxrtq_pending)
         {
           muos_status.serial_rxrtq_pending = true;

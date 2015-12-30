@@ -65,23 +65,38 @@ muos_serial_tx_byte (uint8_t b)
 }
 
 
-
-bool
-muos_serial_rx_pending (void)
+uint8_t
+muos_serial_rx_byte (void)
 {
-  volatile bool ret;
+  uint8_t ret = 0;
+
   muos_hw_serial_rx_stop ();
-  if (MUOS_BUFFER_USED(muos_rxbuffer))
+
+  if (MUOS_CBUFFER_USED (muos_rxbuffer))
     {
-      ret = true;
+      ret = MUOS_CBUFFER_POP (muos_rxbuffer);
     }
   else
     {
-      ret = false;
-      muos_status.serial_rxrtq_pending = false;
+      muos_error_set (muos_error_rx_buffer_underflow);
     }
+
   muos_hw_serial_rx_run ();
+
   return ret;
 }
 
+
+void
+muos_serial_rxrtq_again (muos_queue_function f)
+{
+  muos_interrupt_disable ();
+
+  if (MUOS_CBUFFER_USED (muos_rxbuffer))
+    muos_rtq_pushback_unsafe (f);
+  else
+    muos_status.serial_rxrtq_pending = false;
+
+  muos_interrupt_enable ();
+}
 

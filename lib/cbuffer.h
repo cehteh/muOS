@@ -67,6 +67,7 @@ muos_cbuffer_reserve (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_c
 #define MUOS_CBUFFER_SIZE(b)  MUOS_ARRAY_ELEMENTS((b).cbuffer)
 
 #define MUOS_CBUFFER_FREE(b) MUOS_CBUFFER_SIZE(b) - (b).descriptor.len
+#define MUOS_CBUFFER_USED(b) (b).descriptor.len
 #define MUOS_CBUFFER_PUSH(b, v) muos_cbuffer_push (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (v))
 #define MUOS_CBUFFER_POP(b) muos_cbuffer_pop (&(b).descriptor, MUOS_CBUFFER_SIZE(b))
 

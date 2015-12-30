@@ -46,9 +46,7 @@ MUOS_INITFN (void);
 // stash some status bits together
 extern volatile struct muos_status_flags
 {
-  uint8_t serial_txqueue_pending:1;
   uint8_t serial_rxrtq_pending:1;
 } muos_status;
-
 
 #endif

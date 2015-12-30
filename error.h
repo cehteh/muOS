@@ -30,6 +30,7 @@
   MUOS_ERROR(error_bgq_overflow)                \
   MUOS_ERROR(error_rtq_overflow)                \
   MUOS_ERROR(error_rx_buffer_overflow)          \
+  MUOS_ERROR(error_rx_buffer_underflow)         \
   MUOS_ERROR(error_rx_frame)                    \
   MUOS_ERROR(error_rx_overrun)                  \
   MUOS_ERROR(error_rx_parity)
