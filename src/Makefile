@@ -85,6 +85,15 @@ MUOS_CONFIG += -DMUOS_INITFN=init
 
 
 
+#:MUOS_ERRORFN
+#: Name of the user-defined function which is called when am error is pending.
+#: Errors can happen synchronusly and be handled right where they are happen or asynchronously
+#: from interrupts. If any undhandled error stays pending, this function will be called
+#: synchronously to handle it at very high priority (before any queues)
+MUOS_CONFIG += -DMUOS_ERRORFN=error
+
+
+
 #:MUOS_EXPLICIT_INIT
 #: when set to 1, then all static initialization of muos internal datastructures is disabled
 #: initialization will then be done explicitly in init sections or in main before any of these
