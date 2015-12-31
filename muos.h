@@ -33,6 +33,9 @@ muos_sleep (void);
 extern void
 MUOS_INITFN (void);
 
+extern void
+MUOS_ERRORFN (void);
+
 #define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
 
 
