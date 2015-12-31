@@ -44,9 +44,54 @@ void
 toggle_green_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND3);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (500));
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (50));
 }
 
+
+void
+clearerror (const struct muos_spriq_entry* event)
+{
+  (void) event;
+  PORTD &= ~_BV(PIND2);
+}
+
+void
+error (void)
+{
+  if (muos_error_pending ())
+    {
+      PORTD |= _BV(PIND2);
+
+#define MUOS_ERROR(name)                                         \
+      if (muos_error_check (muos_##name))                        \
+        {                                                        \
+        }
+
+  MUOS_ERRORS;
+#undef MUOS_ERROR
+    }
+
+  muos_clpq_at (muos_now (), MUOS_CLOCK_SECONDS (1), clearerror);
+}
+
+
+void
+serial_blinkerr (const struct muos_spriq_entry* event)
+{
+  if (muos_error_pending ())
+    {
+#define MUOS_ERROR(name)                                         \
+      if (muos_error_check (muos_##name))                        \
+        {                                                        \
+          PIND = _BV(PIND2);                                     \
+        }
+
+  MUOS_ERRORS;
+#undef MUOS_ERROR
+    }
+
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (50));
+}
 
 void
 serial_printerr (const struct muos_spriq_entry* event)
@@ -76,6 +121,8 @@ serial_echo (void)
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
       muos_output_char (data);
+      if (data == '\r')
+        muos_output_char ('\n');
     }
 
   muos_serial_rxrtq_again (serial_echo);
@@ -92,8 +139,8 @@ init (void)
   //muos_clpq_at (0, 0, toggle_red_timed);
   //muos_clpq_at (0, 0, toggle_yellow_timed);
   muos_clpq_at (0, 0, toggle_green_timed);
-  muos_clpq_at (0, 0, serial_ping);
-  muos_clpq_at (0, MUOS_CLOCK_SECONDS (2), serial_printerr);
+  //  muos_clpq_at (0, 0, serial_ping);
+  //muos_clpq_at (0, 0, serial_blinkerr);
 }
 
 
