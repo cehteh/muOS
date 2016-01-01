@@ -32,6 +32,7 @@ muos_txbuffer_type muos_txbuffer;
 muos_rxbuffer_type muos_rxbuffer;
 #endif
 
+#if MUOS_SERIAL_TXBUFFER > 1 || MUOS_SERIAL_RXBUFFER > 1
 void
 muos_serial_init (void)
 {
@@ -45,8 +46,10 @@ muos_serial_init (void)
   muos_hw_rx_enable ();
 #endif
 }
+#endif
 
 
+#if MUOS_SERIAL_TXBUFFER > 1
 void
 muos_serial_tx_byte (uint8_t b)
 {
@@ -63,8 +66,9 @@ muos_serial_tx_byte (uint8_t b)
 
   muos_hw_serial_tx_run ();
 }
+#endif
 
-
+#if MUOS_SERIAL_RXBUFFER > 1
 uint8_t
 muos_serial_rx_byte (void)
 {
@@ -99,4 +103,4 @@ muos_serial_rxrtq_again (muos_queue_function f)
 
   muos_interrupt_enable ();
 }
-
+#endif

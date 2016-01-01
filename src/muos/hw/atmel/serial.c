@@ -29,6 +29,7 @@ MUOS_SERIAL_RXCALLBACK (void);
 #ifdef __AVR_ATmega328P__
 
 
+#if MUOS_SERIAL_TXBUFFER > 1 || MUOS_SERIAL_RXBUFFER > 1
 void
 muos_hw_serial_init (void)
 {
@@ -44,9 +45,9 @@ muos_hw_serial_init (void)
 
   UCSR0C = _BV(UCSZ01)| _BV(UCSZ00);
 }
+#endif
 
-
-
+#if MUOS_SERIAL_TXBUFFER > 1
 ISR(USART_UDRE_vect)
 {
   if (muos_txbuffer.descriptor.len)
@@ -56,10 +57,13 @@ ISR(USART_UDRE_vect)
         muos_hw_serial_tx_stop ();
     }
 }
+#endif
 
 
+#if MUOS_SERIAL_RXBUFFER > 1
 ISR(USART_RX_vect)
 {
+  //TODO: disable error checks depending on config (no parity etc)
   if (UCSR0A & _BV(FE0))
     muos_error_set_unsafe (muos_error_rx_frame);
 
@@ -83,5 +87,6 @@ ISR(USART_RX_vect)
       muos_error_set_unsafe (muos_error_rx_buffer_overflow);
     }
 }
+#endif
 
 #endif
