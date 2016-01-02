@@ -130,7 +130,11 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                   muos_now_ = muos_clock_now ();
 
                   if (muos_error_pending ())
-                    MUOS_ERRORFN ();
+                    {
+                      muos_interrupt_disable ();
+                      MUOS_ERRORFN ();
+                      muos_interrupt_disable ();
+                    }
                 }
                while (muos_clpq_schedule (muos_now_));
             }
@@ -170,7 +174,11 @@ muos_yield (uint8_t count)
               muos_now_ = muos_clock_now ();
 
               if (muos_error_pending ())
-                MUOS_ERRORFN ();
+                {
+                  muos_interrupt_disable ();
+                  MUOS_ERRORFN ();
+                  muos_interrupt_disable ();
+                }
             }
           while (count && muos_clpq_schedule (muos_now_));
         }
@@ -209,7 +217,11 @@ main()
                   muos_now_ = muos_clock_now ();
 
                   if (muos_error_pending ())
-                    MUOS_ERRORFN ();
+                    {
+                      muos_interrupt_disable ();
+                      MUOS_ERRORFN ();
+                      muos_interrupt_disable ();
+                    }
                 }
               while (muos_clpq_schedule (muos_now_));
             }
