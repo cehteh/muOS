@@ -22,6 +22,7 @@
 #define MUOS_CLPQ_H
 
 #include <muos/muos.h>
+#include <muos/clock.h>
 #include <muos/lib/spriq.h>
 
 #if MUOS_CLPQ_LENGTH > 0
@@ -37,7 +38,15 @@ bool
 muos_clpq_schedule (muos_spriq_priority when);
 
 void
-muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
+muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
+
+static inline void
+muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
+{
+  muos_interrupt_disable ();
+  muos_clpq_at_unsafe (base, when, what);
+  muos_interrupt_enable ();
+}
 
 static inline void
 muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when)

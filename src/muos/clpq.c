@@ -76,9 +76,8 @@ muos_clpq_schedule (muos_spriq_priority when)
 
 
 void
-muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
+muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
-  muos_interrupt_disable ();
   if (muos_clpq.descriptor.used < MUOS_SPRIQ_SIZE(muos_clpq))
     {
       muos_spriq_push (&muos_clpq.descriptor, base, when, what);
@@ -87,7 +86,6 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
     {
       muos_error_set_unsafe (muos_error_clpq_overflow);
     }
-  muos_interrupt_enable ();
 }
 
 
