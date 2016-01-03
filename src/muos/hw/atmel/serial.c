@@ -33,7 +33,7 @@ MUOS_SERIAL_RXCALLBACK (void);
 void
 muos_hw_serial_init (void)
 {
-  #define BAUD MUOS_SERIAL_BAUD
+#define BAUD (MUOS_SERIAL_BAUD * (1000 + MUOS_SERIAL_BAUD_TXBOOST) / 1000)
 #include <util/setbaud.h>
   UBRR0H = UBRRH_VALUE;
   UBRR0L = UBRRL_VALUE;

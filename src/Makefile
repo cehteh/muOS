@@ -267,6 +267,15 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
 
 
 
+#:MUOS_SERIAL_BAUD_TXBOOST
+#: Inrcease the TX baudrate by this much permille
+#: Setting the TX speed little higher makes the link a bit more
+#: reliable when the clocks are out of sync. 0.3% as default should work fine
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=0ULL
+MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
+
+
+
 #PLANNED: parity bits stoppbits flowcontrol
 #MUOS_SERIAL_DATABITS=8
 #MUOS_SERIAL_PARITY=N
