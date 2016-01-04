@@ -63,6 +63,28 @@ muos_output_mem (const uint8_t* mem, uint8_t len)
     muos_serial_tx_byte (*mem++);
 }
 
+
+void
+muos_output_csi_char (const char c)
+{
+  muos_serial_tx_byte (0x1b);
+  muos_serial_tx_byte ('[');
+  muos_serial_tx_byte (c);
+}
+
+
+void
+muos_output_csi_cstr (const char* str)
+{
+  muos_serial_tx_byte (0x1b);
+  muos_serial_tx_byte ('[');
+
+  if (str)
+    while (*str)
+      muos_serial_tx_byte (*str++);
+}
+
+
 struct fmtconfig_type {
   uint8_t base:6;
   uint8_t upcase:1;

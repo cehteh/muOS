@@ -85,8 +85,7 @@ muos_lineedit (void)
               if (cursor<used)
                 {
                   ++cursor;
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('C');
+                  muos_output_csi_char ('C');
                 }
               pending = 0;
               break;
@@ -97,8 +96,7 @@ muos_lineedit (void)
               if (cursor)
                 {
                   --cursor;
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('D');
+                  muos_output_csi_char ('D');
                 }
               pending = 0;
               break;
@@ -115,16 +113,12 @@ muos_lineedit (void)
                   --used;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('s');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_cstr ("?25l");
+                  muos_output_csi_char ('s');
+                  muos_output_csi_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_char (' ');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('u');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_cstr ("?25h");
+                  muos_output_csi_char ('u');
+                  muos_output_csi_cstr ("?25h");
                 }
               pending = 0;
               break;
@@ -176,18 +170,13 @@ muos_lineedit (void)
                   --cursor;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('D');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('s');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_cstr ("?25l");
+                  muos_output_csi_char ('D');
+                  muos_output_csi_char ('s');
+                  muos_output_csi_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_char (' ');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_char ('u');
-                  muos_output_cstr ("\x1b[");
-                  muos_output_cstr ("?25h");
+                  muos_output_csi_char ('u');
+                  muos_output_csi_cstr ("?25h");
                 }
               break;
 
@@ -201,7 +190,7 @@ muos_lineedit (void)
                   muos_output_cstr (buffer+cursor-1);
                   if (used-cursor)
                     {
-                      muos_output_cstr ("\x1b[");
+                      muos_output_csi_cstr (0);
                       muos_output_uint8 (used-cursor);
                       muos_output_char ('D');
                     }
