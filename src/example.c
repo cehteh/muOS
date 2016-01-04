@@ -68,54 +68,44 @@ error (void)
     }
 
 #define MUOS_ERROR(name)                                         \
-  if (muos_error_check (muos_##name))                            \
-    {                                                            \
-    }
+  muos_error_check (muos_##name);
 
   MUOS_ERRORS;
 #undef MUOS_ERROR
 }
 
 
-
-
-
-#if 0
-void
-serial_printerr (const struct muos_spriq_entry* event)
-{
-  if (muos_error_pending ())
-    {
-#define MUOS_ERROR(name)                                         \
-      if (muos_error_check (muos_##name))                        \
-        {                                                        \
-          muos_output_cstr ((const __flash char*)"\r\nE:");      \
-          muos_output_uint8 (muos_##name);                       \
-          muos_output_cstr ((const __flash char*)"\r\n");        \
-        }
-
-  MUOS_ERRORS;
-#undef MUOS_ERROR
-    }
-
-  muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (2));
-}
-#endif
 
 void
 serial_echo (void)
 {
   uint8_t data = muos_serial_rx_byte ();
 
-  if (!muos_error_check (muos_error_rx_buffer_underflow))
+  if (data != 'y' && data != ' ')
     {
-      muos_output_char (data);
-      if (data == '\r')
-        muos_output_char ('\n');
+      if (!muos_error_check (muos_error_rx_buffer_underflow))
+        {
+          muos_output_char (data);
+          if (data == '\r')
+            muos_output_char ('\n');
+        }
     }
 
   muos_serial_rxrtq_again (serial_echo);
 }
+
+
+
+void
+lineecho (const char* line)
+{
+  muos_output_cstr ("\r\n<");
+  muos_output_cstr (line);
+  muos_output_cstr (">\r\n");
+}
+
+
+
 
 void
 init (void)
@@ -128,8 +118,10 @@ init (void)
   //muos_clpq_at (0, 0, toggle_red_timed);
   muos_clpq_at (0, 0, toggle_yellow_timed);
   muos_clpq_at (0, 0, toggle_green_timed);
-  muos_clpq_at (0, 0, serial_ping);
+  //muos_clpq_at (0, 0, serial_ping);
   //muos_clpq_at (0, 0, serial_blinkerr);
+  //muos_output_repeat (64, 'x');
+  muos_output_cstr ("Ready:\r\n");
 }
 
 
