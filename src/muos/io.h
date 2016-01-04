@@ -24,38 +24,40 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MUOS_OUTPUTFNS                           \
-  OUTPUTFN(char, char)                           \
-  OUTPUTFN(repeat_char, uint8_t, char)           \
-  OUTPUTFN(cstr, const char*)                    \
-  OUTPUTFN(repeat_cstr, uint8_t, const char*)    \
-  OUTPUTFN(mem, const uint8_t*, uint8_t)         \
-  OUTPUTFN(intptr, intptr_t)                     \
-  OUTPUTFN(uintptr, uintptr_t)                   \
-  OUTPUTFN(int8, int8_t)                         \
-  OUTPUTFN(uint8, uint8_t)                       \
-  OUTPUTFN(int16, uint16_t)                      \
-  OUTPUTFN(uint16, uint16_t)                     \
-  OUTPUTFN(int32, int32_t)                       \
-  OUTPUTFN(uint32, uint32_t)                     \
-  OUTPUTFN(int64, int64_t)                       \
-  OUTPUTFN(uint64, uint64_t)                     \
-  OUTPUTFN(float, float)                         \
-  OUTPUTFN(cstr_R)                               \
-  OUTPUTFN(mem_R)                                \
-  OUTPUTFN(int32_R)                              \
-  OUTPUTFN(uint32_R)                             \
-  OUTPUTFN(int64_R)                              \
-  OUTPUTFN(uint64_R)                             \
-  OUTPUTFN(float_R)                              \
-  OUTPUTFN(upcase, bool)                         \
-  OUTPUTFN(base, uint8_t)                        \
-  OUTPUTFN(ifmt, uint8_t, uint8_t)               \
-  OUTPUTFN(ffmt, char)                           \
-  OUTPUTFN(pupcase, bool)                        \
-  OUTPUTFN(pbase, uint8_t)                       \
-  OUTPUTFN(pifmt, uint8_t, uint8_t)              \
-  OUTPUTFN(pffmt, char)                          \
+#define MUOS_OUTPUTFNS                          \
+  OUTPUTFN(char, char)                          \
+  OUTPUTFN(repeat_char, uint8_t, char)          \
+  OUTPUTFN(cstr, const char*)                   \
+  OUTPUTFN(repeat_cstr, uint8_t, const char*)   \
+  OUTPUTFN(mem, const uint8_t*, uint8_t)        \
+  OUTPUTFN(csi_char, const char)                \
+  OUTPUTFN(csi_cstr, const char*)               \
+  OUTPUTFN(intptr, intptr_t)                    \
+  OUTPUTFN(uintptr, uintptr_t)                  \
+  OUTPUTFN(int8, int8_t)                        \
+  OUTPUTFN(uint8, uint8_t)                      \
+  OUTPUTFN(int16, uint16_t)                     \
+  OUTPUTFN(uint16, uint16_t)                    \
+  OUTPUTFN(int32, int32_t)                      \
+  OUTPUTFN(uint32, uint32_t)                    \
+  OUTPUTFN(int64, int64_t)                      \
+  OUTPUTFN(uint64, uint64_t)                    \
+  OUTPUTFN(float, float)                        \
+  OUTPUTFN(cstr_R)                              \
+  OUTPUTFN(mem_R)                               \
+  OUTPUTFN(int32_R)                             \
+  OUTPUTFN(uint32_R)                            \
+  OUTPUTFN(int64_R)                             \
+  OUTPUTFN(uint64_R)                            \
+  OUTPUTFN(float_R)                             \
+  OUTPUTFN(upcase, bool)                        \
+  OUTPUTFN(base, uint8_t)                       \
+  OUTPUTFN(ifmt, uint8_t, uint8_t)              \
+  OUTPUTFN(ffmt, char)                          \
+  OUTPUTFN(pupcase, bool)                       \
+  OUTPUTFN(pbase, uint8_t)                      \
+  OUTPUTFN(pifmt, uint8_t, uint8_t)             \
+  OUTPUTFN(pffmt, char)                         \
   OUTPUTFN(ctrl, uint8_t, uint8_t, uint8_t)
 
 
