@@ -115,9 +115,16 @@ muos_lineedit (void)
                   --used;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 
+                  muos_output_cstr ("\x1b[");
+                  muos_output_char ('s');
+                  muos_output_cstr ("\x1b[");
+                  muos_output_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_char (' ');
-                  muos_output_repeat_char (strlen(buffer+cursor) +1 , 0x8);
+                  muos_output_cstr ("\x1b[");
+                  muos_output_char ('u');
+                  muos_output_cstr ("\x1b[");
+                  muos_output_cstr ("?25h");
                 }
               pending = 0;
               break;
@@ -169,10 +176,18 @@ muos_lineedit (void)
                   --cursor;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 
-                  muos_output_char (0x8);
+                  muos_output_cstr ("\x1b[");
+                  muos_output_char ('D');
+                  muos_output_cstr ("\x1b[");
+                  muos_output_char ('s');
+                  muos_output_cstr ("\x1b[");
+                  muos_output_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_char (' ');
-                  muos_output_repeat_char (strlen(buffer+cursor) +1 , 0x8);
+                  muos_output_cstr ("\x1b[");
+                  muos_output_char ('u');
+                  muos_output_cstr ("\x1b[");
+                  muos_output_cstr ("?25h");
                 }
               break;
 
