@@ -287,14 +287,13 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 #:MUOS_SERIAL_TXBUFFER
 #: length of the transmission buffer
 #: 0 disables sending data
-#: 1 uses only what the hardware offers PLANNED
 #: >1 creates a buffer of that size
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=1
-MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
-#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
 
 
 
@@ -316,7 +315,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #:          3 bytes on the queue for example.
 #:
 #: 0 disables the queue
-#: >0 creates a queue of that size
+#: >1 creates a queue of that size
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
@@ -341,28 +340,49 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXDEBUG=1
 #:MUOS_SERIAL_RXBUFFER
 #: length of the receive buffer
 #: 0 disables receiving data
-#: 1 uses only what the hardware offers
 #: >1 creates a buffer of that size
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=1
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
-MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=128
 
 
 
 #:MUOS_SERIAL_RXCALLBACK
 #: function to be called from rtq when a character is received
-MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
+#: either a user defined function or muos_lineedit for a default line editor
+#MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
+MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 
 
-#PLANNED .. handled by the callback function
-# 0 = off
-# 1 = simple
-# 2 = simple
-# 3 = cursor
+#:MUOS_LINEEDIT_BUFFER
+#: length of the linedit buffer
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
+MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=128
+
+
+
+# 0 = simple (only backspace)
+# 1 = cursors
+# 2 = history
+# 3 = completion
+
+
+
+#:MUOS_LINEEDIT_HISTORY
+#: buffers for history
+
+#:MUOS_LINEEDIT_CALLBACK
+#: user defined function to call when a line from lineedit is done (return pressed)
+MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
+
 
 
 # now load the main makefile

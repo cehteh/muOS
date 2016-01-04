@@ -26,7 +26,9 @@
 
 #define MUOS_OUTPUTFNS                           \
   OUTPUTFN(char, char)                           \
+  OUTPUTFN(repeat_char, uint8_t, char)           \
   OUTPUTFN(cstr, const char*)                    \
+  OUTPUTFN(repeat_cstr, uint8_t, const char*)    \
   OUTPUTFN(mem, const uint8_t*, uint8_t)         \
   OUTPUTFN(intptr, intptr_t)                     \
   OUTPUTFN(uintptr, uintptr_t)                   \

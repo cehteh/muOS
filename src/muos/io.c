@@ -31,10 +31,28 @@ muos_output_char (char c)
 }
 
 void
+muos_output_repeat_char (uint8_t rep, char c)
+{
+  while (rep--)
+    muos_serial_tx_byte (c);
+}
+
+void
 muos_output_cstr (const char* str)
 {
   while (*str)
     muos_serial_tx_byte (*str++);
+}
+
+void
+muos_output_repeat_cstr (uint8_t rep, const char* str)
+{
+  while (rep--)
+    {
+      const char* p = str;
+      while (*p)
+        muos_serial_tx_byte (*p++);
+    }
 }
 
 
