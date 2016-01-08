@@ -176,7 +176,6 @@ muos_lineedit (void)
               muos_output_char ('G');
               break;
 
-#if 0 //PLANNED:
             case CSI<<8 | 0x32:
               // ovwr start
               pending = OVWR;
@@ -184,9 +183,9 @@ muos_lineedit (void)
 
             case OVWR<<8 | 0x7e:
               // ovwr
+              muos_status.lineedit_ovwr ^= 1;
               pending = 0;
               break;
-#endif
 
             case 0x09:
               // tab
@@ -223,14 +222,20 @@ muos_lineedit (void)
 
             default:
               pending = 0;
-              if (used < MUOS_LINEEDIT_BUFFER-2)
+              if (cursor < used && muos_status.lineedit_ovwr)
+                {
+                  buffer[cursor] = data;
+                  muos_output_char (buffer[cursor]);
+                  ++cursor;
+                }
+              else if (used < MUOS_LINEEDIT_BUFFER-2)
                 {
                   memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
                   buffer[cursor] = data;
-                  ++cursor;
+                  muos_output_cstr (buffer+cursor);
                   ++used;
-                  muos_output_cstr (buffer+cursor-1);
-                  if (used-cursor)
+                  ++cursor;
+                  if (cursor != used)
                     {
                       muos_output_csi_cstr (0);
                       muos_output_uint8 (used-cursor);

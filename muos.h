@@ -51,6 +51,7 @@ extern volatile struct muos_status_flags
 {
   uint8_t serial_rxrtq_pending:1;
   uint8_t lineedit_pending:1;
+  uint8_t lineedit_ovwr:1;
 } muos_status;
 
 #endif
