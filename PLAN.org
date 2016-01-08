@@ -87,6 +87,7 @@ this document is WIP!
      | # |    0.125 |      1024 |    32 |       8 |          8 |   2097.152 |       285.6 |     407.23 | slow avr    |
      | # |        1 |        64 |    32 |       8 |         16 |   4194.304 |         2.2 |       3.18 |             |
      | # |        8 |      1024 |    32 |       8 |         16 |   8388.608 |         4.5 |       6.36 |             |
+     | # |       16 |      1024 |    32 |       8 |          8 |     16.384 |         2.2 |       3.18 | 8bit timer  |
      | # |       16 |      1024 |    32 |       8 |         16 |   4194.304 |         2.2 |       3.18 | 8bit timer  |
      | # |       16 |      1024 |    32 |      16 |         16 |   4194.304 |       571.2 |       3.18 | 16bit timer |
      | # |       16 |        64 |    32 |      16 |         16 |    262.144 |        35.7 |       0.20 |             |
@@ -134,6 +135,8 @@ this document is WIP!
      * uses a sliding window implementation
        more memory conserving, schedules events in near future
 
+***** PLANNED macros for Hz kHz
+
 *** Work Queues
     Most processing should be done by queueing functioncalls into one of the
     following queues. Functions can be pushed onto this queues at the front for
@@ -167,15 +170,6 @@ this document is WIP!
       Is processed in the mainloop when nothing else (rtq) is to do. when the
       bgq (and rtq) is empty, the mainloop goes to sleep waiting for interrupts
       to wake up.
-
-
-** Error log
-   table of last errors
-   SUCCESS gets overwritten
-   otherwise same errors get merged
-
-   later: read/write error log to serial and eeprom
-
 
 
 ** Interrupts
@@ -218,9 +212,10 @@ this document is WIP!
      Default variables and rules for programmers
 
 **** lib
-     Library routines used by other facilities.
+     Muos *internal* Library routines used by other facilities.
      Usually don't handle interupt disable/enable unless specifically required.
-
+     Does not check for error conditions for space and performance reasons.
+     This must be handled by the caller
 
 **** hw
      All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
@@ -251,6 +246,8 @@ this document is WIP!
 
 *** other types for timer (16 bit, different sizes)
 
+** Stack checks
+
 ** watchdog
    timeout for rtq, bgq
    how to detect timeouts on clq?
@@ -260,7 +257,7 @@ this document is WIP!
    index this table by uint8_t or shorter.
 
 ** PLANNED system clock
-   oscal calibration on external pulse
+   osccal calibration on external pulse
 
 ** Library
 
@@ -270,15 +267,17 @@ this document is WIP!
 ** HLD (high level drivers)
 *** Serial
 **** TX
-***** buffered
-***** non buffered
-***** Tagged queue
+***** DONE buffered
+***** TODO non buffered
+***** TODO Tagged queue
+      'reserve' some space for coversions
 **** RX
-***** Lineedit
-****** simple (backspace only)
-****** cursor
-****** history
-****** completion
+***** TODO Lineedit
+      Selections by config
+****** DONE simple (backspace only)
+****** DONE cursor
+****** TODO history
+****** TODO completion
 ******* tab for text
 ******* pgup/pgdown for values
 *** gpio

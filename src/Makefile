@@ -68,13 +68,6 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 #: detailed configuration
 
 
-#:MUOS_DEBUG
-#: Turn on Debugging facilities
-#: if 1 then debugging is enabled and pushes messages on the error log
-#MUOS_CONFIG += -DMUOS_ENABLE_DEBUG=0
-MUOS_CONFIG += -DMUOS_ENABLE_DEBUG=1
-
-
 
 #:MUOS_INITFN
 #: Name of the user-defined initialization function.
@@ -140,14 +133,18 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #:MUOS_RTQ_LENGTH
 #: How many entries the realtime queue can hold, set to 0 to disable the rtq
 #MUOS_CONFIG += -DMUOS_RTQ_LENGTH=0
+#MUOS_CONFIG += -DMUOS_RTQ_LENGTH=8
 MUOS_CONFIG += -DMUOS_RTQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_RTQ_LENGTH=128
 
 
 
 #:MUOS_BGQ_LENGTH
 #: How many entries the background queue can hold, set to 0 to disable the bgq
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=0
+#MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
 MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_BGQ_LENGTH=128
 
 
 
@@ -196,7 +193,9 @@ MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 
 #:MUOS_CLPQ_LENGTH
 #: How many entriex the scheduling Queue can hold, set to 0 to disable the clpq
+#MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=128
 
 
 
@@ -206,6 +205,7 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
 #: timer hardware setup is tightly bound to the hardware capabilities and only barely
 #: abstracted, check for the respective hardware implementation about possible settings.
 MUOS_CONFIG += -DMUOS_CLOCK_HW=0
+#MUOS_CONFIG += -DMUOS_CLOCK_HW=1
 
 
 
@@ -260,6 +260,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_HW=0
 
 #:MUOS_SERIAL_BAUD
 #: Baudrate for the serial interface
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD=300UL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=1200UL
 MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=57600UL
@@ -270,9 +271,11 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
 #:MUOS_SERIAL_BAUD_TXBOOST
 #: Inrcease the TX baudrate by this much permille
 #: Setting the TX speed little higher makes the link a bit more
-#: reliable when the clocks are out of sync. 0.3% as default should work fine
+#: reliable when the clocks are out of sync, esp when one echos back each
+#: character received. 0.3% as default should work fine
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=0ULL
 MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
+#MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=5ULL
 
 
 
@@ -326,14 +329,6 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
 
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
-
-
-
-#:MUOS_SERIAL_TXDEBUG
-#: When debugging and serial TX is enabled then debugging infos are send over the serial
-#: interface (note that this mixes into the serial datastream)
-#MUOS_CONFIG += -DMUOS_SERIAL_TXDEBUG=0
-MUOS_CONFIG += -DMUOS_SERIAL_TXDEBUG=1
 
 
 

@@ -24,7 +24,6 @@
 void
 muos_spriq_push (muos_spriq_vptr spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
-  //TODO: error handling
   muos_spriq_index i = spriq->used;
 
   for (; i && (when < (muos_spriq_priority)(spriq->spriq[i/2].when - base)); i=i/2)
