@@ -37,6 +37,7 @@ bool
 muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
 {
   muos_interrupt_disable ();
+
   if (queue->len)
     {
       intptr_t fn = muos_queue_pop (queue, size);
