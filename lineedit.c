@@ -116,7 +116,7 @@ muos_lineedit (void)
                   muos_output_csi_char ('s');
                   muos_output_csi_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
-                  muos_output_char (' ');
+                  muos_output_csi_char ('K');
                   muos_output_csi_char ('u');
                   muos_output_csi_cstr ("?25h");
                 }
@@ -174,7 +174,7 @@ muos_lineedit (void)
                   muos_output_csi_char ('s');
                   muos_output_csi_cstr ("?25l");
                   muos_output_cstr (buffer+cursor);
-                  muos_output_char (' ');
+                  muos_output_csi_char ('K');
                   muos_output_csi_char ('u');
                   muos_output_csi_cstr ("?25h");
                 }
