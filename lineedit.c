@@ -41,6 +41,9 @@ enum
     DEL,
     PGUP,
     PGDOWN,
+    POS1,
+    END,
+    OVWR,
   };
 
 void
@@ -147,6 +150,44 @@ muos_lineedit (void)
               pending = 0;
               break;
 
+            case CSI<<8 | 0x31:
+              // pos1 start
+              pending = POS1;
+              break;
+
+            case POS1<<8 | 0x7e:
+              // pos1
+              pending = 0;
+              cursor = 0;
+              muos_output_char ('\r');
+              break;
+
+            case CSI<<8 | 0x34:
+              // end start
+              pending = END;
+              break;
+
+            case END<<8 | 0x7e:
+              // end
+              pending = 0;
+              cursor = used;
+              muos_output_csi_cstr (NULL);
+              muos_output_uint16 (cursor+1);
+              muos_output_char ('G');
+              break;
+
+#if 0 //PLANNED:
+            case CSI<<8 | 0x32:
+              // ovwr start
+              pending = OVWR;
+              break;
+
+            case OVWR<<8 | 0x7e:
+              // ovwr
+              pending = 0;
+              break;
+#endif
+
             case 0x09:
               // tab
 #if 0 //PLANNED: completion
@@ -181,6 +222,7 @@ muos_lineedit (void)
               break;
 
             default:
+              pending = 0;
               if (used < MUOS_LINEEDIT_BUFFER-2)
                 {
                   memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
