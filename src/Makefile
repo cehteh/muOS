@@ -69,6 +69,13 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 
 
 
+#:MUOS_DEBUG_BUSY_LED
+#: Uses a LED on some boards (arduino) to indicate when the cpu us busy,
+#: otherwise, while sleeping the LED is turned off.
+MUOS_CONFIG += -DMUOS_DEBUG_IDLE=1
+
+
+
 #:MUOS_INITFN
 #: Name of the user-defined initialization function.
 #: This function is pushed on the rtq (or, if not available the bgq) when starting up. It is
