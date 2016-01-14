@@ -34,8 +34,14 @@ muos_sleep (void)
   //TODO: select sleed mode depending on active hardware (adc, usart)
   muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
   muos_clpq_set_compmatch ();
+#if MUOS_DEBUG_IDLE ==1
+  PORTB &= ~_BV(PINB5);
+#endif
   muos_hw_sleep ();
   muos_hw_sleep_done ();
+#if MUOS_DEBUG_IDLE ==1
+  PORTB |= _BV(PINB5);
+#endif
 }
 
 void muos_die (void)
@@ -194,6 +200,12 @@ int __attribute__((OS_main))
 main()
 {
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
+
+#if MUOS_DEBUG_IDLE ==1
+  //TODO: hardware dependent
+  DDRB = _BV(PINB5);
+  PORTB |= _BV(PINB5);
+#endif
 
 #if MUOS_RTQ_LENGTH >= 2
   muos_rtq_pushback (MUOS_INITFN);
