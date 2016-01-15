@@ -46,7 +46,7 @@ void
 toggle_green_timed (const struct muos_spriq_entry* event)
 {
   PIND = _BV(PIND3);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (20));
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
 }
 
 
@@ -116,7 +116,7 @@ init (void)
   muos_serial_init ();
 
   //muos_clpq_at (0, 0, toggle_red_timed);
-  muos_clpq_at (0, 0, toggle_yellow_timed);
+  //  muos_clpq_at (0, 0, toggle_yellow_timed);
   muos_clpq_at (0, 0, toggle_green_timed);
   //muos_clpq_at (0, 0, serial_ping);
   //muos_clpq_at (0, 0, serial_blinkerr);
