@@ -53,35 +53,6 @@ void muos_die (void)
 void
 muos_start (void)
 {
-
-#if F_CPU != 16000000UL
-  CLKPR = _BV(CLKPCE);
-#if F_CPU == 62500UL
-  CLKPR = _BV(CLKPS3);
-#endif
-#if F_CPU == 125000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS1)| _BV(CLKPS0);
-#endif
-#if F_CPU == 250000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS1);
-#endif
-#if F_CPU == 500000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS0);
-#endif
-#if F_CPU == 1000000UL
-  CLKPR = _BV(CLKPS2);
-#endif
-#if F_CPU == 2000000UL
-  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
-#endif
-#if F_CPU == 4000000UL
-  CLKPR = _BV(CLKPS1);
-#endif
-#if F_CPU == 8000000UL
-  CLKPR = _BV(CLKPS0);
-#endif
-#endif
-
   muos_clock_start ();
   muos_interrupt_enable ();
 }
@@ -199,6 +170,35 @@ muos_yield (uint8_t count)
 int __attribute__((OS_main))
 main()
 {
+
+#if F_CPU != 16000000UL
+  CLKPR = _BV(CLKPCE);
+#if F_CPU == 62500UL
+  CLKPR = _BV(CLKPS3);
+#endif
+#if F_CPU == 125000UL
+  CLKPR = _BV(CLKPS2) | _BV(CLKPS1)| _BV(CLKPS0);
+#endif
+#if F_CPU == 250000UL
+  CLKPR = _BV(CLKPS2) | _BV(CLKPS1);
+#endif
+#if F_CPU == 500000UL
+  CLKPR = _BV(CLKPS2) | _BV(CLKPS0);
+#endif
+#if F_CPU == 1000000UL
+  CLKPR = _BV(CLKPS2);
+#endif
+#if F_CPU == 2000000UL
+  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
+#endif
+#if F_CPU == 4000000UL
+  CLKPR = _BV(CLKPS1);
+#endif
+#if F_CPU == 8000000UL
+  CLKPR = _BV(CLKPS0);
+#endif
+#endif
+
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
 
 #if MUOS_DEBUG_IDLE ==1
