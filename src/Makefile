@@ -69,11 +69,25 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 
 
 
-#:MUOS_DEBUG_BUSY_LED
-#: Uses a LED on some boards (arduino) to indicate when the cpu us busy,
-#: otherwise, while sleeping the LED is turned off.
-MUOS_CONFIG += -DMUOS_DEBUG_IDLE=1
+#:MUOS_DEBUG_BUSY
+#: Uses a GPIO to indicate when the cpu is busy,
+#: otherwise, while sleeping the GPIO is turned off.
+#FIXME: currently hardcoded GPIO
+MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
+
+#:MUOS_DEBUG_INTR
+#: Uses a GPIO to indicate when the cpu is handling interrupts,
+#: otherwise, the GPIO is turned off.
+#FIXME: currently hardcoded GPIO
+MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
+
+
+#:MUOS_DEBUG_ERROR
+#: Uses a GPIO to indicate when an error got set,
+#: otherwise, the GPIO is turned off.
+#FIXME: currently hardcoded GPIO
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
 
 #:MUOS_INITFN
