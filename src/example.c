@@ -51,22 +51,8 @@ toggle_green_timed (const struct muos_spriq_entry* event)
 
 
 void
-clearerror (const struct muos_spriq_entry* event)
-{
-  (void) event;
-  PORTD &= ~_BV(PIND2);
-}
-
-
-void
 error (void)
 {
-  if (!(PORTD & _BV(PIND2)))
-    {
-      PORTD |= _BV(PIND2);
-      muos_clpq_at_unsafe (muos_now (), MUOS_CLOCK_SECONDS (1), clearerror);
-    }
-
 #define MUOS_ERROR(name)                                         \
   muos_error_check (muos_##name);
 
