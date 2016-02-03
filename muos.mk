@@ -45,7 +45,7 @@ IMAGES += $(MAIN).elf
 PRINTFMT = printf "%-60s[ %8s ]\n"
 
 PARALLEL = $(shell nproc || echo 2)
-ifndef DEBUG
+ifndef MAKE_DEBUG
 	MAKEFLAGS = -R -s -j $(PARALLEL)
 else
 	MAKEFLAGS = -R
