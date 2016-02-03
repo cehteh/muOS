@@ -30,6 +30,9 @@ muos_error_set_unsafe (enum muos_errorcode err)
 {
   if (!(muos_errors_[err/8] & 1<<(err%8)))
       {
+#if MUOS_DEBUG_ERROR ==1
+        PORTD |= _BV(PIND2);
+#endif
         muos_errors_[err/8] |= 1<<(err%8);
         ++muos_errors_pending_;
       }
@@ -52,6 +55,12 @@ muos_error_check (enum muos_errorcode err)
   if(ret)
     --muos_errors_pending_;
   muos_errors_[err/8] &= ~(1<<(err%8));
+
+#if MUOS_DEBUG_ERROR ==1
+  if (!muos_errors_pending_)
+    PORTD &= ~_BV(PIND2);
+#endif
+
   muos_interrupt_enable();
   return ret;
 }

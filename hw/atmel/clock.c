@@ -27,7 +27,14 @@
 
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
+#if MUOS_DEBUG_INTR == 1
+  PORTB |= _BV(PINB4);
+#endif
   ++muos_clock_count_;
+#if MUOS_DEBUG_INTR ==1
+  PORTB &= ~_BV(PINB4);
+#endif
+
 }
 
 #define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect

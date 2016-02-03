@@ -54,7 +54,13 @@ muos_hw_sleep_prepare (const uint8_t mode)
 static inline void
 muos_hw_sleep (void)
 {
+#if MUOS_DEBUG_BUSY ==1
+  PORTB &= ~_BV(PINB5);
+#endif
   sleep_cpu();
+#if MUOS_DEBUG_BUSY ==1
+  PORTB |= _BV(PINB5);
+#endif
 }
 
 static inline void
