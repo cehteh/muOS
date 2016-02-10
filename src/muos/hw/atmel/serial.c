@@ -44,6 +44,7 @@ muos_hw_serial_init (void)
 #endif
 
   UCSR0C = _BV(UCSZ01)| _BV(UCSZ00);
+  UCSR0B = _BV(TXEN0) | _BV(RXEN0) | _BV(RXCIE0);
 }
 #endif
 
@@ -74,28 +75,54 @@ ISR(USART_RX_vect)
   PORTB |= _BV(PINB4);
 #endif
   //TODO: disable error checks depending on config (no parity etc)
-  if (UCSR0A & _BV(FE0))
-    muos_error_set_unsafe (muos_error_rx_frame);
+
+  bool err = false;
 
   if (UCSR0A & _BV(DOR0))
-    muos_error_set_unsafe (muos_error_rx_overrun);
+    {
+      muos_error_set_unsafe (muos_error_rx_overrun);
+      err = true;
+    }
 
   if (UCSR0A & _BV(UPE0))
-    muos_error_set_unsafe (muos_error_rx_parity);
-
-  if (MUOS_CBUFFER_FREE(muos_rxbuffer))
     {
-      MUOS_CBUFFER_PUSH (muos_rxbuffer, MUOS_SERIAL_RX_REGISTER);
+      muos_error_set_unsafe (muos_error_rx_parity);
+      err = true;
+    }
+
+  if (UCSR0A & _BV(FE0))
+    {
+      muos_error_set_unsafe (muos_error_rx_frame);
+      err = true;
+      muos_status.serial_rx_sync = false;
+    }
+
+  if (!MUOS_CBUFFER_FREE(muos_rxbuffer))
+    {
+      muos_error_set_unsafe (muos_error_rx_buffer_overflow);
+      err = true;
+    }
+
+  uint8_t data = MUOS_SERIAL_RX_REGISTER;
+
+  if (!muos_status.serial_rx_sync)
+    {
+      if (data == MUOS_SERIAL_RXSYNC)
+        muos_status.serial_rx_sync = true;
+      else
+        err = true;
+    }
+
+  if (!err)
+    {
+      MUOS_CBUFFER_PUSH (muos_rxbuffer, data);
       if (!muos_status.serial_rxrtq_pending)
         {
           muos_status.serial_rxrtq_pending = true;
           muos_rtq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK);
         }
     }
-  else
-    {
-      muos_error_set_unsafe (muos_error_rx_buffer_overflow);
-    }
+
 #if MUOS_DEBUG_INTR ==1
   PORTB &= ~_BV(PINB4);
 #endif

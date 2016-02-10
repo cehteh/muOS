@@ -369,6 +369,15 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
 
 
 
+#:MUOS_SERIAL_RXSYNC
+#: Starting
+#: 0 disables receiving data
+#: >1 creates a buffer of that size
+MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
+
+
+
+
 #:MUOS_SERIAL_RXCALLBACK
 #: function to be called from rtq when a character is received
 #: either a user defined function or muos_lineedit for a default line editor
