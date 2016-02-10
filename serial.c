@@ -37,14 +37,6 @@ void
 muos_serial_init (void)
 {
   muos_hw_serial_init ();
-
-#if MUOS_SERIAL_TXBUFFER > 0
-  muos_hw_tx_enable ();
-#endif
-
-#if MUOS_SERIAL_RXBUFFER > 0
-  muos_hw_rx_enable ();
-#endif
 }
 #endif
 
