@@ -24,6 +24,7 @@
 #include <muos/rtq.h>
 #include <muos/bgq.h>
 #include <muos/clpq.h>
+#include <muos/serial.h>
 
 
 volatile struct muos_status_flags muos_status;
@@ -47,6 +48,7 @@ void muos_die (void)
 void
 muos_start (void)
 {
+  muos_serial_init ();
   muos_clock_start ();
   muos_interrupt_enable ();
 }

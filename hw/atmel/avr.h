@@ -23,11 +23,8 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/atomic.h>
 #include <avr/sleep.h>
 
-#define MUOS_HW_ISR(what) ISR(what)
-#define MUOS_HW_EMPTY_ISR(what) EMPTY_INTERRUPT(what)
 
 static inline void
 muos_interrupt_enable ()

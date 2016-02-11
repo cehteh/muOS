@@ -24,7 +24,7 @@ AVRDUDE = avrdude
 
 CCFLAGS += -mmcu=$(MCU)
 CCFLAGS += -Os
-CCFLAGS += -mtiny-stack
+#CCFLAGS += -mtiny-stack
 CCFLAGS += -fshort-enums
 CCFLAGS += -flto=$(PARALLEL)
 #CCFLAGS += -mcall-prologues
