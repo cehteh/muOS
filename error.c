@@ -41,27 +41,35 @@ muos_error_set_unsafe (enum muos_errorcode err)
 void
 muos_error_set (enum muos_errorcode err)
 {
-  cli ();
+  muos_interrupt_disable ();
   muos_error_set_unsafe (err);
-  sei ();
+  muos_interrupt_enable ();
 }
 
 
 bool
 muos_error_check (enum muos_errorcode err)
 {
-  muos_interrupt_disable();
-  bool ret = muos_errors_[err/8] & 1<<(err%8);
-  if(ret)
-    --muos_errors_pending_;
-  muos_errors_[err/8] &= ~(1<<(err%8));
+  bool ret = false;
+
+  muos_interrupt_disable ();
+
+  if (muos_errors_pending_)
+    {
+      ret = muos_errors_[err/8] & 1<<(err%8);
+
+      muos_errors_[err/8] &= ~(1<<(err%8));
+
+      if (ret)
+        --muos_errors_pending_;
 
 #if MUOS_DEBUG_ERROR ==1
-  if (!muos_errors_pending_)
-    PORTD &= ~_BV(PIND2);
+      if (!muos_errors_pending_)
+        PORTD &= ~_BV(PIND2);
 #endif
+    }
 
-  muos_interrupt_enable();
+  muos_interrupt_enable ();
   return ret;
 }
 
