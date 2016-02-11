@@ -27,6 +27,7 @@
 #define MUOS_ERRORS                             \
   MUOS_ERROR(warn_sched_depth)                  \
   MUOS_ERROR(error_tx_buffer_overflow)          \
+  MUOS_ERROR(error_txqueue_overflow)            \
   MUOS_ERROR(error_clpq_overflow)               \
   MUOS_ERROR(error_bgq_overflow)                \
   MUOS_ERROR(error_rtq_overflow)                \
