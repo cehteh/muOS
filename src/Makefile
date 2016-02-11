@@ -323,21 +323,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 
 
 #:MUOS_SERIAL_TXQUEUE
-#: PLANNED!
 #: use a tagged queue for TX requests.
 #: A tagged queue can store data as references and in binary
 #: format. This may reduce the memory needed for queueing
 #: massivly and improve latency. The TX buffer above can then be smaller.
-#:
-#: Format:
-#:  The queue is a stream of uint8_t values.
-#:  0-127 are printed as verbatim ASCII values
-#:  128-191 the following 1-64 characters are printed verbatim,
-#:          including values bigger than 127
-#:  192-255 are tags followed few byte parameters binary data
-#:	    each tag is associated with a function which interprets
-#:	    this data. Printing a string from PROGMEM only takes
-#:          3 bytes on the queue for example.
 #:
 #: 0 disables the queue
 #: >1 creates a queue of that size
@@ -345,7 +334,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
 
 
