@@ -124,6 +124,10 @@ this document is WIP!
 
 *** Priority Queues
 
+**** PLANNED rtpq realtime priority queue
+     runs direct in timer interrupt, exact timing, wakes up a little earlier
+     spins to exact time.
+
 **** PLANNED ltpq long time queue
      * uses longer, absolute time format (muos_clock or muos_fullclock)
      * needs more memory
@@ -166,6 +170,7 @@ this document is WIP!
 
 ***** DONE Realtime Queue (rtq)
       Will be processed before any bgq events
+****** TODO rename to hpq (high priority queue)
 
 ***** DONE Background Queue (bgq)
       Is processed in the mainloop when nothing else (rtq) is to do. when the
@@ -279,6 +284,7 @@ this document is WIP!
 ****** DONE cursor
 ****** TODO history
 ****** TODO completion
+****** TODO rxsync when line is idle for some frames
 ******* tab for text
 ******* pgup/pgdown for values
 *** gpio

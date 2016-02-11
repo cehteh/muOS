@@ -22,8 +22,6 @@
 #include <muos/serial.h>
 #include <muos/rtq.h>
 
-//TODO: errorhandling
-
 #if MUOS_SERIAL_TXBUFFER > 1
 muos_txbuffer_type muos_txbuffer;
 #endif

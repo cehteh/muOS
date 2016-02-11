@@ -67,14 +67,11 @@ serial_echo (void)
 {
   uint8_t data = muos_serial_rx_byte ();
 
-  if (data != 'y' && data != ' ')
+  if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-      if (!muos_error_check (muos_error_rx_buffer_underflow))
-        {
-          muos_output_char (data);
-          if (data == '\r')
-            muos_output_char ('\n');
-        }
+      muos_output_char ((char)data);
+      if (data == '\r')
+        muos_output_char ('\n');
     }
 
   muos_serial_rxrtq_again (serial_echo);
@@ -99,15 +96,13 @@ init (void)
   DDRB = _BV(PINB5) | _BV(PINB4);
   DDRD = _BV(PIND2) | _BV(PIND3);
 
-  muos_serial_init ();
 
   //muos_clpq_at (0, 0, toggle_red_timed);
   //  muos_clpq_at (0, 0, toggle_yellow_timed);
-  muos_clpq_at (0, 0, toggle_green_timed);
+  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_green_timed);
   //muos_clpq_at (0, 0, serial_ping);
   //muos_clpq_at (0, 0, serial_blinkerr);
-  //muos_output_repeat (64, 'x');
-  muos_output_cstr ("Ready:\r\n");
+  muos_output_cstr ("mµOS Ready:\r\n");
 }
 
 

@@ -24,8 +24,6 @@
 
 #include <string.h>
 
-//static muos_buffer_index cursor;
-
 extern void MUOS_LINEEDIT_CALLBACK (const char*);
 
 static uint8_t cursor;
