@@ -18,42 +18,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_H
-#define MUOS_H
+#ifndef MUOS_TXQUEUE_H
+#define MUOS_TXQUEUE_H
 
 #include <stdint.h>
+#include <muos/lib/cbuffer.h>
 
+#if MUOS_SERIAL_TXQUEUE > 1
+typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXQUEUE)
+muos_txqueue_type;
+#endif
 
-#include <muos/hwdef.h>
+#define MUOS_TXQUEUE_TAGS                       \
+  TAG()                                         \
+
+enum muos_txqueue_tags
+{
+  MUOS_TXTAG_NCHARS = 128,
+  MUOS_TXTAG_NCHARS_END = 191,
+};
+
+muos_cbuffer_index
+muos_txqueue_free (void);
 
 void
-muos_sleep (void);
+muos_txqueue_push (const uint8_t value);
 
+uint8_t
+muos_txqueue_pop (void);
 
-extern void
-MUOS_INITFN (void);
-
-extern void
-MUOS_ERRORFN (void);
-
-#define MUOS_ARRAY_ELEMENTS(array) (sizeof(array)/sizeof(*(array)))
-
-
-#define MUOS_NOINIT __attribute__ ((section (".noinit")))
-
-
-
-
-//#define MUOS_EXPLICIT_INIT MUOS_NOINIT
-
-// stash some status bits together
-extern volatile struct muos_status_flags
-{
-  uint8_t serial_rx_sync:1;
-  uint8_t serial_rxrtq_pending:1;
-  uint8_t lineedit_pending:1;
-  uint8_t lineedit_ovwr:1;
-  uint8_t txqueue_pending:1;
-} muos_status;
+void
+muos_txqueue_run (void);
 
 #endif

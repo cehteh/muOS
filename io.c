@@ -23,6 +23,33 @@
 #include <muos/io.h>
 
 
+#include <muos/bgq.h>
+#include <muos/txqueue.h>
+
+struct fmtconfig_type {
+  uint8_t base:6;
+  uint8_t upcase:1;
+  uint8_t eng:1;
+  uint8_t flt_int:4;
+  uint8_t flt_frac:4;
+};
+
+
+
+struct ctrlseq_type {
+  uint8_t style:2;
+  uint8_t fgcolor:3;
+  uint8_t bgcolor:3;
+};
+
+
+#if MUOS_SERIAL_TXQUEUE == 0
+//DOCME: bare io just fails when buffers are full
+
+static struct fmtconfig_type pfmtconfig = {10, 0, 0, 15, 15};
+static struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
+//PLANNED: fixed point for integers and mille delimiters
+
 
 void
 muos_output_char (char c)
@@ -37,12 +64,14 @@ muos_output_repeat_char (uint8_t rep, char c)
     muos_serial_tx_byte (c);
 }
 
+
 void
 muos_output_cstr (const char* str)
 {
   while (*str)
     muos_serial_tx_byte (*str++);
 }
+
 
 void
 muos_output_repeat_cstr (uint8_t rep, const char* str)
@@ -84,24 +113,6 @@ muos_output_csi_cstr (const char* str)
       muos_serial_tx_byte (*str++);
 }
 
-
-struct fmtconfig_type {
-  uint8_t base:6;
-  uint8_t upcase:1;
-  uint8_t eng:1;
-  uint8_t flt_int:4;
-  uint8_t flt_frac:4;
-};
-
-static struct fmtconfig_type pfmtconfig = {10, 0, 0, 15, 15};
-static struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
-
-
-struct ctrlseq_type {
-  uint8_t style:2;
-  uint8_t fgcolor:3;
-  uint8_t bgcolor:3;
-};
 
 
 #define Xput(bits)                                                                      \
@@ -385,3 +396,5 @@ muos_output_ctrl (uint8_t, uint8_t, uint8_t)
 
 
 #endif
+
+#endif //TXQUEUE
