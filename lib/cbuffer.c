@@ -45,3 +45,34 @@ muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
 }
 
 
+void
+muos_cbuffer_popn (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index n)
+{
+  cbuffer->start += n;
+  if (cbuffer->start >= size)
+    cbuffer->start -= size;
+
+  cbuffer->len -= n;
+}
+
+
+uint8_t
+muos_cbuffer_peek (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index)
+{
+  index = cbuffer->start + index;
+  if (index >= size)
+    index -= size;
+
+  return cbuffer->cbuffer[index];
+}
+
+
+void
+muos_cbuffer_poke (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value)
+{
+  index = cbuffer->start + index;
+  if (index >= size)
+    index -= size;
+
+  cbuffer->cbuffer[index] = value;
+}

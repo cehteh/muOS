@@ -54,14 +54,17 @@ muos_cbuffer_init (muos_cbuffer_vptr cbuffer)
 void
 muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uint8_t value);
 
-
 uint8_t
 muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size);
 
+void
+muos_cbuffer_popn (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index n);
+
+uint8_t
+muos_cbuffer_peek (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index);
 
 void
-muos_cbuffer_reserve (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index need);
-
+muos_cbuffer_poke (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value);
 
 
 #define MUOS_CBUFFER_SIZE(b)  MUOS_ARRAY_ELEMENTS((b).cbuffer)
@@ -70,6 +73,9 @@ muos_cbuffer_reserve (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_c
 #define MUOS_CBUFFER_USED(b) (b).descriptor.len
 #define MUOS_CBUFFER_PUSH(b, v) muos_cbuffer_push (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (v))
 #define MUOS_CBUFFER_POP(b) muos_cbuffer_pop (&(b).descriptor, MUOS_CBUFFER_SIZE(b))
+#define MUOS_CBUFFER_POPN(b, n) muos_cbuffer_popn (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (n))
+#define MUOS_CBUFFER_PEEK(b, pos) muos_cbuffer_peek (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (pos))
+#define MUOS_CBUFFER_POKE(b, pos, val) muos_cbuffer_poke (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (pos), (val))
 
 
 #endif
