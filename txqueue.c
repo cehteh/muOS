@@ -26,8 +26,16 @@
 
 #include <muos/bgq.h>
 
+#include <muos/io.h>
+
 #if MUOS_SERIAL_TXQUEUE > 1
+
+//static struct fmtconfig_type txq_pfmtconfig = {10, 0, 0, 15, 15};
+static struct fmtconfig_type txq_fmtconfig = {10, 0, 0, 15, 15};
+
+
 muos_txqueue_type muos_txqueue;
+
 
 // Format:
 //  The queue is a stream of uint8_t values.
@@ -67,6 +75,10 @@ muos_txqueue_push (const uint8_t value)
   MUOS_CBUFFER_PUSH(muos_txqueue, value);
 }
 
+#define TAG(name)  static void txqueue_##name (void);
+MUOS_TXQUEUE_TAGS
+#undef TAG
+
 
 void
 muos_txqueue_run (void)
@@ -98,7 +110,9 @@ muos_txqueue_run (void)
         }
       else switch (tag)
         {
-
+#define TAG(name)  case MUOS_TXTAG_##name: txqueue_##name (); break;
+          MUOS_TXQUEUE_TAGS
+#undef TAG
         }
     }
 
@@ -111,6 +125,111 @@ muos_txqueue_run (void)
       muos_status.txqueue_pending = false;
     }
 }
+
+void txqueue_NL (void)
+{
+  muos_serial_tx_byte ('\r');
+  MUOS_CBUFFER_POKE (muos_txqueue, 0, '\n');
+}
+
+static uint8_t muos_xput_state = 0;
+
+#define Xput(bits)                                              \
+static uint##bits##_t                                           \
+u##bits##put (uint##bits##_t v, uint8_t base, bool upcase)      \
+{                                                               \
+  if (!muos_xput_state)                                         \
+    {                                                           \
+      for (uint##bits##_t tmp=v; tmp; tmp /= base)              \
+        ++muos_xput_state;                                      \
+    }                                                           \
+                                                                \
+  uint##bits##_t start = 1;                                     \
+                                                                \
+  for (uint##bits##_t i = muos_xput_state-1; i; --i)            \
+    {                                                           \
+      start *= base;                                            \
+    }                                                           \
+                                                                \
+  while (start)                                                 \
+    {                                                           \
+      uint##bits##_t r = v/start;                               \
+      muos_serial_tx_byte ((r<10?'0':upcase?'A'-10:'a'-10)+r);  \
+      if (muos_error_check (muos_error_tx_buffer_overflow))     \
+        return v;                                               \
+      v -= r*start;                                             \
+      start /= base;                                            \
+      --muos_xput_state;                                        \
+    }                                                           \
+  return 0;                                                     \
+}
+
+
+Xput(8);
+Xput(16);
+Xput(32);
+//Xput(64); //PLANNED: 64 bit support
+
+#undef Xput
+
+void txqueue_UINT8 (void)
+{
+  uint8_t value = u8put (MUOS_CBUFFER_PEEK (muos_txqueue, 1), txq_fmtconfig.base, txq_fmtconfig.upcase);
+
+  if (muos_xput_state)
+    {
+      MUOS_CBUFFER_POKE (muos_txqueue, 1, value);
+    }
+  else
+    {
+      MUOS_CBUFFER_POPN (muos_txqueue, 2);
+    }
+}
+
+void txqueue_UINT16 (void)
+{
+  uint16_t value;
+  ((uint8_t*)&value)[1] = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  ((uint8_t*)&value)[0] = MUOS_CBUFFER_PEEK (muos_txqueue, 2);
+
+  value = u16put (value, txq_fmtconfig.base, txq_fmtconfig.upcase);
+
+  if (muos_xput_state)
+    {
+      MUOS_CBUFFER_POKE (muos_txqueue, 1, ((uint8_t*)&value)[1]);
+      MUOS_CBUFFER_POKE (muos_txqueue, 2, ((uint8_t*)&value)[0]);
+    }
+  else
+    {
+      MUOS_CBUFFER_POPN (muos_txqueue, 3);
+      //TODO: reset fmtconfig
+    }
+}
+
+void txqueue_UINT32 (void)
+{
+  uint32_t value;
+  ((uint8_t*)&value)[3] = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  ((uint8_t*)&value)[2] = MUOS_CBUFFER_PEEK (muos_txqueue, 2);
+  ((uint8_t*)&value)[1] = MUOS_CBUFFER_PEEK (muos_txqueue, 3);
+  ((uint8_t*)&value)[0] = MUOS_CBUFFER_PEEK (muos_txqueue, 4);
+
+  value = u32put (value, txq_fmtconfig.base, txq_fmtconfig.upcase);
+
+  if (muos_xput_state)
+    {
+      MUOS_CBUFFER_POKE (muos_txqueue, 1, ((uint8_t*)&value)[3]);
+      MUOS_CBUFFER_POKE (muos_txqueue, 2, ((uint8_t*)&value)[2]);
+      MUOS_CBUFFER_POKE (muos_txqueue, 3, ((uint8_t*)&value)[1]);
+      MUOS_CBUFFER_POKE (muos_txqueue, 4, ((uint8_t*)&value)[0]);
+    }
+  else
+    {
+      MUOS_CBUFFER_POPN (muos_txqueue, 5);
+      //TODO: reset fmtconfig
+    }
+}
+
 
 
 
@@ -156,6 +275,7 @@ muos_txqueue_output_repeat_char (uint8_t rep, char c)
 void
 muos_txqueue_output_cstr (const char* str)
 {
+  //FIXME: check error generation, something fishy here with small tx buffer
   if (muos_txqueue_free () < strlen (str) + 1)
     {
       muos_error_set (muos_error_txqueue_overflow);
@@ -201,6 +321,19 @@ muos_txqueue_output_mem (const uint8_t* mem, uint8_t len)
 
 
 void
+muos_txqueue_output_nl (void)
+{
+  if (!muos_txqueue_free ())
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  muos_txqueue_push (MUOS_TXTAG_NL);
+  muos_txqueue_start ();
+}
+
+void
 muos_txqueue_output_csi_char (const char c)
 {
   (void) c;
@@ -212,6 +345,59 @@ muos_txqueue_output_csi_cstr (const char* str)
 {
   (void) str;
 }
+
+
+
+
+static void
+txqueue_uint8 (uint8_t n)
+{
+  if (muos_txqueue_free () >= 2)
+    {
+      muos_txqueue_push (MUOS_TXTAG_UINT8);
+      muos_txqueue_push (n);
+    }
+  else
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+    }
+}
+
+static void
+txqueue_uint16 (uint16_t n)
+{
+  if (muos_txqueue_free () >= 3)
+    {
+      muos_txqueue_push (MUOS_TXTAG_UINT16);
+      muos_txqueue_push (((uint8_t*)&n)[1]);
+      muos_txqueue_push (((uint8_t*)&n)[0]);
+    }
+  else
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+    }
+}
+
+static void
+txqueue_uint32 (uint32_t n)
+{
+  if (muos_txqueue_free () >= 5)
+    {
+      muos_txqueue_push (MUOS_TXTAG_UINT32);
+      muos_txqueue_push (((uint8_t*)&n)[3]);
+      muos_txqueue_push (((uint8_t*)&n)[2]);
+      muos_txqueue_push (((uint8_t*)&n)[1]);
+      muos_txqueue_push (((uint8_t*)&n)[0]);
+    }
+  else
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+    }
+}
+
+
+
+
 
 void
 muos_txqueue_output_intptr (intptr_t n)
@@ -234,7 +420,14 @@ muos_txqueue_output_int8 (int8_t n)
 void
 muos_txqueue_output_uint8 (uint8_t n)
 {
-  (void) n;
+  if (n <= fmtconfig.base)
+    {
+      muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
+    }
+  else
+    {
+      txqueue_uint8 (n);
+    }
 }
 
 void
@@ -246,7 +439,20 @@ muos_txqueue_output_int16 (uint16_t n)
 void
 muos_txqueue_output_uint16 (uint16_t n)
 {
-  (void) n;
+  if (n <= fmtconfig.base)
+    {
+      muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
+    }
+  else if (n <= 0xff)
+    {
+      txqueue_uint8 (n);
+    }
+  else
+    {
+      txqueue_uint16 (n);
+    }
+
+  muos_txqueue_start ();
 }
 
 void
@@ -255,12 +461,31 @@ muos_txqueue_output_int32 (int32_t n)
   (void) n;
 }
 
+
 void
 muos_txqueue_output_uint32 (uint32_t n)
 {
-  (void) n;
+  if (n <= fmtconfig.base)
+    {
+      muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
+    }
+  else if (n <= 0xff)
+    {
+      txqueue_uint8 (n);
+    }
+  else if (n <= 0xffff)
+    {
+      txqueue_uint16 (n);
+    }
+  else
+    {
+      txqueue_uint32 (n);
+    }
+
+  muos_txqueue_start ();
 }
 
+#if 0
 void
 muos_txqueue_output_int64 (int64_t n)
 {
@@ -273,7 +498,6 @@ muos_txqueue_output_uint64 (uint64_t n)
   (void) n;
 }
 
-#if 0
 void
 muos_txqueue_output_float (float)
 {

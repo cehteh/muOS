@@ -29,13 +29,22 @@ typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXQUEUE)
 muos_txqueue_type;
 #endif
 
-#define MUOS_TXQUEUE_TAGS                       \
-  TAG()                                         \
+#define MUOS_TXQUEUE_TAGS                         \
+  TAG(NL)                                         \
+  TAG(UINT8)                                      \
+  TAG(UINT16)                                     \
+  TAG(UINT32)                                     \
+
 
 enum muos_txqueue_tags
 {
   MUOS_TXTAG_NCHARS = 128,
   MUOS_TXTAG_NCHARS_END = 191,
+
+#define TAG(name)  MUOS_TXTAG_##name,
+  MUOS_TXQUEUE_TAGS
+#undef TAG
+
 };
 
 muos_cbuffer_index
