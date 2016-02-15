@@ -26,30 +26,13 @@
 #include <muos/bgq.h>
 #include <muos/txqueue.h>
 
-struct fmtconfig_type {
-  uint8_t base:6;
-  uint8_t upcase:1;
-  uint8_t eng:1;
-  uint8_t flt_int:4;
-  uint8_t flt_frac:4;
-};
-
-
-
-struct ctrlseq_type {
-  uint8_t style:2;
-  uint8_t fgcolor:3;
-  uint8_t bgcolor:3;
-};
+struct fmtconfig_type pfmtconfig = {10, 0, 0, 15, 15};
+struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
 
 
 #if MUOS_SERIAL_TXQUEUE == 0
 //DOCME: bare io just fails when buffers are full
-
-static struct fmtconfig_type pfmtconfig = {10, 0, 0, 15, 15};
-static struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
 //PLANNED: fixed point for integers and mille delimiters
-
 
 void
 muos_output_char (char c)
@@ -121,8 +104,7 @@ muos_output_csi_cstr (const char* str)
       muos_serial_tx_byte (*str++);
 }
 
-
-
+//FIXME: broken, port back from txqueue
 #define Xput(bits)                                                                      \
   static void                                                                           \
   u##bits##put (uint##bits##_t v, uint8_t base, uint8_t upcase)                         \
@@ -133,7 +115,7 @@ muos_output_csi_cstr (const char* str)
         return;                                                                         \
       }                                                                                 \
                                                                                         \
-    uint##bits##_t start = base;                                                        \
+    uint##bits##_t start = 1;                                                           \
                                                                                         \
     for (uint##bits##_t i = base; i && i <= (uint##bits##_t)-1/2+1 && i<=v; i = i*base) \
       start = i;                                                                        \
@@ -405,4 +387,4 @@ muos_output_ctrl (uint8_t, uint8_t, uint8_t)
 
 #endif
 
-#endif //TXQUEUE
+#endif

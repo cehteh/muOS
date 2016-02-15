@@ -24,6 +24,29 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+struct fmtconfig_type {
+  uint8_t base:6;
+  uint8_t upcase:1;
+  uint8_t eng:1;
+  uint8_t flt_int:4;
+  uint8_t flt_frac:4;
+};
+
+
+
+struct ctrlseq_type {
+  uint8_t style:2;
+  uint8_t fgcolor:3;
+  uint8_t bgcolor:3;
+};
+
+extern struct fmtconfig_type pfmtconfig;
+extern struct fmtconfig_type fmtconfig;
+
+
+
+
 #define MUOS_OUTPUTFNS                          \
   OUTPUTFN(char, char)                          \
   OUTPUTFN(repeat_char, uint8_t, char)          \
@@ -175,7 +198,7 @@ muos_output_int8 (int8_t n)
 static inline void
 muos_output_uint8 (uint8_t n)
 {
-  (void) n;
+  muos_txqueue_output_uint8 (n);
 }
 
 static inline void
@@ -187,7 +210,7 @@ muos_output_int16 (uint16_t n)
 static inline void
 muos_output_uint16 (uint16_t n)
 {
-  (void) n;
+  muos_txqueue_output_uint16 (n);
 }
 
 static inline void
@@ -199,7 +222,7 @@ muos_output_int32 (int32_t n)
 static inline void
 muos_output_uint32 (uint32_t n)
 {
-  (void) n;
+  muos_txqueue_output_uint32 (n);
 }
 
 static inline void
