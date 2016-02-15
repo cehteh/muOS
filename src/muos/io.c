@@ -94,6 +94,14 @@ muos_output_mem (const uint8_t* mem, uint8_t len)
 
 
 void
+muos_output_nl (void)
+{
+  muos_serial_tx_byte ('\r');
+  muos_serial_tx_byte ('\n');
+}
+
+
+void
 muos_output_csi_char (const char c)
 {
   muos_serial_tx_byte (0x1b);

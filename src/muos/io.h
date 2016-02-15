@@ -30,6 +30,7 @@
   OUTPUTFN(cstr, const char*)                   \
   OUTPUTFN(repeat_cstr, uint8_t, const char*)   \
   OUTPUTFN(mem, const uint8_t*, uint8_t)        \
+  OUTPUTFN(nl, void)                            \
   OUTPUTFN(csi_char, const char)                \
   OUTPUTFN(csi_cstr, const char*)               \
   OUTPUTFN(intptr, intptr_t)                    \
@@ -130,6 +131,13 @@ muos_output_mem (const uint8_t* mem, uint8_t len)
   (void) mem;
   (void) len;
 
+}
+
+
+static inline void
+muos_output_nl (void)
+{
+   muos_txqueue_output_nl ();
 }
 
 
