@@ -224,25 +224,25 @@ void txqueue_UINT32 (void)
 void txqueue_BASE2 (void)
 {
   txq_fmtconfig.base = 2;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 void txqueue_BASE8 (void)
 {
   txq_fmtconfig.base = 8;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 void txqueue_BASE10 (void)
 {
   txq_fmtconfig.base = 10;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 void txqueue_BASE16 (void)
 {
   txq_fmtconfig.base = 16;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 void txqueue_BASEN (void)
@@ -255,13 +255,13 @@ void txqueue_BASEN (void)
 void txqueue_UPCASE (void)
 {
   txq_fmtconfig.upcase = true;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 void txqueue_DOWNCASE (void)
 {
   txq_fmtconfig.upcase = false;
-  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+  MUOS_CBUFFER_POP (muos_txqueue);
 }
 
 
