@@ -309,28 +309,28 @@ muos_output_float_R ()
 static inline void
 muos_output_upcase (bool upcase)
 {
-  (void) upcase;
+  muos_txqueue_output_upcase (upcase);
 }
 
 
 static inline void
 muos_output_base (uint8_t base)
 {
-  (void) base;
+  muos_txqueue_output_base (base);
 }
 
 
 static inline void
 muos_output_pupcase (bool upcase)
 {
-  (void) upcase;
+  muos_txqueue_output_pupcase (upcase);
 }
 
 
 static inline void
 muos_output_pbase (uint8_t base)
 {
-  (void) base;
+  muos_txqueue_output_pbase (base);
 }
 
 

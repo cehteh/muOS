@@ -30,7 +30,7 @@
 
 #if MUOS_SERIAL_TXQUEUE > 1
 
-//static struct fmtconfig_type txq_pfmtconfig = {10, 0, 0, 15, 15};
+static struct fmtconfig_type txq_pfmtconfig = {10, 0, 0, 15, 15};
 static struct fmtconfig_type txq_fmtconfig = {10, 0, 0, 15, 15};
 
 
@@ -183,6 +183,7 @@ void txqueue_UINT8 (void)
   else
     {
       MUOS_CBUFFER_POPN (muos_txqueue, 2);
+      txq_fmtconfig = txq_pfmtconfig;
     }
 }
 
@@ -202,7 +203,7 @@ void txqueue_UINT16 (void)
   else
     {
       MUOS_CBUFFER_POPN (muos_txqueue, 3);
-      //TODO: reset fmtconfig
+      txq_fmtconfig = txq_pfmtconfig;
     }
 }
 
@@ -226,11 +227,67 @@ void txqueue_UINT32 (void)
   else
     {
       MUOS_CBUFFER_POPN (muos_txqueue, 5);
-      //TODO: reset fmtconfig
+      txq_fmtconfig = txq_pfmtconfig;
     }
 }
 
 
+void txqueue_BASE2 (void)
+{
+  txq_fmtconfig.base = 2;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+void txqueue_BASE8 (void)
+{
+  txq_fmtconfig.base = 8;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+void txqueue_BASE10 (void)
+{
+  txq_fmtconfig.base = 10;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+void txqueue_BASE16 (void)
+{
+  txq_fmtconfig.base = 16;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+void txqueue_BASEN (void)
+{
+  txq_fmtconfig.base = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  MUOS_CBUFFER_POPN (muos_txqueue, 2);
+}
+
+
+void txqueue_UPCASE (void)
+{
+  txq_fmtconfig.upcase = true;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+void txqueue_DOWNCASE (void)
+{
+  txq_fmtconfig.upcase = false;
+  MUOS_CBUFFER_POPN (muos_txqueue, 1);
+}
+
+
+void txqueue_PBASE (void)
+{
+  txq_fmtconfig.base = txq_pfmtconfig.base = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  MUOS_CBUFFER_POPN (muos_txqueue, 2);
+}
+
+
+void txqueue_PUPCASE (void)
+{
+  txq_fmtconfig.upcase = txq_pfmtconfig.upcase = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  MUOS_CBUFFER_POPN (muos_txqueue, 2);
+}
 
 
 void
@@ -402,7 +459,6 @@ txqueue_uint32 (uint32_t n)
 void
 muos_txqueue_output_intptr (intptr_t n)
 {
-  //TODO: hexfmt
   switch (sizeof n)
     {
     case 2:
@@ -417,7 +473,6 @@ muos_txqueue_output_intptr (intptr_t n)
 void
 muos_txqueue_output_uintptr (uintptr_t n)
 {
-  //TODO: hexfmt
   switch (sizeof n)
     {
     case 2:
@@ -434,16 +489,12 @@ muos_txqueue_output_int8 (int8_t n)
 {
   if (n < 0)
     {
-      txqueue_uint8 (n);
-    }
-  else
-    {
       if (!muos_error_peek (muos_error_tx_buffer_overflow))
         {
           muos_txqueue_push ('-');
           if (!muos_error_peek (muos_error_tx_buffer_overflow))
             {
-              txqueue_uint8 (-n);
+              muos_txqueue_output_uint8 (-n);
               if (muos_error_peek (muos_error_tx_buffer_overflow))
                 {
                   MUOS_CBUFFER_RPOP (muos_txqueue);
@@ -451,12 +502,16 @@ muos_txqueue_output_int8 (int8_t n)
             }
         }
     }
+  else
+    {
+      muos_txqueue_output_uint8 (n);
+    }
 }
 
 void
 muos_txqueue_output_uint8 (uint8_t n)
 {
-  if (n <= fmtconfig.base)
+  if (n < fmtconfig.base)
     {
       muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
     }
@@ -464,6 +519,9 @@ muos_txqueue_output_uint8 (uint8_t n)
     {
       txqueue_uint8 (n);
     }
+
+  fmtconfig = pfmtconfig;
+  muos_txqueue_start ();
 }
 
 void
@@ -476,7 +534,7 @@ muos_txqueue_output_int16 (int16_t n)
           muos_txqueue_push ('-');
           if (!muos_error_peek (muos_error_tx_buffer_overflow))
             {
-              txqueue_uint16 (-n);
+              muos_txqueue_output_uint16 (-n);
               if (muos_error_peek (muos_error_tx_buffer_overflow))
                 {
                   MUOS_CBUFFER_RPOP (muos_txqueue);
@@ -486,14 +544,15 @@ muos_txqueue_output_int16 (int16_t n)
     }
   else
     {
-      txqueue_uint16 (n);
+      muos_txqueue_output_uint16 (n);
     }
+
 }
 
 void
 muos_txqueue_output_uint16 (uint16_t n)
 {
-  if (n <= fmtconfig.base)
+  if (n < fmtconfig.base)
     {
       muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
     }
@@ -506,20 +565,39 @@ muos_txqueue_output_uint16 (uint16_t n)
       txqueue_uint16 (n);
     }
 
+  fmtconfig = pfmtconfig;
   muos_txqueue_start ();
 }
 
 void
 muos_txqueue_output_int32 (int32_t n)
 {
-  (void) n;
+  if (n < 0)
+    {
+      if (!muos_error_peek (muos_error_tx_buffer_overflow))
+        {
+          muos_txqueue_push ('-');
+          if (!muos_error_peek (muos_error_tx_buffer_overflow))
+            {
+              muos_txqueue_output_uint32 (-n);
+              if (muos_error_peek (muos_error_tx_buffer_overflow))
+                {
+                  MUOS_CBUFFER_RPOP (muos_txqueue);
+                }
+            }
+        }
+    }
+  else
+    {
+      muos_txqueue_output_uint32 (n);
+    }
 }
 
 
 void
 muos_txqueue_output_uint32 (uint32_t n)
 {
-  if (n <= fmtconfig.base)
+  if (n < fmtconfig.base)
     {
       muos_txqueue_output_char ((((char)n<10?'0':fmtconfig.upcase?'A'-10:'a'-10))+(char)n);
     }
@@ -536,6 +614,7 @@ muos_txqueue_output_uint32 (uint32_t n)
       txqueue_uint32 (n);
     }
 
+  fmtconfig = pfmtconfig;
   muos_txqueue_start ();
 }
 
@@ -543,25 +622,7 @@ muos_txqueue_output_uint32 (uint32_t n)
 void
 muos_txqueue_output_int64 (int64_t n)
 {
-  if (n < 0)
-    {
-      if (!muos_error_peek (muos_error_tx_buffer_overflow))
-        {
-          muos_txqueue_push ('-');
-          if (!muos_error_peek (muos_error_tx_buffer_overflow))
-            {
-              txqueue_uint32 (-n);
-              if (muos_error_peek (muos_error_tx_buffer_overflow))
-                {
-                  MUOS_CBUFFER_RPOP (muos_txqueue);
-                }
-            }
-        }
-    }
-  else
-    {
-      txqueue_uint32 (n);
-    }
+  (void) n;
 }
 
 void
@@ -639,28 +700,75 @@ muos_txqueue_output_float_R ()
 void
 muos_txqueue_output_upcase (bool upcase)
 {
-  (void) upcase;
+  fmtconfig.upcase = upcase;
+  if (upcase)
+    muos_txqueue_push (MUOS_TXTAG_UPCASE);
+  else
+    muos_txqueue_push (MUOS_TXTAG_DOWNCASE);
 }
 
 
 void
 muos_txqueue_output_base (uint8_t base)
 {
-  (void) base;
+  fmtconfig.base = base;
+  switch (base)
+    {
+    case 2:
+      muos_txqueue_push (MUOS_TXTAG_BASE2);
+      break;
+    case 8:
+      muos_txqueue_push (MUOS_TXTAG_BASE8);
+      break;
+    case 10:
+      muos_txqueue_push (MUOS_TXTAG_BASE10);
+      break;
+    case 16:
+      muos_txqueue_push (MUOS_TXTAG_BASE16);
+      break;
+    default:
+      if (muos_txqueue_free () >= 2)
+        {
+          muos_txqueue_push (MUOS_TXTAG_BASEN);
+          muos_txqueue_push (base);
+        }
+      else
+        {
+          muos_error_set (muos_error_txqueue_overflow);
+        }
+    }
 }
 
 
 void
 muos_txqueue_output_pupcase (bool upcase)
 {
-  (void) upcase;
+  fmtconfig.upcase = pfmtconfig.upcase = upcase;
+  if (muos_txqueue_free () >= 2)
+    {
+      muos_txqueue_push (MUOS_TXTAG_PUPCASE);
+      muos_txqueue_push (upcase);
+    }
+  else
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+    }
 }
 
 
 void
 muos_txqueue_output_pbase (uint8_t base)
 {
-  (void) base;
+  fmtconfig.base = pfmtconfig.base = base;
+  if (muos_txqueue_free () >= 2)
+    {
+      muos_txqueue_push (MUOS_TXTAG_PBASE);
+      muos_txqueue_push (base);
+    }
+  else
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+    }
 }
 
 
