@@ -73,6 +73,7 @@ muos_cbuffer_poke (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuf
 #define MUOS_CBUFFER_USED(b) (b).descriptor.len
 #define MUOS_CBUFFER_PUSH(b, v) muos_cbuffer_push (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (v))
 #define MUOS_CBUFFER_POP(b) muos_cbuffer_pop (&(b).descriptor, MUOS_CBUFFER_SIZE(b))
+#define MUOS_CBUFFER_RPOP(b) --(b).descriptor.len
 #define MUOS_CBUFFER_POPN(b, n) muos_cbuffer_popn (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (n))
 #define MUOS_CBUFFER_PEEK(b, pos) muos_cbuffer_peek (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (pos))
 #define MUOS_CBUFFER_POKE(b, pos, val) muos_cbuffer_poke (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (pos), (val))

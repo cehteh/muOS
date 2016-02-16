@@ -402,19 +402,55 @@ txqueue_uint32 (uint32_t n)
 void
 muos_txqueue_output_intptr (intptr_t n)
 {
-  (void) n;
+  //TODO: hexfmt
+  switch (sizeof n)
+    {
+    case 2:
+      muos_txqueue_output_int16 (n);
+      break;
+    case 4:
+      muos_txqueue_output_int32 (n);
+      break;
+    }
 }
 
 void
 muos_txqueue_output_uintptr (uintptr_t n)
 {
-  (void) n;
+  //TODO: hexfmt
+  switch (sizeof n)
+    {
+    case 2:
+      muos_txqueue_output_uint16 (n);
+      break;
+    case 4:
+      muos_txqueue_output_uint32 (n);
+      break;
+    }
 }
 
 void
 muos_txqueue_output_int8 (int8_t n)
 {
-  (void) n;
+  if (n < 0)
+    {
+      txqueue_uint8 (n);
+    }
+  else
+    {
+      if (!muos_error_peek (muos_error_tx_buffer_overflow))
+        {
+          muos_txqueue_push ('-');
+          if (!muos_error_peek (muos_error_tx_buffer_overflow))
+            {
+              txqueue_uint8 (-n);
+              if (muos_error_peek (muos_error_tx_buffer_overflow))
+                {
+                  MUOS_CBUFFER_RPOP (muos_txqueue);
+                }
+            }
+        }
+    }
 }
 
 void
@@ -431,9 +467,27 @@ muos_txqueue_output_uint8 (uint8_t n)
 }
 
 void
-muos_txqueue_output_int16 (uint16_t n)
+muos_txqueue_output_int16 (int16_t n)
 {
-  (void) n;
+  if (n < 0)
+    {
+      if (!muos_error_peek (muos_error_tx_buffer_overflow))
+        {
+          muos_txqueue_push ('-');
+          if (!muos_error_peek (muos_error_tx_buffer_overflow))
+            {
+              txqueue_uint16 (-n);
+              if (muos_error_peek (muos_error_tx_buffer_overflow))
+                {
+                  MUOS_CBUFFER_RPOP (muos_txqueue);
+                }
+            }
+        }
+    }
+  else
+    {
+      txqueue_uint16 (n);
+    }
 }
 
 void
@@ -489,7 +543,25 @@ muos_txqueue_output_uint32 (uint32_t n)
 void
 muos_txqueue_output_int64 (int64_t n)
 {
-  (void) n;
+  if (n < 0)
+    {
+      if (!muos_error_peek (muos_error_tx_buffer_overflow))
+        {
+          muos_txqueue_push ('-');
+          if (!muos_error_peek (muos_error_tx_buffer_overflow))
+            {
+              txqueue_uint32 (-n);
+              if (muos_error_peek (muos_error_tx_buffer_overflow))
+                {
+                  MUOS_CBUFFER_RPOP (muos_txqueue);
+                }
+            }
+        }
+    }
+  else
+    {
+      txqueue_uint32 (n);
+    }
 }
 
 void

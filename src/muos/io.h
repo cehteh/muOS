@@ -60,7 +60,7 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(uintptr, uintptr_t)                  \
   OUTPUTFN(int8, int8_t)                        \
   OUTPUTFN(uint8, uint8_t)                      \
-  OUTPUTFN(int16, uint16_t)                     \
+  OUTPUTFN(int16, int16_t)                      \
   OUTPUTFN(uint16, uint16_t)                    \
   OUTPUTFN(int32, int32_t)                      \
   OUTPUTFN(uint32, uint32_t)                    \
@@ -180,19 +180,19 @@ muos_output_csi_cstr (const char* str)
 static inline void
 muos_output_intptr (intptr_t n)
 {
-  (void) n;
+  muos_txqueue_output_intptr (n);
 }
 
 static inline void
 muos_output_uintptr (uintptr_t n)
 {
-  (void) n;
+  muos_txqueue_output_uintptr (n);
 }
 
 static inline void
 muos_output_int8 (int8_t n)
 {
-  (void) n;
+  muos_txqueue_output_int8 (n);
 }
 
 static inline void
@@ -204,7 +204,7 @@ muos_output_uint8 (uint8_t n)
 static inline void
 muos_output_int16 (uint16_t n)
 {
-  (void) n;
+  muos_txqueue_output_int16 (n);
 }
 
 static inline void
@@ -216,7 +216,7 @@ muos_output_uint16 (uint16_t n)
 static inline void
 muos_output_int32 (int32_t n)
 {
-  (void) n;
+  muos_txqueue_output_int32 (n);
 }
 
 static inline void
@@ -225,6 +225,7 @@ muos_output_uint32 (uint32_t n)
   muos_txqueue_output_uint32 (n);
 }
 
+#if 0 //PLANNED: 64 bit
 static inline void
 muos_output_int64 (int64_t n)
 {
@@ -236,6 +237,7 @@ muos_output_uint64 (uint64_t n)
 {
   (void) n;
 }
+#endif
 
 #if 0
 static inline void
