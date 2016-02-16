@@ -83,30 +83,19 @@ MUOS_TXQUEUE_TAGS
 void
 muos_txqueue_run (void)
 {
-  while (MUOS_CBUFFER_USED (muos_txqueue) &&  MUOS_CBUFFER_FREE (muos_txbuffer))
+  while (MUOS_CBUFFER_USED (muos_txqueue) && MUOS_CBUFFER_FREE (muos_txbuffer))
     {
       uint8_t tag = MUOS_CBUFFER_PEEK (muos_txqueue, 0);
       if (tag < MUOS_TXTAG_NCHARS)
         {
           muos_serial_tx_byte (tag);
-          MUOS_CBUFFER_POPN (muos_txqueue, 1);
+          MUOS_CBUFFER_POP (muos_txqueue);
         }
       else if (tag <= MUOS_TXTAG_NCHARS_END)
         {
-          for (muos_cbuffer_index i = 1; i <= tag-MUOS_TXTAG_NCHARS+1; ++i)
-            {
-              muos_serial_tx_byte (MUOS_CBUFFER_PEEK (muos_txqueue, i));
-              if (muos_error_check (muos_error_tx_buffer_overflow))
-                {
-                  MUOS_CBUFFER_POKE (muos_txqueue, i-1, tag-i);
-
-                  MUOS_CBUFFER_POPN (muos_txqueue, tag-i-MUOS_TXTAG_NCHARS+2);
-
-                  goto out;
-                }
-            }
-          MUOS_CBUFFER_POPN (muos_txqueue, tag-MUOS_TXTAG_NCHARS+2);
-        out:;
+          muos_serial_tx_byte (MUOS_CBUFFER_PEEK (muos_txqueue, 1));
+          MUOS_CBUFFER_POKE (muos_txqueue, 1, tag-1);
+          MUOS_CBUFFER_POP (muos_txqueue);
         }
       else switch (tag)
         {
@@ -332,8 +321,7 @@ muos_txqueue_output_repeat_char (uint8_t rep, char c)
 void
 muos_txqueue_output_cstr (const char* str)
 {
-  //FIXME: check error generation, something fishy here with small tx buffer
-  if (muos_txqueue_free () < strlen (str) + 1)
+  if (muos_txqueue_free () < strlen (str) + 2)
     {
       muos_error_set (muos_error_txqueue_overflow);
       return;
