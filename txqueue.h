@@ -34,6 +34,15 @@ muos_txqueue_type;
   TAG(UINT8)                                      \
   TAG(UINT16)                                     \
   TAG(UINT32)                                     \
+  TAG(BASE2)                                      \
+  TAG(BASE8)                                      \
+  TAG(BASE10)                                     \
+  TAG(BASE16)                                     \
+  TAG(BASEN)                                      \
+  TAG(UPCASE)                                     \
+  TAG(DOWNCASE)                                   \
+  TAG(PBASE)                                      \
+  TAG(PUPCASE)                                    \
 
 
 enum muos_txqueue_tags
