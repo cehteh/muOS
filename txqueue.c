@@ -341,6 +341,7 @@ muos_txqueue_output_cstr (const char* str)
             {
               muos_txqueue_push (*str);
             }
+          break;
         }
     }
 
