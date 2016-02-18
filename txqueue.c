@@ -285,6 +285,12 @@ void txqueue_PUPCASE (void)
   MUOS_CBUFFER_POPN (muos_txqueue, 2);
 }
 
+void txqueue_CSI (void)
+{
+  muos_serial_tx_byte (0x1b);
+  MUOS_CBUFFER_POKE (muos_txqueue, 0, '[');
+}
+
 
 void
 muos_txqueue_output_char (char c)
@@ -328,7 +334,7 @@ muos_txqueue_output_repeat_char (uint8_t rep, char c)
 void
 muos_txqueue_output_cstr (const char* str)
 {
-  if (muos_txqueue_free () < strlen (str) + 2)
+  if (muos_txqueue_free () < strlen (str) + 1)
     {
       muos_error_set (muos_error_txqueue_overflow);
       return;
@@ -389,14 +395,30 @@ muos_txqueue_output_nl (void)
 void
 muos_txqueue_output_csi_char (const char c)
 {
-  (void) c;
+  if (!muos_txqueue_free () >= 2)
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  muos_txqueue_push (MUOS_TXTAG_CSI);
+  muos_txqueue_output_char (c);
+  muos_txqueue_start ();
 }
 
 
 void
 muos_txqueue_output_csi_cstr (const char* str)
 {
-  (void) str;
+  if (!muos_txqueue_free () >= strlen (str) + 2)
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  muos_txqueue_push (MUOS_TXTAG_CSI);
+  muos_txqueue_output_cstr (str);
+  muos_txqueue_start ();
 }
 
 
