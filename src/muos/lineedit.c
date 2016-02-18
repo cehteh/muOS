@@ -85,7 +85,17 @@ muos_lineedit (void)
               // right
               if (cursor<used)
                 {
+#if MUOS_LINEEDIT_UTF8 == 1
                   ++cursor;
+                  if(buffer[cursor] & 128)
+                    {
+                      do {
+                        ++cursor;
+                      } while ((buffer[cursor] & 192) == 128);
+                    }
+#else
+                  ++cursor;
+#endif
                   muos_output_csi_char ('C');
                 }
               pending = 0;
@@ -96,7 +106,17 @@ muos_lineedit (void)
               // left
               if (cursor)
                 {
+#if MUOS_LINEEDIT_UTF8 == 1
                   --cursor;
+                  if(buffer[cursor] & 128)
+                    {
+                      do {
+                        --cursor;
+                      } while ((buffer[cursor] & 192) != 192);
+                    }
+#else
+                  --cursor;
+#endif
                   muos_output_csi_char ('D');
                 }
               pending = 0;
@@ -111,8 +131,21 @@ muos_lineedit (void)
               // del
               if (used && cursor < used)
                 {
+#if MUOS_LINEEDIT_UTF8 == 1
+                  uint8_t len = 1;
+                  if(buffer[cursor] & 128)
+                    {
+                      while((buffer[cursor+len] & 192) == 128)
+                        ++len;
+                    }
+
+                  used -= len;
+                  memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+
+#else
                   --used;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
+#endif
 
                   muos_output_csi_char ('s');
                   muos_output_csi_cstr ("?25l");
@@ -204,9 +237,23 @@ muos_lineedit (void)
               // backspace
               if (cursor > 0)
                 {
+#if MUOS_LINEEDIT_UTF8 == 1
+                  uint8_t len = 1;
+                  if(buffer[cursor-len] & 128)
+                    {
+                      while((buffer[cursor-len] & 192) != 192)
+                        ++len;
+                    }
+
+                  used -= len;
+                  cursor -= len;
+                  memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+
+#else
                   --used;
                   --cursor;
                   memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
+#endif
 
                   muos_output_csi_char ('D');
                   muos_output_csi_char ('s');
