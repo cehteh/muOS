@@ -24,6 +24,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
+#include <avr/pgmspace.h>
+
+#define MUOS_PSTR(s) PSTR(s)
+typedef const __flash char muos_flash_cstr[];
 
 
 static inline void

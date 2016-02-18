@@ -148,11 +148,11 @@ muos_lineedit (void)
 #endif
 
                   muos_output_csi_char ('s');
-                  muos_output_csi_cstr ("?25l");
+                  muos_output_csi_cstr_P ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_csi_char ('K');
                   muos_output_csi_char ('u');
-                  muos_output_csi_cstr ("?25h");
+                  muos_output_csi_cstr_P ("?25h");
                 }
               pending = 0;
               break;
@@ -257,11 +257,11 @@ muos_lineedit (void)
 
                   muos_output_csi_char ('D');
                   muos_output_csi_char ('s');
-                  muos_output_csi_cstr ("?25l");
+                  muos_output_csi_cstr_P ("?25l");
                   muos_output_cstr (buffer+cursor);
                   muos_output_csi_char ('K');
                   muos_output_csi_char ('u');
-                  muos_output_csi_cstr ("?25h");
+                  muos_output_csi_cstr_P ("?25h");
                 }
               break;
 
@@ -282,7 +282,7 @@ muos_lineedit (void)
                   ++cursor;
                   if (cursor != used)
                     {
-                      muos_output_csi_cstr (0);
+                      muos_output_csi_char ('0');
                       muos_output_uint8 (used-cursor);
                       muos_output_char ('D');
                     }
