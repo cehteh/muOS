@@ -94,7 +94,14 @@ muos_txqueue_run (void)
       else if (tag <= MUOS_TXTAG_NCHARS_END)
         {
           muos_serial_tx_byte (MUOS_CBUFFER_PEEK (muos_txqueue, 1));
-          MUOS_CBUFFER_POKE (muos_txqueue, 1, tag-1);
+          if (tag > MUOS_TXTAG_NCHARS)
+            {
+              MUOS_CBUFFER_POKE (muos_txqueue, 1, tag-1);
+            }
+          else
+            {
+              MUOS_CBUFFER_POP (muos_txqueue);
+            }
           MUOS_CBUFFER_POP (muos_txqueue);
         }
       else switch (tag)
