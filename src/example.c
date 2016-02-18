@@ -95,7 +95,7 @@ lineecho (const char* line)
 void
 mutest (void)
 {
-  muos_output_cstr ("mµOS Ready:");
+  muos_output_cstr_P ("mµOS Ready:");
   muos_output_nl ();
 
 }

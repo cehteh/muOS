@@ -117,16 +117,6 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 
 
 
-#:MUOS_ERROR_LOG_LENGTH
-#: if 1 then only one error code is kept in memory
-#: if greater than 1 a circular log of recent errors is kept in memory (prefer powers of 2)
-#: if 0 then error storing is disabled, muos_error_set() is a nop, muos_error() fails
-#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=0
-#MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=1
-MUOS_CONFIG += -DMUOS_ERROR_LOG_LENGTH=8
-
-
-
 #:MUOS_SCHED_DEPTH
 #: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield())
 MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
@@ -339,6 +329,19 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
 MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
 
+#:MUOS_SERIAL_TXQUEUE_OPT
+#: Optimization level
+#:
+#: optimize for:
+#: 	ram
+#: 	flash
+#: 	cpu
+#:	latency
+#:
+#:	type support for 24 48 64 bit
+#:
+#:
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE_OPT =
 
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
