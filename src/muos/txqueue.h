@@ -43,6 +43,7 @@ muos_txqueue_type;
   TAG(DOWNCASE)                                   \
   TAG(PBASE)                                      \
   TAG(PUPCASE)                                    \
+  TAG(CSI)                                        \
 
 
 enum muos_txqueue_tags

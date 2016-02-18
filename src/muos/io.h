@@ -167,14 +167,14 @@ muos_output_nl (void)
 static inline void
 muos_output_csi_char (const char c)
 {
-  (void) c;
+  muos_txqueue_output_csi_char (c);
 }
 
 
 static inline void
 muos_output_csi_cstr (const char* str)
 {
-  (void) str;
+  muos_txqueue_output_csi_cstr (str);
 }
 
 static inline void
