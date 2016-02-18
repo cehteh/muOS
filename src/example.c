@@ -69,9 +69,10 @@ serial_echo (void)
 
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-      muos_output_char ((char)data);
-      if (data == '\r')
-        muos_output_char ('\n');
+      if (data != '\r')
+        muos_output_char ((char)data);
+      else
+        muos_output_nl ();
     }
 
   muos_serial_rxrtq_again (serial_echo);
@@ -90,7 +91,17 @@ lineecho (const char* line)
 
 
 
+
 void
+mutest (void)
+{
+  muos_output_cstr ("mµOS Ready:");
+  muos_output_nl ();
+
+}
+
+
+  void
 init (void)
 {
   DDRB = _BV(PINB5) | _BV(PINB4);
@@ -102,7 +113,8 @@ init (void)
   muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_green_timed);
   //muos_clpq_at (0, 0, serial_ping);
   //muos_clpq_at (0, 0, serial_blinkerr);
-  muos_output_cstr ("mµOS Ready:\r\n");
+
+  muos_bgq_pushback (mutest);
 }
 
 
