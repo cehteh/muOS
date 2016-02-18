@@ -386,6 +386,13 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 
 
 
+#:MUOS_LINEEDIT_UTF8
+#: enable UTF8 support for lineedit
+#MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8=0
+MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8=1
+
+
+
 # 0 = simple (only backspace)
 # 1 = cursors
 # 2 = history
