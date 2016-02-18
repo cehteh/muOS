@@ -122,6 +122,28 @@ muos_txqueue_run (void)
     }
 }
 
+
+void txqueue_FSTR (void)
+{
+  void* str;
+  ((uint8_t*)&str)[1] = MUOS_CBUFFER_PEEK (muos_txqueue, 1);
+  ((uint8_t*)&str)[0] = MUOS_CBUFFER_PEEK (muos_txqueue, 2);
+
+  uint8_t b = pgm_read_byte (str);
+  if (b)
+    {
+      muos_serial_tx_byte (b);
+      ++str;
+      MUOS_CBUFFER_POKE (muos_txqueue, 1, ((uint8_t*)&str)[1]);
+      MUOS_CBUFFER_POKE (muos_txqueue, 2, ((uint8_t*)&str)[0]);
+    }
+  else
+    {
+      MUOS_CBUFFER_POPN (muos_txqueue, 3);
+    }
+}
+
+
 void txqueue_NL (void)
 {
   muos_serial_tx_byte ('\r');
@@ -363,6 +385,23 @@ muos_txqueue_output_cstr (const char* str)
 
 
 void
+muos_txqueue_output_fstr (muos_flash_cstr str)
+{
+  if (muos_txqueue_free () < 3)
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  muos_txqueue_push (MUOS_TXTAG_FSTR);
+  muos_txqueue_push (((uint8_t*)&str)[1]);
+  muos_txqueue_push (((uint8_t*)&str)[0]);
+
+muos_txqueue_start ();
+}
+
+
+void
 muos_txqueue_output_repeat_cstr (uint8_t rep, const char* str)
 {
   (void) rep;
@@ -410,7 +449,7 @@ muos_txqueue_output_csi_char (const char c)
 void
 muos_txqueue_output_csi_cstr (const char* str)
 {
-  if (!muos_txqueue_free () >= strlen (str) + 2)
+  if (muos_txqueue_free () < strlen (str) + 2)
     {
       muos_error_set (muos_error_txqueue_overflow);
       return;
@@ -418,6 +457,22 @@ muos_txqueue_output_csi_cstr (const char* str)
 
   muos_txqueue_push (MUOS_TXTAG_CSI);
   muos_txqueue_output_cstr (str);
+  muos_txqueue_start ();
+}
+
+
+
+void
+muos_txqueue_output_csi_fstr (muos_flash_cstr str)
+{
+  if (muos_txqueue_free () < 4)
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  muos_txqueue_push (MUOS_TXTAG_CSI);
+  muos_txqueue_output_fstr (str);
   muos_txqueue_start ();
 }
 

@@ -51,11 +51,13 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(char, char)                          \
   OUTPUTFN(repeat_char, uint8_t, char)          \
   OUTPUTFN(cstr, const char*)                   \
+  OUTPUTFN(fstr, muos_flash_cstr)               \
   OUTPUTFN(repeat_cstr, uint8_t, const char*)   \
   OUTPUTFN(mem, const uint8_t*, uint8_t)        \
   OUTPUTFN(nl, void)                            \
   OUTPUTFN(csi_char, const char)                \
   OUTPUTFN(csi_cstr, const char*)               \
+  OUTPUTFN(csi_fstr, muos_flash_cstr)           \
   OUTPUTFN(intptr, intptr_t)                    \
   OUTPUTFN(uintptr, uintptr_t)                  \
   OUTPUTFN(int8, int8_t)                        \
@@ -141,6 +143,15 @@ muos_output_cstr (const char* str)
 
 
 static inline void
+muos_output_fstr (muos_flash_cstr str)
+{
+  muos_txqueue_output_fstr (str);
+}
+
+#define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
+
+
+static inline void
 muos_output_repeat_cstr (uint8_t rep, const char* str)
 {
   (void) rep;
@@ -176,6 +187,16 @@ muos_output_csi_cstr (const char* str)
 {
   muos_txqueue_output_csi_cstr (str);
 }
+
+
+static inline void
+muos_output_csi_fstr (muos_flash_cstr str)
+{
+  muos_txqueue_output_csi_fstr (str);
+}
+
+#define muos_output_csi_cstr_P(s) muos_output_csi_fstr (MUOS_PSTR(s))
+
 
 static inline void
 muos_output_intptr (intptr_t n)

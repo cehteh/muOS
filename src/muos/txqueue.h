@@ -44,6 +44,7 @@ muos_txqueue_type;
   TAG(PBASE)                                      \
   TAG(PUPCASE)                                    \
   TAG(CSI)                                        \
+  TAG(FSTR)                                       \
 
 
 enum muos_txqueue_tags
