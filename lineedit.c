@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+
 extern void MUOS_LINEEDIT_CALLBACK (const char*);
 
 static uint8_t cursor;
@@ -34,7 +35,12 @@ static uint8_t pending;
 
 enum
   {
-    ESCAPE = 1,
+    UTF8_1 = 1,
+    UTF8_2,
+    UTF8_3,
+    UTF8_4,
+    UTF8DROP,
+    ESCAPE,
     CSI,
     DEL,
     PGUP,
@@ -44,6 +50,59 @@ enum
     OVWR,
   };
 
+//FIXME: for ascii, delte/backspace: handle printable characters, whats with non printable ones?
+
+
+#if MUOS_LINEEDIT_UTF8 == 1
+
+static inline bool
+utf8start (const char c)
+{
+  return ((c & 192) == 192);
+}
+
+static inline bool
+utf8cont (const char c)
+{
+  return ((c & 192) == 128);
+}
+
+static inline bool
+utf8ascii (const char c)
+{
+  return !(c & 128);
+}
+
+static uint8_t
+utf8len (const char* str)
+{
+  uint8_t len = 0;
+  for (; *str; ++str)
+    if (!utf8cont (*str))
+      ++len;
+   return len;
+}
+
+static uint8_t
+utf8size (const char* start)
+{
+  while (utf8cont (*start))
+    --start;
+
+  uint8_t size = 1;
+  if (utf8start (*start))
+    {
+      size = 2;
+      for (uint8_t s = *start<<2; s&128; s<<=1)
+        {
+          ++size;
+        }
+    }
+  return size;
+}
+#endif
+
+
 void
 muos_lineedit (void)
 {
@@ -51,255 +110,285 @@ muos_lineedit (void)
 
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-      if (used < MUOS_LINEEDIT_BUFFER-1)
+
+      //FIXME: non utf ignore chars  >127
+      if (pending == UTF8DROP)
         {
-          switch (pending<<8 | data)
+          if (utf8cont (data))
+            goto end;
+          else
+            pending = 0;
+        }
+
+      switch (pending<<8 | data)
+        {
+        case 0x1b:
+          // escape
+          pending = ESCAPE;
+          break;
+
+        case ESCAPE<<8 | 0x5b:
+          pending = CSI;
+          break;
+
+        case CSI<<8 | 0x41:
+        case 0x0b:
+          // up
+#if 0 //PLANNED: history
+#endif
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x42:
+        case 0x0a:
+          // down
+#if 0 //PLANNED: history
+#endif
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x43:
+        case 0x0c:
+          // right
+          if (cursor<used)
             {
-            case 0x1b:
-              // escape
-              pending = ESCAPE;
-              break;
-
-            case ESCAPE<<8 | 0x5b:
-              pending = CSI;
-              break;
-
-            case CSI<<8 | 0x41:
-            case 0x0b:
-              // up
-#if 0 //PLANNED: history
-#endif
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x42:
-            case 0x0a:
-              // down
-#if 0 //PLANNED: history
-#endif
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x43:
-            case 0x0c:
-              // right
-              if (cursor<used)
-                {
 #if MUOS_LINEEDIT_UTF8 == 1
-                  ++cursor;
-                  if(buffer[cursor] & 128)
-                    {
-                      do {
-                        ++cursor;
-                      } while ((buffer[cursor] & 192) == 128);
-                    }
+              cursor += utf8size (buffer+cursor+1);
 #else
-                  ++cursor;
+              ++cursor;
 #endif
-                  muos_output_csi_char ('C');
-                }
-              pending = 0;
-              break;
+              muos_output_csi_char ('C');
+            }
+          pending = 0;
+          break;
 
-            case CSI<<8 | 0x44:
-            case 0x08:
-              // left
+        case CSI<<8 | 0x44:
+        case 0x08:
+          // left
+          if (cursor)
+            {
+#if MUOS_LINEEDIT_UTF8 == 1
+              cursor -= utf8size (buffer+cursor-1);
+#else
+              --cursor;
+#endif
+              muos_output_csi_char ('D');
+            }
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x33:
+          // del start
+          pending = DEL;
+          break;
+
+        case DEL<<8 | 0x7e:
+          // del
+          if (used && cursor < used)
+            {
+#if MUOS_LINEEDIT_UTF8 == 1
+              uint8_t len = utf8size (buffer+cursor);
+              used -= len;
+              memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+#else
+              --used;
+              memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
+#endif
+
+              muos_output_csi_char ('s');
+              muos_output_csi_cstr_P ("?25l");
+              muos_output_cstr (buffer+cursor);
+              muos_output_csi_char ('K');
+              muos_output_csi_char ('u');
+              muos_output_csi_cstr_P ("?25h");
+            }
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x35:
+          // pgup start
+          pending = PGUP;
+          break;
+
+        case PGUP<<8 | 0x7e:
+          // pgup
+#if 0 //PLANNED: completion
+#endif
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x36:
+          // pgdown start
+          pending = PGDOWN;
+          break;
+
+        case PGDOWN<<8 | 0x7e:
+          // pgdown
+#if 0 //PLANNED: completion
+#endif
+          pending = 0;
+          break;
+
+        case CSI<<8 | 0x31:
+          // pos1 start
+          pending = POS1;
+          break;
+
+        case POS1<<8 | 0x7e:
+          // pos1
+          pending = 0;
+          cursor = 0;
+          muos_output_char ('\r');
+          break;
+
+        case CSI<<8 | 0x34:
+          // end start
+          pending = END;
+          break;
+
+        case END<<8 | 0x7e:
+          // end
+          pending = 0;
+          cursor = used;
+          muos_output_csi_cstr (NULL);
+          muos_output_uint16 (cursor+1);
+          muos_output_char ('G');
+          break;
+
+        case CSI<<8 | 0x32:
+          // ovwr start
+          pending = OVWR;
+          break;
+
+        case OVWR<<8 | 0x7e:
+          // ovwr
+          muos_status.lineedit_ovwr ^= 1;
+          pending = 0;
+          break;
+
+        case 0x09:
+          // tab
+#if 0 //PLANNED: completion
+#endif
+          break;
+
+        case 0x0d:
+          // return
+          MUOS_LINEEDIT_CALLBACK (buffer);
+          used = 0;
+          cursor = 0;
+          *buffer = 0;
+          pending = 0;
+          break;
+
+        case 0x7f:
+          // backspace
+          if (cursor > 0)
+            {
+#if MUOS_LINEEDIT_UTF8 == 1
+              uint8_t len = utf8size (buffer+cursor-1);
+              used -= len;
+              cursor -= len;
+              memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+#else
+              --used;
+              --cursor;
+              memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
+#endif
+
+              muos_output_csi_char ('D');
+              muos_output_csi_char ('s');
+              muos_output_csi_cstr_P ("?25l");
+              muos_output_cstr (buffer+cursor);
+              muos_output_csi_char ('K');
+              muos_output_csi_char ('u');
+              muos_output_csi_cstr_P ("?25h");
+            }
+          break;
+
+        default:
+
+#if MUOS_LINEEDIT_UTF8 == 1
+
+          if (utf8start (data))
+            {
+              pending = utf8size ((const char*)&data);
+            }
+          else if (utf8ascii (data))
+            {
+              pending = UTF8_1;
+            }
+
+          if (used+pending >= MUOS_LINEEDIT_BUFFER)
+            {
+              if (pending > 1)
+                pending = UTF8DROP;
+              else
+                pending = 0;
+
+              muos_output_char (7);
+              break;
+            }
+
+          memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
+          buffer[cursor] = data;
+
+          if (pending == UTF8_1)
+            {
               if (cursor)
+                muos_output_cstr (buffer + cursor - (utf8size (buffer+cursor)-1));
+              else
+                muos_output_cstr (buffer);
+
+              if (cursor != used)
                 {
-#if MUOS_LINEEDIT_UTF8 == 1
-                  --cursor;
-                  if(buffer[cursor] & 128)
-                    {
-                      do {
-                        --cursor;
-                      } while ((buffer[cursor] & 192) != 192);
-                    }
-#else
-                  --cursor;
-#endif
-                  muos_output_csi_char ('D');
-                }
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x33:
-              // del start
-              pending = DEL;
-              break;
-
-            case DEL<<8 | 0x7e:
-              // del
-              if (used && cursor < used)
-                {
-#if MUOS_LINEEDIT_UTF8 == 1
-                  uint8_t len = 1;
-                  if(buffer[cursor] & 128)
-                    {
-                      while((buffer[cursor+len] & 192) == 128)
-                        ++len;
-                    }
-
-                  used -= len;
-                  memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
-
-#else
-                  --used;
-                  memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-#endif
-
-                  muos_output_csi_char ('s');
-                  muos_output_csi_cstr_P ("?25l");
-                  muos_output_cstr (buffer+cursor);
-                  muos_output_csi_char ('K');
-                  muos_output_csi_char ('u');
-                  muos_output_csi_cstr_P ("?25h");
-                }
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x35:
-              // pgup start
-              pending = PGUP;
-              break;
-
-            case PGUP<<8 | 0x7e:
-              // pgup
-#if 0 //PLANNED: completion
-#endif
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x36:
-              // pgdown start
-              pending = PGDOWN;
-              break;
-
-            case PGDOWN<<8 | 0x7e:
-              // pgdown
-#if 0 //PLANNED: completion
-#endif
-              pending = 0;
-              break;
-
-            case CSI<<8 | 0x31:
-              // pos1 start
-              pending = POS1;
-              break;
-
-            case POS1<<8 | 0x7e:
-              // pos1
-              pending = 0;
-              cursor = 0;
-              muos_output_char ('\r');
-              break;
-
-            case CSI<<8 | 0x34:
-              // end start
-              pending = END;
-              break;
-
-            case END<<8 | 0x7e:
-              // end
-              pending = 0;
-              cursor = used;
-              muos_output_csi_cstr (NULL);
-              muos_output_uint16 (cursor+1);
-              muos_output_char ('G');
-              break;
-
-            case CSI<<8 | 0x32:
-              // ovwr start
-              pending = OVWR;
-              break;
-
-            case OVWR<<8 | 0x7e:
-              // ovwr
-              muos_status.lineedit_ovwr ^= 1;
-              pending = 0;
-              break;
-
-            case 0x09:
-              // tab
-#if 0 //PLANNED: completion
-#endif
-              break;
-
-            case 0x0d:
-              // return
-              MUOS_LINEEDIT_CALLBACK (buffer);
-              used = 0;
-              cursor = 0;
-              *buffer = 0;
-              pending = 0;
-              break;
-
-            case 0x7f:
-              // backspace
-              if (cursor > 0)
-                {
-#if MUOS_LINEEDIT_UTF8 == 1
-                  uint8_t len = 1;
-                  if(buffer[cursor-len] & 128)
-                    {
-                      while((buffer[cursor-len] & 192) != 192)
-                        ++len;
-                    }
-
-                  used -= len;
-                  cursor -= len;
-                  memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
-
-#else
-                  --used;
-                  --cursor;
-                  memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-#endif
-
-                  muos_output_csi_char ('D');
-                  muos_output_csi_char ('s');
-                  muos_output_csi_cstr_P ("?25l");
-                  muos_output_cstr (buffer+cursor);
-                  muos_output_csi_char ('K');
-                  muos_output_csi_char ('u');
-                  muos_output_csi_cstr_P ("?25h");
-                }
-              break;
-
-            default:
-              pending = 0;
-              if (cursor < used && muos_status.lineedit_ovwr)
-                {
-                  buffer[cursor] = data;
-                  muos_output_char (buffer[cursor]);
-                  ++cursor;
-                }
-              else if (used < MUOS_LINEEDIT_BUFFER-2)
-                {
-                  memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
-                  buffer[cursor] = data;
-                  muos_output_cstr (buffer+cursor);
-                  ++used;
-                  ++cursor;
-                  if (cursor != used)
-                    {
-                      muos_output_csi_char ('0');
-                      muos_output_uint8 (used-cursor);
-                      muos_output_char ('D');
-                    }
+                  muos_output_csi_char ('0');
+                  muos_output_uint8 (utf8len (buffer+cursor+1));
+                  muos_output_char ('D');
                 }
             }
-        }
 
-      if (used)
-        {
-          muos_status.lineedit_pending = true;
-        }
-      else
-        {
-          muos_status.lineedit_pending = false;
+          ++used;
+          ++cursor;
+          --pending;
+
+
+#else
+          pending = 0;
+          if (cursor < used && muos_status.lineedit_ovwr)
+            {
+              buffer[cursor] = data;
+              muos_output_char (buffer[cursor]);
+              ++cursor;
+            }
+          else if (used < MUOS_LINEEDIT_BUFFER-2)
+            {
+              memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
+              buffer[cursor] = data;
+              muos_output_cstr (buffer+cursor);
+              ++used;
+              ++cursor;
+              if (cursor != used)
+                {
+                  muos_output_csi_char ('0');
+                  muos_output_uint8 (used-cursor);
+                  muos_output_char ('D');
+                }
+            }
+#endif
         }
     }
 
+  if (used)
+    {
+      muos_status.lineedit_pending = true;
+    }
+  else
+    {
+      muos_status.lineedit_pending = false;
+    }
+
+end:
   muos_serial_rxrtq_again (muos_lineedit);
 }
 
