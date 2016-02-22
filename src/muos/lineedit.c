@@ -100,6 +100,15 @@ utf8size (const char* start)
     }
   return size;
 }
+
+static void
+utf8del (void)
+{
+  uint8_t len = utf8size (buffer+cursor);
+  used -= len;
+  memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+}
+
 #endif
 
 
@@ -187,9 +196,7 @@ muos_lineedit (void)
           if (used && cursor < used)
             {
 #if MUOS_LINEEDIT_UTF8 == 1
-              uint8_t len = utf8size (buffer+cursor);
-              used -= len;
-              memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+              utf8del ();
 #else
               --used;
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
@@ -320,7 +327,9 @@ muos_lineedit (void)
               pending = UTF8_1;
             }
 
-          if (used+pending >= MUOS_LINEEDIT_BUFFER)
+          uint8_t ovwr_len = cursor < used && muos_status.lineedit_ovwr?utf8size (buffer+cursor):0;
+
+          if (used+pending - ovwr_len >= MUOS_LINEEDIT_BUFFER)
             {
               if (pending > 1)
                 pending = UTF8DROP;
@@ -330,6 +339,9 @@ muos_lineedit (void)
               muos_output_char (7);
               break;
             }
+
+          if (ovwr_len && !utf8cont (data))
+            utf8del ();
 
           memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
           buffer[cursor] = data;
