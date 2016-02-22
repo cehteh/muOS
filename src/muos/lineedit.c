@@ -50,7 +50,7 @@ enum
     OVWR,
   };
 
-//FIXME: for ascii, delte/backspace: handle printable characters, whats with non printable ones?
+//FIXME: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
 
 
 #if MUOS_LINEEDIT_UTF8 == 1
@@ -195,12 +195,13 @@ muos_lineedit (void)
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 #endif
 
-              muos_output_csi_char ('s');
-              muos_output_csi_cstr_P ("?25l");
+              muos_output_csi_cstr_P ("s\x1b[?25l");
               muos_output_cstr (buffer+cursor);
-              muos_output_csi_char ('K');
-              muos_output_csi_char ('u');
-              muos_output_csi_cstr_P ("?25h");
+              muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+            }
+          else
+            {
+              muos_output_char (7);
             }
           pending = 0;
           break;
@@ -296,13 +297,13 @@ muos_lineedit (void)
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
 #endif
 
-              muos_output_csi_char ('D');
-              muos_output_csi_char ('s');
-              muos_output_csi_cstr_P ("?25l");
+              muos_output_csi_cstr_P ("D\x1b[s\x1b[?25l");
               muos_output_cstr (buffer+cursor);
-              muos_output_csi_char ('K');
-              muos_output_csi_char ('u');
-              muos_output_csi_cstr_P ("?25h");
+              muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+            }
+          else
+            {
+              muos_output_char (7);
             }
           break;
 
