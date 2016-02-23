@@ -403,6 +403,14 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8=1
 
 
 
+#:MUOS_LINEEDIT_RECALL
+#: most simple history, only one byte in ram and litte flash needed
+#: One can recall the previous line with cursor up, immediately after pressing return
+#MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=0
+MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=1
+
+
+
 #:MUOS_LINEEDIT_HISTORY
 #: buffers for history
 
