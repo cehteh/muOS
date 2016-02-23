@@ -312,7 +312,8 @@ muos_lineedit (void)
           // return
           MUOS_LINEEDIT_CALLBACK (buffer);
 #if MUOS_LINEEDIT_RECALL == 1
-          recall = *buffer;
+          if (*buffer)
+            recall = *buffer;
 #endif
           used = 0;
           cursor = 0;
