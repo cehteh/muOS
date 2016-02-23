@@ -31,6 +31,12 @@ static uint8_t cursor;
 static uint8_t used;
 static char buffer[MUOS_LINEEDIT_BUFFER];
 
+#if MUOS_LINEEDIT_RECALL == 1
+static char recall;
+#endif
+
+
+
 static uint8_t pending;
 
 enum
@@ -108,8 +114,8 @@ utf8del (void)
   used -= len;
   memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
 }
-
 #endif
+
 
 
 void
@@ -143,7 +149,18 @@ muos_lineedit (void)
         case CSI<<8 | 0x41:
         case 0x0b:
           // up
+#if MUOS_LINEEDIT_RECALL == 1
+          if (recall)
+            {
+              *buffer = recall;
+              recall = 0;
+              cursor = used = strlen (buffer);
+              muos_output_cstr (buffer);
+            }
+#endif
+
 #if 0 //PLANNED: history
+
 #endif
           pending = 0;
           break;
@@ -151,6 +168,17 @@ muos_lineedit (void)
         case CSI<<8 | 0x42:
         case 0x0a:
           // down
+#if MUOS_LINEEDIT_RECALL == 1
+          if (!recall)
+            {
+              recall = *buffer;
+              used = 0;
+              cursor = 0;
+              *buffer = 0;
+              muos_output_cstr_P ("\r\x1b[K");
+            }
+#endif
+
 #if 0 //PLANNED: history
 #endif
           pending = 0;
@@ -283,6 +311,9 @@ muos_lineedit (void)
         case 0x0d:
           // return
           MUOS_LINEEDIT_CALLBACK (buffer);
+#if MUOS_LINEEDIT_RECALL == 1
+          recall = *buffer;
+#endif
           used = 0;
           cursor = 0;
           *buffer = 0;
@@ -343,6 +374,9 @@ muos_lineedit (void)
           if (ovwr_len && !utf8cont (data))
             utf8del ();
 
+#if MUOS_LINEEDIT_RECALL == 1
+          recall = 0;
+#endif
           memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
           buffer[cursor] = data;
 
