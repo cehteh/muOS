@@ -25,6 +25,7 @@
 #include <stdbool.h>
 
 #define MUOS_ERRORS                             \
+  MUOS_ERROR(error_error)                       \
   MUOS_ERROR(warn_sched_depth)                  \
   MUOS_ERROR(error_tx_buffer_overflow)          \
   MUOS_ERROR(error_txqueue_overflow)            \
@@ -35,7 +36,7 @@
   MUOS_ERROR(error_rx_buffer_underflow)         \
   MUOS_ERROR(error_rx_frame)                    \
   MUOS_ERROR(error_rx_overrun)                  \
-  MUOS_ERROR(error_rx_parity)
+  MUOS_ERROR(error_rx_parity)                   \
 
 
 enum muos_errorcode

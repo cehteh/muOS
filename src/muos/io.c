@@ -55,6 +55,17 @@ muos_output_cstr (const char* str)
     muos_serial_tx_byte (*str++);
 }
 
+void
+muos_output_fstr (muos_flash_cstr str)
+{
+  for (uint8_t b  = pgm_read_byte (str);
+       b;
+       b  = pgm_read_byte (++str))
+    {
+      muos_serial_tx_byte (b);
+    }
+}
+
 
 void
 muos_output_repeat_cstr (uint8_t rep, const char* str)
@@ -103,6 +114,17 @@ muos_output_csi_cstr (const char* str)
     while (*str)
       muos_serial_tx_byte (*str++);
 }
+
+
+void
+muos_output_csi_fstr (muos_flash_cstr str)
+{
+  muos_serial_tx_byte (0x1b);
+  muos_serial_tx_byte ('[');
+
+  muos_output_fstr (str);
+}
+
 
 //FIXME: broken, port back from txqueue
 #define Xput(bits)                                                                      \
@@ -200,7 +222,7 @@ muos_output_uint8 (uint8_t n)
 }
 
 void
-muos_output_int16 (uint16_t n)
+muos_output_int16 (int16_t n)
 {
   i16put (n, fmtconfig.base, fmtconfig.upcase);
   fmtconfig = pfmtconfig;

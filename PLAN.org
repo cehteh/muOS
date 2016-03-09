@@ -41,6 +41,11 @@ this document is WIP!
    scheduled based on this clock. The configuration of this timer (prescaler,
    which hardware timer to be used) is left open to the user.
 
+FIXME what happens when hwclock wraps around but time is read in another
+interrupt while global clock counter is not incremented yet? -> add intr
+pending bit -> dont read clock in interrupts
+
+
 *** Adjustments and Skew
     Once started the clock generally only increments.
 
@@ -281,9 +286,11 @@ this document is WIP!
 **** RX
 ***** TODO Lineedit
       Selections by config
+      block lineedit when TX is stalled
 ****** DONE simple (backspace only)
 ****** DONE cursor
 ****** TODO history
+******* simple history, store only 1 byte aside, instant pgup after return restores previous line
 ****** TODO completion
 ****** TODO rxsync when line is idle for some frames
 ******* tab for text
@@ -310,3 +317,15 @@ this document is WIP!
 *** PID++
 *** power interface depending on active components
 ** Debug tools
+* Ideas
+
+** Debugger
+   over serial
+   only few commands, most logic on host side
+
+   * peek
+   * 
+
+   * debug() function
+   * debug interrupt
+   * 

@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+//FIXME: editing 3 byte utf8 broken
 
 extern void MUOS_LINEEDIT_CALLBACK (const char*);
 
@@ -55,6 +56,7 @@ enum
     END,
     OVWR,
   };
+
 
 //FIXME: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
 
@@ -126,14 +128,25 @@ muos_lineedit (void)
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
 
-      //FIXME: non utf ignore chars  >127
+#if MUOS_LINEEDIT_UTF8 == 1
       if (pending == UTF8DROP)
         {
           if (utf8cont (data))
-            goto end;
+            {
+              muos_serial_rxrtq_again (muos_lineedit);
+              return;
+            }
           else
             pending = 0;
         }
+#else
+      if (data > 127)
+        {
+          muos_output_char (7);
+          muos_serial_rxrtq_again (muos_lineedit);
+          return;
+        }
+#endif
 
       switch (pending<<8 | data)
         {
@@ -409,7 +422,7 @@ muos_lineedit (void)
               muos_output_char (buffer[cursor]);
               ++cursor;
             }
-          else if (used < MUOS_LINEEDIT_BUFFER-2)
+          else if (used < MUOS_LINEEDIT_BUFFER-1)
             {
               memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
               buffer[cursor] = data;
@@ -436,7 +449,6 @@ muos_lineedit (void)
       muos_status.lineedit_pending = false;
     }
 
-end:
   muos_serial_rxrtq_again (muos_lineedit);
 }
 
