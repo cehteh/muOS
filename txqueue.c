@@ -397,7 +397,7 @@ muos_txqueue_output_fstr (muos_flash_cstr str)
   muos_txqueue_push (((uint8_t*)&str)[1]);
   muos_txqueue_push (((uint8_t*)&str)[0]);
 
-muos_txqueue_start ();
+  muos_txqueue_start ();
 }
 
 

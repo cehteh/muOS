@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//TODO: remove 'repeat' variants
 
 struct fmtconfig_type {
   uint8_t base:6;
@@ -87,6 +88,10 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(ctrl, uint8_t, uint8_t, uint8_t)
 
 
+#define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
+#define muos_output_csi_cstr_P(s) muos_output_csi_fstr (MUOS_PSTR(s))
+
+
 /*
 ctrl
  style:
@@ -148,8 +153,6 @@ muos_output_fstr (muos_flash_cstr str)
   muos_txqueue_output_fstr (str);
 }
 
-#define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
-
 
 static inline void
 muos_output_repeat_cstr (uint8_t rep, const char* str)
@@ -194,8 +197,6 @@ muos_output_csi_fstr (muos_flash_cstr str)
 {
   muos_txqueue_output_csi_fstr (str);
 }
-
-#define muos_output_csi_cstr_P(s) muos_output_csi_fstr (MUOS_PSTR(s))
 
 
 static inline void
