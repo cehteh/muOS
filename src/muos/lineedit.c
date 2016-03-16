@@ -24,8 +24,6 @@
 
 #include <string.h>
 
-//FIXME: editing 3 byte utf8 broken
-
 extern void MUOS_LINEEDIT_CALLBACK (const char*);
 
 static uint8_t cursor;
@@ -81,6 +79,8 @@ utf8ascii (const char c)
   return !(c & 128);
 }
 
+
+#if 0 //unused
 static uint8_t
 utf8len (const char* str)
 {
@@ -90,6 +90,8 @@ utf8len (const char* str)
       ++len;
    return len;
 }
+#endif
+
 
 static uint8_t
 utf8size (const char* start)
@@ -116,6 +118,16 @@ utf8del (void)
   used -= len;
   memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
 }
+
+static void
+utf8line_redraw (void)
+{
+  muos_output_csi_cstr_P ("?25l\r");
+  muos_output_cstrn (buffer, cursor);
+  muos_output_csi_cstr_P ("s");
+  muos_output_cstr (buffer+cursor);
+  muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+}
 #endif
 
 
@@ -127,7 +139,6 @@ muos_lineedit (void)
 
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-
 #if MUOS_LINEEDIT_UTF8 == 1
       if (pending == UTF8DROP)
         {
@@ -173,7 +184,6 @@ muos_lineedit (void)
 #endif
 
 #if 0 //PLANNED: history
-
 #endif
           pending = 0;
           break;
@@ -203,12 +213,16 @@ muos_lineedit (void)
           if (cursor<used)
             {
 #if MUOS_LINEEDIT_UTF8 == 1
-              cursor += utf8size (buffer+cursor+1);
+              cursor += utf8size (buffer+cursor);
+              utf8line_redraw ();
 #else
               ++cursor;
-#endif
               muos_output_csi_char ('C');
+#endif
             }
+          else
+            muos_output_char (7);
+
           pending = 0;
           break;
 
@@ -219,11 +233,15 @@ muos_lineedit (void)
             {
 #if MUOS_LINEEDIT_UTF8 == 1
               cursor -= utf8size (buffer+cursor-1);
+              utf8line_redraw ();
 #else
               --cursor;
-#endif
               muos_output_csi_char ('D');
+#endif
             }
+          else
+            muos_output_char (7);
+
           pending = 0;
           break;
 
@@ -238,14 +256,15 @@ muos_lineedit (void)
             {
 #if MUOS_LINEEDIT_UTF8 == 1
               utf8del ();
+              utf8line_redraw ();
 #else
               --used;
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-#endif
-
               muos_output_csi_cstr_P ("s\x1b[?25l");
               muos_output_cstr (buffer+cursor);
               muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+#endif
+
             }
           else
             {
@@ -299,9 +318,14 @@ muos_lineedit (void)
           // end
           pending = 0;
           cursor = used;
+
+#if MUOS_LINEEDIT_UTF8 == 1
+          utf8line_redraw ();
+#else
           muos_output_csi_cstr (NULL);
           muos_output_uint16 (cursor+1);
           muos_output_char ('G');
+#endif
           break;
 
         case CSI<<8 | 0x32:
@@ -340,18 +364,19 @@ muos_lineedit (void)
             {
 #if MUOS_LINEEDIT_UTF8 == 1
               uint8_t len = utf8size (buffer+cursor-1);
+
               used -= len;
               cursor -= len;
-              memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
+              memmove (buffer+cursor, buffer+cursor+len, used-cursor+1);
+              utf8line_redraw ();
 #else
               --used;
               --cursor;
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-#endif
-
               muos_output_csi_cstr_P ("D\x1b[s\x1b[?25l");
               muos_output_cstr (buffer+cursor);
               muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+#endif
             }
           else
             {
@@ -394,25 +419,11 @@ muos_lineedit (void)
           memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
           buffer[cursor] = data;
 
-          if (pending == UTF8_1)
-            {
-              if (cursor)
-                muos_output_cstr (buffer + cursor - (utf8size (buffer+cursor)-1));
-              else
-                muos_output_cstr (buffer);
-
-              if (cursor != used)
-                {
-                  muos_output_csi_char ('0');
-                  muos_output_uint8 (utf8len (buffer+cursor+1));
-                  muos_output_char ('D');
-                }
-            }
-
           ++used;
           ++cursor;
+          if (pending == UTF8_1)
+            utf8line_redraw ();
           --pending;
-
 
 #else
           pending = 0;
