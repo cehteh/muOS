@@ -147,6 +147,8 @@ pending bit -> dont read clock in interrupts
 
 ***** PLANNED macros for Hz kHz
 
+***** PLANNED macros for different timebase, stable timing etc
+
 *** Work Queues
     Most processing should be done by queueing functioncalls into one of the
     following queues. Functions can be pushed onto this queues at the front for
@@ -280,7 +282,7 @@ pending bit -> dont read clock in interrupts
 **** TX
 ***** DONE buffered
 ***** TODO non buffered
-***** TODO Tagged queue
+***** TODO Tagged queue (TXQUEUE)
       'reserve' some space for coversions
       DOCME txqueue is transactional
 **** RX
