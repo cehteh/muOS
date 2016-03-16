@@ -21,13 +21,13 @@
 # Project configuration
 
 PLATFORM = atmel
-MCU = atmega328p
-#MCU = attiny85
+#MCU = atmega328p
+MCU = attiny85
 
 MAIN = example
 
-PROGRAMMER = avrdude
-#PROGRAMMER = micronucleus
+#PROGRAMMER = avrdude
+PROGRAMMER = micronucleus
 
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
@@ -73,21 +73,21 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 #: Uses a GPIO to indicate when the cpu is busy,
 #: otherwise, while sleeping the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
+#MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
 #:MUOS_DEBUG_INTR
 #: Uses a GPIO to indicate when the cpu is handling interrupts,
 #: otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
+#MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
 
 
 #:MUOS_DEBUG_ERROR
 #: Uses a GPIO to indicate when an error got set,
 #: otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
+#MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
 
 #:MUOS_INITFN
@@ -135,8 +135,8 @@ MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 #:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
 #:  8 bits allow queues for up to 256 functions
 #:  16 bits allow huge queues, use only when really required
-#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
-MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
+MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
+#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
 
 
@@ -181,13 +181,13 @@ MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 #: Type to keep track of the size of the spriq.
 #: uint8_t for up to 255 entries, uint16_t for up to 65k entries.
 #: choosing uint8_t saves only one byte ram, usually not worth it
-#MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
-MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint16_t
+MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
+#MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint16_t
 
 
 
 #:MUOS_LPRIQ_TYPE
-#: type used for the 'priorities' if the priority queue
+#: type used for the 'priorities' of the priority queue
 MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=MUOS_CLOCK_TYPE
 #MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=uint8_t
 #MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=uint16_t
@@ -304,12 +304,12 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 #: 0 disables sending data
 #: >1 creates a buffer of that size
 #FIXME: handle the case when txbuffer is smaller than lineedit buffer
-#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=2
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=4
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
-MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
 
@@ -323,10 +323,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #:
 #: 0 disables the queue
 #: >1 creates a queue of that size
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
-MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=80
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
@@ -354,9 +354,9 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #: length of the receive buffer
 #: 0 disables receiving data
 #: >1 creates a buffer of that size
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
-MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
@@ -384,9 +384,9 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 #:MUOS_LINEEDIT_BUFFER
 #: length of the linedit buffer
-#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
+MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
-MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=32
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=32
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=128
 

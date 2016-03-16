@@ -19,35 +19,14 @@
 
 // define events, no main here
 
-void
-serial_ping (const struct muos_spriq_entry* event)
-{
-  if (!muos_status.lineedit_pending)
-    muos_output_char ('.');
-
-  muos_clpq_repeat (event, MUOS_CLOCK_SECONDS (1));
-}
 
 void
-toggle_red_timed (const struct muos_spriq_entry* event)
+toggle_led_timed (const struct muos_spriq_entry* event)
 {
-  PIND = _BV(PIND2);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (25));
-}
-
-void
-toggle_yellow_timed (const struct muos_spriq_entry* event)
-{
-  PINB = _BV(PINB5);
+  PINB = _BV(PINB1);
   muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
 }
 
-void
-toggle_green_timed (const struct muos_spriq_entry* event)
-{
-  PIND = _BV(PIND3);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
-}
 
 
 void
@@ -61,69 +40,12 @@ error (void)
 }
 
 
-
-void
-serial_echo (void)
-{
-  uint8_t data = muos_serial_rx_byte ();
-
-  if (!muos_error_check (muos_error_rx_buffer_underflow))
-    {
-      if (data != '\r')
-        muos_output_char ((char)data);
-      else
-        muos_output_nl ();
-    }
-
-  muos_serial_rxrtq_again (serial_echo);
-}
-
-
-
-void
-lineecho (const char* line)
-{
-  muos_output_cstr ("\r\n<");
-  muos_output_cstr (line);
-  muos_output_cstr (">\r\n");
-#if 0 //hexdump
-  muos_output_cstr ("<");
-  while (*line)
-    {
-      muos_output_base (16);
-      muos_output_uint8 (*line);
-      muos_output_char (' ');
-      ++line;
-    }
-  muos_output_cstr (">\r\n");
-#endif
-}
-
-
-
-
-void
-mutest (void)
-{
-  muos_output_cstr_P ("mµOS Ready:");
-  muos_output_nl ();
-}
-
-
 void
 init (void)
 {
-  DDRB = _BV(PINB5) | _BV(PINB4);
-  DDRD = _BV(PIND2) | _BV(PIND3);
+  DDRB = _BV(PINB1);
 
-
-  //muos_clpq_at (0, 0, toggle_red_timed);
-  //  muos_clpq_at (0, 0, toggle_yellow_timed);
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_green_timed);
-  //muos_clpq_at (0, 0, serial_ping);
-  //muos_clpq_at (0, 0, serial_blinkerr);
-
-  muos_bgq_pushback (mutest);
+  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_led_timed);
 }
 
 
