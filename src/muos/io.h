@@ -52,6 +52,7 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(char, char)                          \
   OUTPUTFN(repeat_char, uint8_t, char)          \
   OUTPUTFN(cstr, const char*)                   \
+  OUTPUTFN(cstrn, const char*, uint8_t)         \
   OUTPUTFN(fstr, muos_flash_cstr)               \
   OUTPUTFN(repeat_cstr, uint8_t, const char*)   \
   OUTPUTFN(mem, const uint8_t*, uint8_t)        \
@@ -70,7 +71,8 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(int64, int64_t)                      \
   OUTPUTFN(uint64, uint64_t)                    \
   OUTPUTFN(float, float)                        \
-  OUTPUTFN(cstr_R)                              \
+  OUTPUTFN(cstr_R, const char*)                 \
+  OUTPUTFN(cstrn_R, const char*, uint8_t)       \
   OUTPUTFN(mem_R)                               \
   OUTPUTFN(int32_R)                             \
   OUTPUTFN(uint32_R)                            \
@@ -144,6 +146,13 @@ static inline void
 muos_output_cstr (const char* str)
 {
   muos_txqueue_output_cstr (str);
+}
+
+
+static inline void
+muos_output_cstrn (const char* str, uint8_t n)
+{
+  muos_txqueue_output_cstrn (str, n);
 }
 
 

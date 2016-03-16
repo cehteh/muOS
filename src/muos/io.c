@@ -55,6 +55,15 @@ muos_output_cstr (const char* str)
     muos_serial_tx_byte (*str++);
 }
 
+
+void
+muos_output_cstrn (const char* str, uint8_t n)
+{
+  while (*str && n--)
+    muos_serial_tx_byte (*str++);
+}
+
+
 void
 muos_output_fstr (muos_flash_cstr str)
 {
