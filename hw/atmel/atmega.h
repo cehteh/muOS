@@ -32,6 +32,11 @@
 #define MUOS_HW_CLOCK_DIV256   _BV(CS02)
 #define MUOS_HW_CLOCK_DIV1024  _BV(CS02) | _BV(CS00)
 
+#define ISRNAME_OVERFLOW_(hw) TIMER##hw##_OVF_vect
+#define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_(hw)
+
+#define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect
+#define ISRNAME_COMPMATCH(tmhw,cmhw) ISRNAME_COMPMATCH_(tmhw,cmhw)
 
 #define MUOS_HW_CLOCK_REGISTER_(hw) TCNT##hw
 #define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_(hw)
