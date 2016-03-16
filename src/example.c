@@ -86,6 +86,17 @@ lineecho (const char* line)
   muos_output_cstr ("\r\n<");
   muos_output_cstr (line);
   muos_output_cstr (">\r\n");
+#if 0 //hexdump
+  muos_output_cstr ("<");
+  while (*line)
+    {
+      muos_output_base (16);
+      muos_output_uint8 (*line);
+      muos_output_char (' ');
+      ++line;
+    }
+  muos_output_cstr (">\r\n");
+#endif
 }
 
 
@@ -96,11 +107,10 @@ mutest (void)
 {
   muos_output_cstr_P ("mµOS Ready:");
   muos_output_nl ();
-
 }
 
 
-  void
+void
 init (void)
 {
   DDRB = _BV(PINB5) | _BV(PINB4);

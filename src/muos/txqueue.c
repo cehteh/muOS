@@ -352,7 +352,6 @@ muos_txqueue_output_repeat_char (uint8_t rep, char c)
   (void) c;
 }
 
-
 void
 muos_txqueue_output_cstr (const char* str)
 {
