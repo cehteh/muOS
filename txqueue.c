@@ -383,6 +383,36 @@ muos_txqueue_output_cstr (const char* str)
   muos_txqueue_start ();
 }
 
+void
+muos_txqueue_output_cstrn (const char* str, uint8_t n)
+{
+  if (muos_txqueue_free () < strlen (str) + 1 || muos_txqueue_free () < n+1)
+    {
+      muos_error_set (muos_error_txqueue_overflow);
+      return;
+    }
+
+  for(; *str && n; ++str, --n)
+    {
+      if ((uint8_t)*str < 128)
+        {
+          muos_txqueue_push (*str);
+        }
+      else
+        {
+          muos_txqueue_push (MUOS_TXTAG_NCHARS + (n < strlen (str)?n:strlen (str))-1);
+
+          for(; *str && n; ++str, --n)
+            {
+              muos_txqueue_push (*str);
+            }
+          break;
+        }
+    }
+
+  muos_txqueue_start ();
+}
+
 
 void
 muos_txqueue_output_fstr (muos_flash_cstr str)
