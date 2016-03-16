@@ -20,29 +20,19 @@
 
 #include <muos/clock.h>
 
-#ifdef __AVR_ATmega328P__
-
-#define ISRNAME_OVERFLOW_(hw) TIMER##hw##_OVF_vect
-#define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_(hw)
-
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
 #if MUOS_DEBUG_INTR == 1
-  PORTB |= _BV(PINB4);
+  //FIXME: PORTB |= _BV(PINB4);
 #endif
   ++muos_clock_count_;
 #if MUOS_DEBUG_INTR ==1
-  PORTB &= ~_BV(PINB4);
+  //FIXME: PORTB &= ~_BV(PINB4);
 #endif
 
 }
 
-#define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect
-#define ISRNAME_COMPMATCH(tmhw,cmhw) ISRNAME_COMPMATCH_(tmhw,cmhw)
-
 // compmatch interrupt is only used to wake the mainloop
 EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
-
-#endif
 
 
