@@ -36,3 +36,29 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
 
 
+#if MUOS_CLOCK_CALIBRATE == 1
+static muos_clock muos_clock_calibrate_last;
+
+void
+muos_clock_calibrate (muos_clock sync)
+{
+  muos_clock now = muos_clock_now ();
+
+  if (sync)
+    {
+      muos_clock elapsed;
+
+      if (now > muos_clock_calibrate_last)
+        elapsed = now - muos_clock_calibrate_last;
+      else
+        elapsed = muos_clock_calibrate_last - now;
+
+      if (elapsed > sync)
+        --OSCCAL;
+      if (elapsed < sync)
+        ++OSCCAL;
+    }
+
+  muos_clock_calibrate_last = now;
+}
+#endif
