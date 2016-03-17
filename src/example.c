@@ -44,8 +44,15 @@ void
 init (void)
 {
   DDRB = _BV(PINB1);
+  PORTB |= _BV(PINB1);
+  GIMSK |= _BV(PCIE);
+  PCMSK |= _BV(PCINT2);
 
   muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_led_timed);
 }
 
-
+ISR(PCINT0_vect)
+{
+  if (PINB & _BV(PINB2))
+    muos_clock_calibrate (MUOS_CLOCK_MILLISECONDS (20));
+}

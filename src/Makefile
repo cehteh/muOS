@@ -256,6 +256,14 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 
 
 
+#:MUOS_CLOCK_CALIBRATE
+#: Enables frequency calibration api for syncing
+#: the master clock with some external clock.
+#MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=0
+MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
+
+
+
 #:MUOS_BUFFER_INDEX
 #: type used to the cyclic buffer length and indexing
 MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
