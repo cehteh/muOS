@@ -23,6 +23,12 @@
 
 #include <muos/hw/atmel/attiny.h>
 
+// values guessed from datasheet
+// Figure 22-42. Calibrated 8 MHz RC Oscillator Frequency vs. OSCCAL Value
+// don't need to be exact
+#define MUOS_HW_ATMEL_OSCAL_HIGHSWITCH 184
+#define MUOS_HW_ATMEL_OSCAL_LOWSWITCH 94
+
 static inline void
 muos_hw_shutdown (void)
 {

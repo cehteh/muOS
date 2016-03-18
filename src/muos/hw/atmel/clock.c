@@ -39,6 +39,8 @@ EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW, MUOS_CLOCK_HW_COMPAREMATCH));
 #if MUOS_CLOCK_CALIBRATE == 1
 static muos_clock muos_clock_calibrate_last;
 
+//PLANNED: add long time calibration to keep frequency more stable
+
 void
 muos_clock_calibrate (muos_clock sync)
 {
@@ -54,9 +56,19 @@ muos_clock_calibrate (muos_clock sync)
         elapsed = muos_clock_calibrate_last - now;
 
       if (elapsed > sync)
-        --OSCCAL;
-      if (elapsed < sync)
-        ++OSCCAL;
+        {
+          if (OSCCAL != 128)
+            --OSCCAL;
+          else
+            OSCCAL = MUOS_HW_ATMEL_OSCAL_LOWSWITCH;
+        }
+      else if (elapsed < sync)
+        {
+          if (OSCCAL != 127)
+            ++OSCCAL;
+          else
+            OSCCAL = MUOS_HW_ATMEL_OSCAL_HIGHSWITCH;
+        }
     }
 
   muos_clock_calibrate_last = now;
