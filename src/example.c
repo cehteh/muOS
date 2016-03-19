@@ -54,5 +54,5 @@ init (void)
 ISR(PCINT0_vect)
 {
   if (PINB & _BV(PINB2))
-    muos_clock_calibrate (MUOS_CLOCK_MILLISECONDS (20));
+    muos_clock_calibrate (muos_clock_now (), MUOS_CLOCK_MILLISECONDS (20));
 }
