@@ -46,10 +46,8 @@ static muos_clock calibrate_drift_sync;
 
 
 void
-muos_clock_calibrate (muos_clock sync)
+muos_clock_calibrate (const muos_clock now, const muos_clock sync)
 {
-  muos_clock now = muos_clock_now ();
-
   if (sync)
     {
       muos_clock elapsed;

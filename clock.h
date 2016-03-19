@@ -107,7 +107,7 @@ muos_clock_fullnow (void)
 
 #if MUOS_CLOCK_CALIBRATE != 0
 void
-muos_clock_calibrate (muos_clock sync);
+muos_clock_calibrate (const muos_clock now, const muos_clock sync);
 #endif
 
 #endif
