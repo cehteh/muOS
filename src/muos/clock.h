@@ -105,7 +105,7 @@ muos_clock_fullnow (void)
   return clock;
 }
 
-#if MUOS_CLOCK_CALIBRATE == 1
+#if MUOS_CLOCK_CALIBRATE != 0
 void
 muos_clock_calibrate (muos_clock sync);
 #endif

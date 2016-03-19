@@ -257,11 +257,22 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 
 
 #:MUOS_CLOCK_CALIBRATE
-#: Enables frequency calibration api for syncing
-#: the master clock with some external clock.
+#: Frequency calibration api for syncing the
+#: master clock with some external signal.
+#:  0 = disabled
 #MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=0
 MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 
+
+
+#:MUOS_CLOCK_CALIBRATE_DRIFT
+#: If defined compensate drift.
+#: The Value should be the time for a rolling average to compensate the drift over.
+#: Sycnronization must then be called at regular time intervals.
+MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DRIFT='MUOS_CLOCK_MILLISECONDS(10000)'
+
+
+#TODO: static calibration interval
 
 
 #:MUOS_BUFFER_INDEX
