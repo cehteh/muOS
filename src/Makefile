@@ -20,7 +20,7 @@
 
 # Project configuration
 
-PLATFORM = atmel
+PLATFORM = atmel/avr
 #MCU = atmega328p
 MCU = attiny85
 
