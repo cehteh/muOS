@@ -105,6 +105,10 @@ muos_clock_fullnow (void)
   return clock;
 }
 
+muos_clock
+muos_clock_elapsed (muos_clock now, muos_clock start);
+
+
 #if MUOS_CLOCK_CALIBRATE != 0
 void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync);

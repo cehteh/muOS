@@ -24,5 +24,12 @@
 volatile muos_clock muos_clock_count_;
 muos_clock muos_now_;
 
-
+muos_clock
+muos_clock_elapsed (muos_clock now, muos_clock start)
+{
+  if (now > start)
+    return now - start;
+  else
+    return start - now;
+}
 
