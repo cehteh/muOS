@@ -265,6 +265,11 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 
 
 
+#:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
+MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
+
+
+
 #:MUOS_CLOCK_CALIBRATE_DRIFT
 #: If defined compensate drift.
 #: The Value should be the time for a rolling average to compensate the drift over.
