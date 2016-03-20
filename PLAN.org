@@ -84,23 +84,24 @@ pending bit -> dont read clock in interrupts
       configured this state should never overflow for the application runtime.
 
 **** Some math about datatypes and overflows
-     |   |    F_CPU |     CLOCK | clock | hwclock | shortclock |  shortclock |   fullclock |      clock |             |
-     |   |      MHZ | PRESCALER |  bits |    bits |       bits |        (ms) |     (years) |     (days) | Notes       |
-     |---+----------+-----------+-------+---------+------------+-------------+-------------+------------+-------------|
-     | # | 0.032768 |      1024 |    32 |       8 |          8 |    8000.000 |      1089.5 |    1553.45 | watch osc   |
-     | # |    0.125 |      1024 |    16 |       8 |          8 |    2097.152 |         0.0 |       0.01 | unuseable   |
-     | # |   0.0625 |      1024 |    32 |       8 |         16 | 1073741.800 |       571.2 |     814.45 | slow avr    |
-     | # |    0.125 |      1024 |    32 |       8 |          8 |    2097.152 |       285.6 |     407.23 | slow avr    |
-     | # |        1 |        64 |    32 |       8 |         16 |    4194.304 |         2.2 |       3.18 |             |
-     | # |        8 |      1024 |    32 |       8 |         16 |    8388.608 |         4.5 |       6.36 |             |
-     | # |       16 |      1024 |    32 |       8 |          8 |      16.384 |         2.2 |       3.18 | 8bit timer  |
-     | # |       16 |      1024 |    32 |       8 |         16 |    4194.304 |         2.2 |       3.18 | 8bit timer  |
-     | # |       16 |      1024 |    32 |      16 |         16 |    4194.304 |       571.2 |       3.18 | 16bit timer |
-     | # |       16 |        64 |    32 |      16 |         16 |     262.144 |        35.7 |       0.20 |             |
-     | # |       16 |         1 |    32 |      16 |         16 |       4.096 |         0.6 |       0.00 | fast avr    |
-     | # |       72 |       256 |    32 |      16 |         16 |     233.017 |        31.7 |       0.18 | STM32 72MHz |
-     | # |      200 |         1 |    64 |      16 |         32 |   21474.836 | 191673930.0 | 1067519.90 | maxed out   |
-     #+TBLFM: $7=(2^$6)*$3/($2*1000);%.3f::$8=(2^($4+$5))*$3/($2*1000000)/60/60/24/365;%.1f::$9=(2^($4))*$3/($2*1000000)/60/60/24;%.2f
+     |   |    F_CPU |     CLOCK | clock | hwclock | shortclock |     tick |  shortclock |    fullclock |      clock |             |
+     |   |      MHZ | PRESCALER |  bits |    bits |       bits |       µs |        (ms) |      (years) |     (days) | Notes       |
+     |---+----------+-----------+-------+---------+------------+----------+-------------+--------------+------------+-------------|
+     | # | 0.032768 |      1024 |    32 |       8 |          8 | 31250.00 |    8000.000 |      1089.54 |    1553.45 | watch osc   |
+     | # |    0.125 |      1024 |    16 |       8 |          8 |  8192.00 |    2097.152 |         0.00 |       0.01 | unuseable   |
+     | # |   0.0625 |      1024 |    32 |       8 |         16 | 16384.00 | 1073741.800 |       571.23 |     814.45 | slow avr    |
+     | # |    0.125 |      1024 |    32 |       8 |          8 |  8192.00 |    2097.152 |       285.62 |     407.23 | slow avr    |
+     | # |        1 |        64 |    32 |       8 |         16 |    64.00 |    4194.304 |         2.23 |       3.18 |             |
+     | # |        8 |      1024 |    32 |       8 |         16 |   128.00 |    8388.608 |         4.46 |       6.36 |             |
+     | # |       16 |      1024 |    32 |       8 |          8 |    64.00 |      16.384 |         2.23 |       3.18 | 8bit timer  |
+     | # |       16 |      1024 |    32 |       8 |         16 |    64.00 |    4194.304 |         2.23 |       3.18 | 8bit timer  |
+     | # |       16 |         8 |    32 |       8 |         24 |     0.50 |    8388.608 |         0.02 |       0.02 |             |
+     | # |       16 |      1024 |    32 |      16 |         16 |    64.00 |    4194.304 |       571.23 |       3.18 | 16bit timer |
+     | # |       16 |        64 |    32 |      16 |         16 |     4.00 |     262.144 |        35.70 |       0.20 |             |
+     | # |       16 |         1 |    32 |      16 |         16 |     0.06 |       4.096 |         0.56 |       0.00 | fast avr    |
+     | # |       72 |       256 |    32 |      16 |         16 |     3.56 |     233.017 |        31.74 |       0.18 | STM32 72MHz |
+     | # |      200 |         1 |    64 |      16 |         32 |     0.01 |   21474.836 | 191673930.00 | 1067519.90 | maxed out   |
+     #+TBLFM: $7=($3/$2;%.2f::$8=(2^$6)*$3/($2*1000);%.3f::$9=(2^($4+$5))*$3/($2*1000000)/60/60/24/365;%.2f::$10=(2^($4))*$3/($2*1000000)/60/60/24;%.2f
 
      Conclusions:
      * less than 32 bit for the clock counter makes hardly any sense, even for
@@ -288,15 +289,17 @@ pending bit -> dont read clock in interrupts
 **** RX
 ***** TODO Lineedit
       Selections by config
-      block lineedit when TX is stalled
 ****** DONE simple (backspace only)
 ****** DONE cursor
+****** PLANNED load/save commandline from api (configuration settings)
+****** TODO block lineedit when TX is stalled
+******* TODO implement txqueue *_R variants to print from lineedit buffer
 ****** TODO history
-******* simple history, store only 1 byte aside, instant pgup after return restores previous line
-****** TODO completion
-****** TODO rxsync when line is idle for some frames
-******* tab for text
-******* pgup/pgdown for values
+******* DONE simple history, store only 1 byte aside, instant pgup after return restores previous line
+***** TODO completion
+ - tab for text
+ - pgup/pgdown for values
+***** TODO rxsync when line is idle for some frames
 *** gpio
     configure (in out pullup)
     set, clear, toggle
