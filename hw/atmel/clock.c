@@ -44,14 +44,18 @@ static muos_clock calibrate_drift_last;
 static muos_clock calibrate_drift_sync;
 #endif
 
-
 void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync)
 {
   muos_clock elapsed = muos_clock_elapsed (now, calibrate_last);
-  if (sync)
-    {
 
+  if (sync
+#ifdef MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
+      && elapsed >= sync - MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(sync)
+      && elapsed <= sync + MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(sync)
+#endif
+      )
+    {
 
 
 #ifndef MUOS_CLOCK_CALIBRATE_DRIFT
