@@ -48,14 +48,10 @@ static muos_clock calibrate_drift_sync;
 void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync)
 {
+  muos_clock elapsed = muos_clock_elapsed (now, calibrate_last);
   if (sync)
     {
-      muos_clock elapsed;
 
-      if (now > calibrate_last)
-        elapsed = now - calibrate_last;
-      else
-        elapsed = calibrate_last - now;
 
 
 #ifndef MUOS_CLOCK_CALIBRATE_DRIFT
@@ -79,12 +75,7 @@ muos_clock_calibrate (const muos_clock now, const muos_clock sync)
       else
         calibrate_drift_sync += sync;
 
-      muos_clock elapsed_drift;
-
-      if (now > calibrate_drift_last)
-        elapsed_drift = now - calibrate_drift_last;
-      else
-        elapsed_drift = calibrate_drift_last - now;
+      muos_clock elapsed_drift = muos_clock_elapsed (now, calibrate_drift_last);
 
       int8_t divert = (elapsed>sync?1:elapsed<sync?-1:0) +
         (elapsed_drift>calibrate_drift_sync?1:elapsed_drift<calibrate_drift_sync?-1:0);
