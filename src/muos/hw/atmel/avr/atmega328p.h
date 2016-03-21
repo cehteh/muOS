@@ -18,19 +18,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_HWDEF_H
-#define MUOS_HWDEF_H
+#ifndef MUOS_HW_ATMEL_ATMEGA328P_H
+#define MUOS_HW_ATMEL_ATMEGA328P_H
 
-#ifdef __AVR_ATmega328P__
-#include <muos/hw/atmel/atmega328p.h>
-#endif
+#include <muos/hw/atmel/avr/atmega.h>
 
-#ifdef __AVR_ATtiny85__
-#include <muos/hw/atmel/attiny85.h>
-#endif
+// values guessed from datasheet
+// Figure 29-176. Calibrated 8 MHz RC Oscillator Frequency vs. OSCCAL Value
+// doesn't need to be exact
+#define MUOS_HW_ATMEL_OSCAL_HIGHSWITCH 202
+#define MUOS_HW_ATMEL_OSCAL_LOWSWITCH 76
 
-#ifdef MUOS_LINUX
-#include <muos/hw/linux/linux.h>
-#endif
+static inline void
+muos_hw_shutdown (void)
+{
+  MCUCR |= _BV(PUD);
+  DDRB = 0;
+  DDRC = 0;
+  DDRD = 0;
+  muos_hw_sleep_prepare (SLEEP_MODE_PWR_DOWN);
+  for (;;)
+    {
+      muos_hw_sleep ();
+    }
+}
 
 #endif

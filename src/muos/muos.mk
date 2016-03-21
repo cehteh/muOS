@@ -29,7 +29,7 @@ CCFLAGS += -std=gnu99
 DEPFLAGS += $(CCFLAGS) -M -MP -MT $*.o
 
 # Preprocessor Flags
-CPPFLAGS += -I .
+CPPFLAGS += -I . -D'MUOS_HW_HEADER=<muos/hw/$(PLATFORM)/$(MCU).h>'
 
 # Compile Flags
 CFLAGS += $(CCFLAGS) $(CPPFLAGS)
@@ -59,7 +59,7 @@ endif
 FORCE:
 
 include muos/prg_$(PROGRAMMER).mk
-include muos/hw/$(PLATFORM)/platform.mk
+include muos/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
