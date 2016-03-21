@@ -21,10 +21,11 @@
 #ifndef MUOS_HW_ATMEL_ATMEGA_H
 #define MUOS_HW_ATMEL_ATMEGA_H
 
-#include <muos/hw/atmel/avr.h>
+#include <muos/hw/atmel/avr/avr.h>
 
 // one hardware timer is used for the wall clock
 
+//FIXME: #if MUOS_CLOCK_HW=0
 #define MUOS_HW_CLOCK_OFF      0
 #define MUOS_HW_CLOCK_DIV0     _BV(CS00)
 #define MUOS_HW_CLOCK_DIV8     _BV(CS01)

@@ -21,13 +21,29 @@
 #ifndef MUOS_HW_ATMEL_ATMEGA328P_H
 #define MUOS_HW_ATMEL_ATMEGA328P_H
 
-#include <muos/hw/atmel/attiny.h>
+#include <muos/hw/atmel/avr/attiny.h>
 
 // values guessed from datasheet
 // Figure 22-42. Calibrated 8 MHz RC Oscillator Frequency vs. OSCCAL Value
 // don't need to be exact
 #define MUOS_HW_ATMEL_OSCAL_HIGHSWITCH 184
 #define MUOS_HW_ATMEL_OSCAL_LOWSWITCH 94
+
+
+
+
+#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)  \
+  TIMSK |= _BV(TOIE##hw)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)     \
+  OCR##tmhw##cmhw = at;                                        \
+  TIMSK |= _BV(OCIE##tmhw##cmhw)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)       \
+  TIMSK &= ~_BV(OCIE##tmhw##cmhw)
+
+
+
 
 static inline void
 muos_hw_shutdown (void)

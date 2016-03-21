@@ -24,7 +24,6 @@
 #include <stdbool.h>
 
 #include <muos/muos.h>
-#include <muos/hwdef.h>
 
 
 #define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALER)

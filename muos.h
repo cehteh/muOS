@@ -24,7 +24,7 @@
 #include <stdint.h>
 
 
-#include <muos/hwdef.h>
+#include MUOS_HW_HEADER
 
 
 #define MDEBUG(c) do { muos_serial_tx_byte (c);} while (0)
@@ -58,5 +58,6 @@ extern volatile struct muos_status_flags
   uint8_t lineedit_ovwr:1;
   uint8_t txqueue_pending:1;
 } muos_status;
+
 
 #endif
