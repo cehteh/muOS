@@ -32,17 +32,28 @@
 
 
 
-#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)  \
+#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw, _)       \
   TIMSK |= _BV(TOIE##hw)
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)     \
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(tmhw, cmhw, at)   \
   OCR##tmhw##cmhw = at;                                        \
   TIMSK |= _BV(OCIE##tmhw##cmhw)
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)       \
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(hw, at)             \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(hw, at)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(hw, at)              \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(MUOS_PP_BOTH hw, at)
+
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)       \
   TIMSK &= ~_BV(OCIE##tmhw##cmhw)
 
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)        \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)
 
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
 
 static inline void

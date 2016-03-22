@@ -216,8 +216,8 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 #: This is a hardware dependent config. usually a number or a simple name
 #: timer hardware setup is tightly bound to the hardware capabilities and only barely
 #: abstracted, check for the respective hardware implementation about possible settings.
-MUOS_CONFIG += -DMUOS_CLOCK_HW=0
-#MUOS_CONFIG += -DMUOS_CLOCK_HW=1
+#MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
+MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 
 
@@ -228,13 +228,6 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW=0
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=256
 MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
-
-
-
-#:MUOS_CLOCK_HW_COMPAREMATCH
-#: The Compare/Match unit of the Timer to use
-#: This is a hardware dependent config. usually a number or a simple name
-MUOS_CONFIG += -DMUOS_CLOCK_HW_COMPAREMATCH=A
 
 
 
