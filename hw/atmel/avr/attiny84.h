@@ -21,20 +21,36 @@
 #ifndef MUOS_HW_ATMEL_ATMEGA328P_H
 #define MUOS_HW_ATMEL_ATMEGA328P_H
 
+
+#include <muos/pp.h>
 #include <muos/hw/atmel/avr/attiny.h>
 
 
 
 
-#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)  \
+#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw, _) \
   TIMSK##hw |= _BV(TOIE##hw)
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)    \
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(tmhw, cmhw, at)   \
   OCR##tmhw##cmhw = at;                                        \
   TIMSK##tmhw |= _BV(OCIE##tmhw##cmhw)
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)       \
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(hw, at)             \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(hw, at)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(hw, at)              \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(MUOS_PP_BOTH hw, at)
+
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)       \
   TIMSK##tmhw &= ~_BV(OCIE##tmhw##cmhw)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)        \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
 
 // values guessed from datasheet

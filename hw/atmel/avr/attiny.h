@@ -21,6 +21,8 @@
 #ifndef MUOS_HW_ATMEL_ATMEGA_H
 #define MUOS_HW_ATMEL_ATMEGA_H
 
+
+#include <muos/pp.h>
 #include <muos/hw/atmel/avr/avr.h>
 
 // one hardware timer is used for the wall clock
@@ -55,35 +57,31 @@
 
 
 
-#define ISRNAME_OVERFLOW_(hw) TIM##hw##_OVF_vect
-#define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_(hw)
+#define ISRNAME_OVERFLOW_(hw, _) TIM##hw##_OVF_vect
+
+#define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_ hw
 
 #define ISRNAME_COMPMATCH_(tmhw,cmhw) TIM##tmhw##_COMP##cmhw##_vect
-#define ISRNAME_COMPMATCH(tmhw,cmhw) ISRNAME_COMPMATCH_(tmhw,cmhw)
+#define ISRNAME_COMPMATCH(hw) ISRNAME_COMPMATCH_ hw
 
-#define MUOS_HW_CLOCK_REGISTER_(hw) TCNT##hw
-#define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_(hw)
+#define MUOS_HW_CLOCK_REGISTER_(hw, ...) TCNT##hw
+#define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_ hw
 
-
-#define MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)  \
+#define MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)  \
   TCCR##hw##B = MUOS_HW_CLOCK_DIV##prescale
 
-#define MUOS_HW_CLOCK_PRESCALE_SET(hw, prescale)   \
-  MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)
+#define MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)   \
+  MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)
+
+#define MUOS_HW_CLOCK_PRESCALE_SET(hw, prescale)                \
+  MUOS_HW_CLOCK_PRESCALE_SET_(MUOS_PP_FIRST hw, prescale)
 
 
 
 #define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE(hw)   \
-  MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw)
+  MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_ hw
 
 
-
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(tmhw, cmhw, at)   \
-  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tmhw, cmhw, at)
-
-
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(tmhw, cmhw)       \
-  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)
 
 
 
