@@ -25,7 +25,19 @@
 #include <muos/pp.h>
 #include <muos/hw/atmel/avr/attiny.h>
 
+#define MUOS_HW_CLOCK0_OFF      0
+#define MUOS_HW_CLOCK0_DIV1     _BV(CS00)
+#define MUOS_HW_CLOCK0_DIV8     _BV(CS01)
+#define MUOS_HW_CLOCK0_DIV64    _BV(CS01) | _BV(CS00)
+#define MUOS_HW_CLOCK0_DIV256   _BV(CS02)
+#define MUOS_HW_CLOCK0_DIV1024  _BV(CS02) | _BV(CS00)
 
+#define MUOS_HW_CLOCK1_OFF      0
+#define MUOS_HW_CLOCK1_DIV1     _BV(CS10)
+#define MUOS_HW_CLOCK1_DIV8     _BV(CS11)
+#define MUOS_HW_CLOCK1_DIV64    _BV(CS11) | _BV(CS10)
+#define MUOS_HW_CLOCK1_DIV256   _BV(CS12)
+#define MUOS_HW_CLOCK1_DIV1024  _BV(CS12) | _BV(CS10)
 
 
 #define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw, _) \

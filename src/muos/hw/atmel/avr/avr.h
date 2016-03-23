@@ -71,5 +71,15 @@ muos_hw_sleep_done (void)
 }
 
 
+//FIXME: only guessed values, this is the time between setting compmatch for wakeup and going to sleep
+#define MUOS_HW_CLOCK_LATENCY1    256
+#define MUOS_HW_CLOCK_LATENCY8    32
+#define MUOS_HW_CLOCK_LATENCY64   4
+#define MUOS_HW_CLOCK_LATENCY256  0
+#define MUOS_HW_CLOCK_LATENCY1024 0
+
+#define MUOS_HW_CLOCK_LATENCY_(div) MUOS_HW_CLOCK_LATENCY##div
+#define MUOS_HW_CLOCK_LATENCY(div) MUOS_HW_CLOCK_LATENCY_(div)
+
 
 #endif
