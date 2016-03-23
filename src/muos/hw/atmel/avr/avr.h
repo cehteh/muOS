@@ -46,10 +46,8 @@ static inline void
 muos_hw_sleep_prepare (const uint8_t mode)
 {
   //TODO: configureable mode
-  cli();
   set_sleep_mode (mode);
   sleep_enable();
-  sei();
 }
 
 static inline void
@@ -58,7 +56,8 @@ muos_hw_sleep (void)
 #if MUOS_DEBUG_BUSY ==1
   PORTB &= ~_BV(PINB5);
 #endif
-  sleep_cpu();
+  sei ();
+  sleep_cpu ();
 #if MUOS_DEBUG_BUSY ==1
   PORTB |= _BV(PINB5);
 #endif
@@ -69,17 +68,6 @@ muos_hw_sleep_done (void)
 {
   sleep_disable();
 }
-
-
-//FIXME: only guessed values, this is the time between setting compmatch for wakeup and going to sleep
-#define MUOS_HW_CLOCK_LATENCY1    256
-#define MUOS_HW_CLOCK_LATENCY8    32
-#define MUOS_HW_CLOCK_LATENCY64   4
-#define MUOS_HW_CLOCK_LATENCY256  0
-#define MUOS_HW_CLOCK_LATENCY1024 0
-
-#define MUOS_HW_CLOCK_LATENCY_(div) MUOS_HW_CLOCK_LATENCY##div
-#define MUOS_HW_CLOCK_LATENCY(div) MUOS_HW_CLOCK_LATENCY_(div)
 
 
 #endif

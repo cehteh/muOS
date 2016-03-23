@@ -32,7 +32,10 @@ volatile struct muos_status_flags muos_status;
 void
 muos_sleep (void)
 {
-  //TODO: select sleed mode depending on active hardware (adc, usart)
+  // muos_hw_sleep () enables interrupts right before the sleep,
+  // this must be done to prevent races (interrupts while compmatch gets armed)
+  muos_interrupt_disable ();
+  //TODO: select sleep mode depending on active hardware (adc, usart)
   muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
   muos_clpq_set_compmatch ();
   muos_hw_sleep ();
