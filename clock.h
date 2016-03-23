@@ -78,16 +78,21 @@ muos_clock_now (void)
 static inline muos_shortclock
 muos_clock_shortnow (void)
 {
-  muos_shortclock counter;
-  muos_hwclock hw;
-  do
+  if (sizeof(MUOS_CLOCK_REGISTER) < sizeof(muos_shortclock))
     {
-      counter = (muos_shortclock)muos_clock_count_;
-      hw = MUOS_CLOCK_REGISTER;
-    }
-  while ((uint8_t)counter != (uint8_t)muos_clock_count_);
+      muos_shortclock counter;
+      muos_hwclock hw;
+      do
+        {
+          counter = (muos_shortclock)muos_clock_count_;
+          hw = MUOS_CLOCK_REGISTER;
+        }
+      while ((uint8_t)counter != (uint8_t)muos_clock_count_);
 
-  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+      return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
+    }
+  else
+    return MUOS_CLOCK_REGISTER;
 }
 
 

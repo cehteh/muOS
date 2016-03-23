@@ -92,9 +92,13 @@ muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_sp
 void
 muos_clpq_set_compmatch (void)
 {
-  muos_spriq_priority diff = muos_clpq.descriptor.spriq[0].when - (muos_clock_count_<<8) ;
+  muos_spriq_priority diff = muos_clpq.descriptor.spriq[0].when -
+    (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
 
-  if (diff > MUOS_CLOCK_REGISTER && diff < 255)
+  if (diff <= MUOS_HW_CLOCK_LATENCY(MUOS_CLOCK_PRESCALER))
+    diff = MUOS_HW_CLOCK_LATENCY(MUOS_CLOCK_PRESCALER);
+
+  if (diff > MUOS_CLOCK_REGISTER)
     {
       MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, diff);
     }
