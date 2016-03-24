@@ -55,7 +55,7 @@ muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when
 }
 
 
-void
+bool
 muos_clpq_set_compmatch (void);
 
 #endif

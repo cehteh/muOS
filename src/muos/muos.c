@@ -34,12 +34,21 @@ muos_sleep (void)
 {
   // muos_hw_sleep () enables interrupts right before the sleep,
   // this must be done to prevent races (interrupts while compmatch gets armed)
+
   muos_interrupt_disable ();
-  //TODO: select sleep mode depending on active hardware (adc, usart)
-  muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
-  muos_clpq_set_compmatch ();
-  muos_hw_sleep ();
-  muos_hw_sleep_done ();
+  if (muos_clpq_set_compmatch ())
+    {
+      //TODO: select sleep mode depending on active hardware (adc, usart)
+      muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
+      muos_hw_sleep ();
+      muos_hw_sleep_done ();
+    }
+  else
+    {
+      // busywait for timespans which are to small for compmatch
+      muos_interrupt_enable ();
+      while (MUOS_CLOCK_REGISTER < (typeof(MUOS_CLOCK_REGISTER)) muos_clpq.descriptor.spriq[0].when);
+    }
 }
 
 void muos_die (void)

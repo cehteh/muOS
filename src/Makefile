@@ -222,7 +222,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 
 #:MUOS_CLOCK_HW_PRESCALER
-#: Prescaler from some hardware defined master clock
+#: Prescaler from some hardware defined master clock.
+#: Use a 16 bit timer for PRESCALER=1, 8 bit has too high interrupt load
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64

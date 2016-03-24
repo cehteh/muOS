@@ -27,6 +27,12 @@
 muos_clpq_type muos_clpq;
 
 
+//PLANNED:
+//: realtime in interrupt function calls
+//: high bit tag
+//: sorting before normal functions
+//: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
+
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
@@ -89,26 +95,31 @@ muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_sp
 }
 
 // This is the time between setting compmatch for wakeup and going to sleep
-#define MUOS_CLOCK_LATENCY ((224+MUOS_CLOCK_PRESCALER/2)/MUOS_CLOCK_PRESCALER)
+#define MUOS_CLOCK_LATENCY ((224U+MUOS_CLOCK_PRESCALER/2)/MUOS_CLOCK_PRESCALER)
 
-void
+// The time a busy loop takes
+#define MUOS_CLOCK_BUSYLATENCY (16U/MUOS_CLOCK_PRESCALER)
+
+bool
 muos_clpq_set_compmatch (void)
 {
-  muos_spriq_priority diff = muos_clpq.descriptor.spriq[0].when -
+  muos_spriq_priority at = muos_clpq.descriptor.spriq[0].when -
     (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
 
-  if (diff < MUOS_CLOCK_LATENCY)
-      diff = MUOS_CLOCK_LATENCY;
-
-  if (diff < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY &&
-      diff > MUOS_CLOCK_REGISTER )
+  if (at < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_BUSYLATENCY)
     {
-      MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, diff);
+      if (at > MUOS_CLOCK_LATENCY + MUOS_CLOCK_REGISTER
+          && MUOS_CLOCK_REGISTER < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY)
+        {
+          MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, at);
+        }
+      else
+        return false;
     }
   else
-    {
-      MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-    }
+    MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+
+  return true;
 }
 
 #endif
