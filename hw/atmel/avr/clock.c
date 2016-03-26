@@ -45,6 +45,7 @@ void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync)
 {
   muos_clock elapsed = muos_clock_elapsed (now, calibrate_last);
+  calibrate_last = now;
 
   if (sync
 #ifdef MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
@@ -70,7 +71,5 @@ muos_clock_calibrate (const muos_clock now, const muos_clock sync)
             OSCCAL = MUOS_HW_ATMEL_OSCAL_LOWSWITCH;
         }
     }
-
-  calibrate_last = now;
 }
 #endif
