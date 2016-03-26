@@ -443,5 +443,68 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 
 
+#:MUOS_CPPM_CHANNELS
+#: enable the CPPM Parser for Radio Control Signals
+#MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=0
+MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
+#MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=16
+
+
+
+#:MUOS_CPPM_CAPTURE
+#: Select Input Capture driver
+#: Input capture is more precise than pinchange
+MUOS_CONFIG += -DMUOS_CPPM_CAPTURE='(1)'
+
+
+
+#:MUOS_CPPM_PCINT
+#PLANNED: cppm pcint
+#: Select PinChange driver
+#: Pin change interrupt bit
+#MUOS_CONFIG += -DMUOS_CPPM_PCINT=8
+
+
+
+#:MUOS_CPPM_FRAME
+#: Length of a full CPPM frame
+MUOS_CONFIG += -DMUOS_CPPM_FRAME='MUOS_CLOCK_MILLISECONDS(27)'
+
+
+
+#:MUOS_CPPM_FRAME_CLOCKSYNC
+#: Use the MUOS_CLOCK_CALIBRATE to synchronize the µC clock with the CPPM frames
+#MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=0
+MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=1
+
+
+
+#:MUOS_CPPM_MIN
+#: Minimum CPPM Pulse length
+MUOS_CONFIG += -DMUOS_CPPM_MIN='MUOS_CLOCK_MICROSECONDS(750)'
+
+
+
+#:MUOS_CPPM_MAX
+#: Maximum CPPM Pulse length, also any longer pulse defines the frame start
+MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
+
+
+
+#:MUOS_CPPM_FILTER
+#: filter expression for single channel data
+MUOS_CONFIG += -D'MUOS_CPPM_FILTER(old,new)=(old + new)/2'
+
+
+
+#:MUOS_CPPM_CALLBACK
+#: function to be called from rtq when a frame got received
+MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
+
+
+
+
+
+
 # now load the main makefile
 include muos/muos.mk
