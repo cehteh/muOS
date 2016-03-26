@@ -260,18 +260,19 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 
 
 #:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
-MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
+#: When the time elapsed since the last sync differs more than
+#: +/- this value, the calibration measurement is reset and starts over.
+#: This filters out glitches from api calls.
+MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/16)'
 
 
 
-#:MUOS_CLOCK_CALIBRATE_DRIFT
-#: If defined compensate drift.
-#: The Value should be the time for a rolling average to compensate the drift over.
-#: Sycnronization must then be called at regular time intervals.
-MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DRIFT='MUOS_CLOCK_MILLISECONDS(10000)'
+#:MUOS_CLOCK_CALIBRATE_DEADBAND
+#: Adds a deadband/range around the target clock. On µC where the clock
+#: calibration is rather coarse a exact match can not be reached and constant
+#: readjustments will only result in high jitter.
+MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=3000
 
-
-#TODO: static calibration interval
 
 
 #:MUOS_BUFFER_INDEX

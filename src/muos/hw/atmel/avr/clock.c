@@ -38,11 +38,8 @@ EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW));
 
 #if MUOS_CLOCK_CALIBRATE != 0
 static muos_clock calibrate_last;
+static int32_t divert;
 
-#ifdef MUOS_CLOCK_CALIBRATE_DRIFT
-static muos_clock calibrate_drift_last;
-static muos_clock calibrate_drift_sync;
-#endif
 
 void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync)
@@ -56,58 +53,23 @@ muos_clock_calibrate (const muos_clock now, const muos_clock sync)
 #endif
       )
     {
+      divert = (divert + ((int32_t)sync - (int32_t)elapsed)*3)/4;
 
-
-#ifndef MUOS_CLOCK_CALIBRATE_DRIFT
-        if (elapsed > sync)
-        {
-          if (OSCCAL != 128)
-            --OSCCAL;
-          else
-            OSCCAL = MUOS_HW_ATMEL_OSCAL_LOWSWITCH;
-        }
-      else if (elapsed < sync)
+      if (divert > MUOS_CLOCK_CALIBRATE_DEADBAND/MUOS_CLOCK_PRESCALER)
         {
           if (OSCCAL != 127)
             ++OSCCAL;
           else
             OSCCAL = MUOS_HW_ATMEL_OSCAL_HIGHSWITCH;
         }
-#else
-      if (calibrate_drift_sync + sync > MUOS_CLOCK_CALIBRATE_DRIFT)
-        calibrate_drift_last += sync;
-      else
-        calibrate_drift_sync += sync;
-
-      muos_clock elapsed_drift = muos_clock_elapsed (now, calibrate_drift_last);
-
-      int8_t divert = (elapsed>sync?1:elapsed<sync?-1:0) +
-        (elapsed_drift>calibrate_drift_sync?1:elapsed_drift<calibrate_drift_sync?-1:0);
-
-      if (divert > 0)
+      else if (divert < -MUOS_CLOCK_CALIBRATE_DEADBAND/MUOS_CLOCK_PRESCALER)
         {
           if (OSCCAL != 128)
             --OSCCAL;
           else
             OSCCAL = MUOS_HW_ATMEL_OSCAL_LOWSWITCH;
         }
-      else if (divert < 0)
-        {
-          if (OSCCAL != 127)
-            ++OSCCAL;
-          else
-            OSCCAL = MUOS_HW_ATMEL_OSCAL_HIGHSWITCH;
-        }
-#endif
     }
-
-#ifdef MUOS_CLOCK_CALIBRATE_DRIFT
-  else
-    {
-      calibrate_drift_sync = 0;
-      calibrate_drift_last = now;
-    }
-#endif
 
   calibrate_last = now;
 }
