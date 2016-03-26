@@ -61,7 +61,7 @@ void muos_die (void)
 void
 muos_start (void)
 {
-  muos_serial_init ();
+  //FIXME: conditional muos_serial_init ();
   muos_cppm_init ();
   muos_clock_start ();
   muos_interrupt_enable ();
@@ -180,7 +180,10 @@ muos_yield (uint8_t count)
 int __attribute__((OS_main))
 main()
 {
+  CLKPR = _BV(CLKPCE);
+  CLKPR = 0;
 
+  #if 0
 #if F_CPU != 16000000UL
   CLKPR = _BV(CLKPCE);
 #if F_CPU == 62500UL
@@ -206,6 +209,7 @@ main()
 #endif
 #if F_CPU == 8000000UL
   CLKPR = _BV(CLKPS0);
+#endif
 #endif
 #endif
 
