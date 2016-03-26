@@ -1,0 +1,105 @@
+/*
+ *      mµOS            - my micro OS
+ *
+ * Copyright (C)
+ *      2016                            Christian Thäter <ct@pipapo.org>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#if MUOS_CPPM_CHANNELS > 0
+
+#include <muos/clock.h>
+#include <muos/rtq.h>
+#include <muos/cppm.h>
+
+static volatile muos_clock cppm_time;
+static uint8_t cppm_channel = 255;
+
+#ifdef MUOS_CPPM_CAPTURE
+
+void
+muos_hw_cppm_init (void)
+{
+  TCCR1B |= _BV(ICNC1);
+  TIMSK1 |= _BV(ICIE1);
+}
+
+#ifdef MUOS_CPPM_FRAME_CLOCKSYNC
+void
+muos_cppm_calibrate (void)
+{
+  muos_clock_calibrate (cppm_time, MUOS_CPPM_FRAME);
+};
+#endif
+
+
+
+
+#ifdef MUOS_CPPM_CALLBACK
+void MUOS_CPPM_CALLBACK (void);
+#endif
+
+ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
+{
+  muos_clock now = ICR1;
+  now += ((TIFR1 & _BV(TOV1)) && (now < 0x1000))?0x10000:0;
+  now += muos_clock_count_*0x10000;
+
+  muos_clock elapsed = muos_clock_elapsed (now, cppm_time);
+  cppm_time = now;
+
+  if (elapsed < MUOS_CPPM_MIN)
+    {
+      muos_error_set_unsafe (muos_error_cppm_frame);
+      cppm_channel = 255;
+    }
+  else if (elapsed > MUOS_CPPM_MAX)
+    {
+      cppm_channel = 0;
+#ifdef MUOS_CPPM_FRAME_CLOCKSYNC
+      muos_rtq_pushback (muos_cppm_calibrate);
+#endif
+    }
+  else if (cppm_channel < MUOS_CPPM_CHANNELS)
+    {
+      muos_cppm_channel[cppm_channel] = MUOS_CPPM_FILTER (muos_cppm_channel[cppm_channel], elapsed);
+      ++cppm_channel;
+#ifdef MUOS_CPPM_CALLBACK
+      if (cppm_channel == MUOS_CPPM_CHANNELS)
+        muos_rtq_pushback (MUOS_CPPM_CALLBACK);
+#endif
+    }
+}
+
+
+
+
+
+#endif
+
+#if 0
+//PLANNED: pcint implementation
+//void
+//muos_hw_cppm_init (void)
+//{
+//  GIMSK |= _BV(PCIE);
+//  PCMSK |= _BV(PCINT2);
+//}
+//ISR(ISRNAME_PCINT(MUOS_CPPM_PCINT))
+//{
+//}
+
+#endif
+#endif

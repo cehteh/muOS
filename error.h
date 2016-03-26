@@ -37,6 +37,7 @@
   MUOS_ERROR(error_rx_frame)                    \
   MUOS_ERROR(error_rx_overrun)                  \
   MUOS_ERROR(error_rx_parity)                   \
+  MUOS_ERROR(error_cppm_frame)                  \
 
 
 enum muos_errorcode
