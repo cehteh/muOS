@@ -35,6 +35,9 @@
 #define ISRNAME_COMPMATCH_(tmhw,cmhw) TIM##tmhw##_COMP##cmhw##_vect
 #define ISRNAME_COMPMATCH(hw) ISRNAME_COMPMATCH_ hw
 
+#define ISRNAME_CAPTURE_(hw) TIM##hw##_CAPT_vect
+#define ISRNAME_CAPTURE(hw) ISRNAME_CAPTURE_ hw
+
 #define MUOS_HW_CLOCK_REGISTER_(hw, ...) TCNT##hw
 #define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_ hw
 
