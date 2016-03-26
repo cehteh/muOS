@@ -21,18 +21,20 @@
 # Project configuration
 
 PLATFORM = atmel/avr
+
 #MCU = atmega328p
-MCU = attiny85
+#MCU = attiny85
+MCU = attiny84
 
 MAIN = example
 
-#PROGRAMMER = avrdude
-PROGRAMMER = micronucleus
+PROGRAMMER = avrdude
+#PROGRAMMER = micronucleus
 
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
-#AVRDUDE_PROGRAMMER = usbasp
-AVRDUDE_PROGRAMMER = arduino
+AVRDUDE_PROGRAMMER = usbasp
+#AVRDUDE_PROGRAMMER = arduino
 
 # additional C Source file
 SOURCES += $(wildcard *.c)
@@ -46,8 +48,8 @@ CCFLAGS += -g
 #CCFLAGS += -DF_CPU=1000000UL
 #CCFLAGS += -DF_CPU=2000000UL
 #CCFLAGS += -DF_CPU=4000000UL
-#CCFLAGS += -DF_CPU=8000000UL
-CCFLAGS += -DF_CPU=16000000UL
+CCFLAGS += -DF_CPU=8000000UL
+#CCFLAGS += -DF_CPU=16000000UL
 
 # Dependency generation Flags
 #DEPFLAGS +=
@@ -225,10 +227,11 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 #: Prescaler from some hardware defined master clock.
 #: Use a 16 bit timer for PRESCALER=1, 8 bit has too high interrupt load
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
+MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=256
-MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
 
 
 
@@ -242,10 +245,9 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
 
 
 #:MUOS_CLOCK_SHORT_TYPE
-#: The type used for shorter timespans.
-#MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint8_t
-MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
-#MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
+#: The type used for shorter timespans
+#MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
+MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
 
 
@@ -263,7 +265,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 #: When the time elapsed since the last sync differs more than
 #: +/- this value, the calibration measurement is reset and starts over.
 #: This filters out glitches from api calls.
-MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/16)'
+MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
 
 
 
@@ -271,7 +273,7 @@ MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/16)'
 #: Adds a deadband/range around the target clock. On µC where the clock
 #: calibration is rather coarse a exact match can not be reached and constant
 #: readjustments will only result in high jitter.
-MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=3000
+MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
 
