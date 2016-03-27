@@ -33,14 +33,11 @@ volatile struct muos_status_flags muos_status;
 void
 muos_sleep (void)
 {
-  // muos_hw_sleep () enables interrupts right before the sleep,
-  // this must be done to prevent races (interrupts while compmatch gets armed)
-
-  muos_interrupt_disable ();
   if (muos_clpq_set_compmatch ())
     {
       //TODO: select sleep mode depending on active hardware (adc, usart)
       muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
+      // muos_hw_sleep () enables interrupts while sleeping
       muos_hw_sleep ();
       muos_hw_sleep_done ();
     }
@@ -49,12 +46,12 @@ muos_sleep (void)
       // busywait for timespans which are to small for compmatch
       muos_interrupt_enable ();
       while (MUOS_CLOCK_REGISTER < (typeof(MUOS_CLOCK_REGISTER)) muos_clpq.descriptor.spriq[0].when);
+      muos_interrupt_disable ();
     }
 }
 
 void muos_die (void)
 {
-  muos_interrupt_disable ();
   muos_hw_shutdown ();
 }
 
@@ -64,7 +61,6 @@ muos_start (void)
   //FIXME: conditional muos_serial_init ();
   muos_cppm_init ();
   muos_clock_start ();
-  muos_interrupt_enable ();
 }
 
 
@@ -101,6 +97,9 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
     overflow = true;
 
   ++sched_depth_;
+
+  muos_interrupt_disable ();
+
   while (overflow || muos_now_<end)
     {
       if (overflow && muos_now_<end)
@@ -118,9 +117,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
                   if (muos_error_pending ())
                     {
-                      muos_interrupt_disable ();
                       MUOS_ERRORFN ();
-                      muos_interrupt_disable ();
                     }
                 }
                while (muos_clpq_schedule (muos_now_));
@@ -137,6 +134,8 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
       muos_sleep ();
     }
+
+  muos_interrupt_enable ();
   --sched_depth_;
   return false;
 }
@@ -151,6 +150,8 @@ muos_yield (uint8_t count)
 
   ++sched_depth_;
   ++count;
+  muos_interrupt_disable ();
+
   do
     {
       do
@@ -162,9 +163,7 @@ muos_yield (uint8_t count)
 
               if (muos_error_pending ())
                 {
-                  muos_interrupt_disable ();
                   MUOS_ERRORFN ();
-                  muos_interrupt_disable ();
                 }
             }
           while (count && muos_clpq_schedule (muos_now_));
@@ -172,6 +171,7 @@ muos_yield (uint8_t count)
       while (count && muos_rtq_schedule ());
     }
   while (count && muos_bgq_schedule ());
+  muos_interrupt_enable ();
   --sched_depth_;
 }
 
@@ -244,9 +244,7 @@ main()
 
                   if (muos_error_pending ())
                     {
-                      muos_interrupt_disable ();
                       MUOS_ERRORFN ();
-                      muos_interrupt_disable ();
                     }
                 }
               while (muos_clpq_schedule (muos_now_));
