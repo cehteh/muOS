@@ -36,7 +36,6 @@ muos_clpq_type muos_clpq;
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
-  muos_interrupt_disable ();
   if (muos_clpq.descriptor.used &&
       (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2))
     {
@@ -68,15 +67,10 @@ muos_clpq_schedule (muos_spriq_priority when)
               muos_clpq.descriptor.spriq[0].when += (muos_spriq_priority)-1/2-1;
             }
         }
-
-      muos_interrupt_enable ();
       return true;
     }
-  else
-    {
-      muos_interrupt_enable ();
-      return false;
-    }
+
+  return false;
 }
 
 

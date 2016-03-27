@@ -36,8 +36,6 @@ muos_queue_pop (muos_queue_vptr queue, const muos_queue_size size)
 bool
 muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
 {
-  muos_interrupt_disable ();
-
   if (queue->len)
     {
       intptr_t fn = muos_queue_pop (queue, size);
@@ -53,9 +51,9 @@ muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
           muos_interrupt_enable ();
           ((muos_queue_function_arg)(-fn))(arg);
         }
+      muos_interrupt_disable ();
       return true;
     }
-  muos_interrupt_enable ();
   return false;
 }
 

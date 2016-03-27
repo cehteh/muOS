@@ -58,6 +58,7 @@ muos_hw_sleep (void)
 #endif
   sei ();
   sleep_cpu ();
+  cli ();
 #if MUOS_DEBUG_BUSY ==1
   PORTB |= _BV(PINB5);
 #endif
