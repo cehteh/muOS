@@ -74,7 +74,22 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
     }
   else if (cppm_channel < MUOS_CPPM_CHANNELS)
     {
-      muos_cppm_channel[cppm_channel] = MUOS_CPPM_FILTER (muos_cppm_channel[cppm_channel], elapsed);
+#ifdef MUOS_CPPM_RAW
+      muos_cppm_channel_raw[cppm_channel] = MUOS_CPPM_RAW_FILTER (muos_cppm_channel_raw[cppm_channel], elapsed);
+#endif
+
+#ifdef MUOS_CPPM_COOKED
+      uint16_t old =
+        ((uint16_t)muos_cppm_channel_cooked[cppm_channel] + 125)
+        * (MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN) / 250
+        + MUOS_CPPM_COOKED_MIN;
+
+      muos_cppm_channel_cooked[cppm_channel] =
+        (((int16_t)((old+2*elapsed)/3) - (int16_t)MUOS_CPPM_COOKED_MIN)*250
+         / (int16_t)(MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN))
+        - 125;
+#endif
+
       ++cppm_channel;
 #ifdef MUOS_CPPM_CALLBACK
       if (cppm_channel == MUOS_CPPM_CHANNELS)

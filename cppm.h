@@ -25,7 +25,14 @@
 
 #if MUOS_CPPM_CHANNELS > 0
 
-extern volatile uint16_t muos_cppm_channel[MUOS_CPPM_CHANNELS];
+#ifdef MUOS_CPPM_RAW
+extern volatile uint16_t muos_cppm_channel_raw[MUOS_CPPM_CHANNELS];
+#endif
+
+#ifdef MUOS_CPPM_COOKED
+extern volatile int8_t muos_cppm_channel_cooked[MUOS_CPPM_CHANNELS];
+#endif
+
 
 void
 muos_cppm_init (void);
