@@ -453,6 +453,40 @@ MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 
 
 
+#:MUOS_CPPM_RAW
+#: store the raw cppm timing data in
+#:  uint16_t muos_cppm_channel_raw[]
+MUOS_CONFIG += -DMUOS_CPPM_RAW
+
+
+
+#:MUOS_CPPM_RAW_FILTER
+#: filter expression for raw channel data
+MUOS_CONFIG += -D'MUOS_CPPM_RAW_FILTER(old,new)=(old + new)/2'
+
+
+
+#:MUOS_CPPM_COOKED
+#: store the cppm data (glitch filtered) in
+#:  int8_t muos_cppm_channel_cooked[]
+#: with a range from -125 to 125 this simplifies access
+#: saves a few bytes but looses resolution
+MUOS_CONFIG += -DMUOS_CPPM_COOKED
+
+
+
+#:MUOS_CPPM_COOKED_MIN
+#: defines the minimum signal length for cooked values
+MUOS_CONFIG += -DMUOS_CPPM_COOKED_MIN='MUOS_CLOCK_MICROSECONDS(1000)'
+
+
+
+#:MUOS_CPPM_COOKED_MAX
+#: defines the maximum signal length for cooked values
+MUOS_CONFIG += -DMUOS_CPPM_COOKED_MAX='MUOS_CLOCK_MICROSECONDS(2000)'
+
+
+
 #:MUOS_CPPM_CAPTURE
 #: Select Input Capture driver
 #: Input capture is more precise than pinchange
@@ -490,12 +524,6 @@ MUOS_CONFIG += -DMUOS_CPPM_MIN='MUOS_CLOCK_MICROSECONDS(750)'
 #:MUOS_CPPM_MAX
 #: Maximum CPPM Pulse length, also any longer pulse defines the frame start
 MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
-
-
-
-#:MUOS_CPPM_FILTER
-#: filter expression for single channel data
-MUOS_CONFIG += -D'MUOS_CPPM_FILTER(old,new)=(old + new)/2'
 
 
 

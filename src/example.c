@@ -64,12 +64,12 @@ cppm_output (void)
 {
   PINA = _BV(PINA2);
 
-  if (muos_cppm_channel[0] > MUOS_CLOCK_MICROSECONDS(1500))
+  if (muos_cppm_channel_cooked[0] > 0)
     PORTA |= _BV(PINA0);
   else
     PORTA &= ~_BV(PINA0);
 
-  if (muos_cppm_channel[1] > MUOS_CLOCK_MICROSECONDS(1500))
+  if (muos_cppm_channel_cooked[1] >= 0)
     PORTA |= _BV(PINA1);
   else
     PORTA &= ~_BV(PINA1);
