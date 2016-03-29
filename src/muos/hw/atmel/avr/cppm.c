@@ -84,6 +84,14 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
         * (MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN) / 250
         + MUOS_CPPM_COOKED_MIN;
 
+      elapsed = elapsed > (((uint16_t)127 + 125)
+                           * (MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN) / 250
+                           + MUOS_CPPM_COOKED_MIN)
+        ?(((uint16_t)127 + 125)
+          * (MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN) / 250
+          + MUOS_CPPM_COOKED_MIN)
+        : elapsed;
+
       muos_cppm_channel_cooked[cppm_channel] =
         (((int16_t)((old+2*elapsed)/3) - (int16_t)MUOS_CPPM_COOKED_MIN)*250
          / (int16_t)(MUOS_CPPM_COOKED_MAX - MUOS_CPPM_COOKED_MIN))
