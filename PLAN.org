@@ -132,7 +132,8 @@ pending bit -> dont read clock in interrupts
 
 **** PLANNED rtpq realtime priority queue
      runs direct in timer interrupt, exact timing, wakes up a little earlier
-     spins to exact time.
+     spins to exact time. Serve from clpq, tag functions as hard-rt and dont
+     reenable interrupts then.
 
 **** PLANNED ltpq long time queue
      * uses longer, absolute time format (muos_clock or muos_fullclock)
@@ -141,6 +142,7 @@ pending bit -> dont read clock in interrupts
        form ltpq to clpq)
      * optional only needed for 'calendar' like events, may be short, only as
        much long time events the program uses at most
+     * persistent timers stored in EEPROM when RTC is present
 
 **** DONE clpq short time realtime queue
      * uses a sliding window implementation
