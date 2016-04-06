@@ -20,6 +20,12 @@ SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/lib/*.c)
 SOURCES += $(wildcard muos/hw/$(PLATFORM)/*.c)
 
+HEADERS += $(wildcard muos/*.h)
+HEADERS += $(wildcard muos/lib/*.h)
+HEADERS += $(wildcard muos/hw/$(PLATFORM)/*.h)
+
+TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc)
+
 OBJECTS += $(SOURCES:.c=.o)
 
 # Common CC Flags
@@ -107,3 +113,32 @@ mrproper: clean .v/IMAGES
 	rm -f $(IMAGES)
 
 #gitclean: git stash, git clean -dfx
+
+
+#documentation targets
+
+
+doc: manual issues
+
+txt: muos_manual.txt muos_issues.txt
+
+manual: muos_manual.pdf muos_manual.html
+
+issues: muos_issues.html
+
+%.pdf: %.txt
+	$(PRINTFMT) $@ A2X
+	a2x -d book -L -k --dblatex-opts "-P latex.output.revhistory=0" $<
+
+%.html: %.txt
+	$(PRINTFMT) $@ ASCIIDOC
+	asciidoc -d book -a toc $<
+
+muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS)
+	$(PRINTFMT) $@ PIPADOC
+	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >muos_manual.txt
+
+muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS)
+	$(PRINTFMT) $@ ISSUES
+	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >muos_issues.txt
+
