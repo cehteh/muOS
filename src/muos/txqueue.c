@@ -36,6 +36,7 @@ static struct fmtconfig_type txq_fmtconfig = {10, 0, 0, 15, 15};
 
 muos_txqueue_type muos_txqueue;
 
+//PLANNED: transaction support with begin/end
 
 // Format:
 //  The queue is a stream of uint8_t values.

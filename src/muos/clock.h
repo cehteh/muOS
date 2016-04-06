@@ -25,6 +25,7 @@
 
 #include <muos/muos.h>
 
+//FIXME: *_now called from interrupts might be off because pending timer overflows
 
 #define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALER)
 #define MUOS_CLOCK_MILLISECONDS(s) (MUOS_CLOCK_SECONDS(s)/1000)
