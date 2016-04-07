@@ -1,34 +1,152 @@
+mµOS - My micro OS
+
+a small operating system for microcontrollers
+
+== Concept and Goals
+
+mµOS is supposed to be a general purpose Operating-System for small
+Microcontrollers. With small/proper configuration it scales down to AVR ATTiny
+where some have less than 100 Bytes of RAM and less than 2 kByte of Program
+Flash. The main focus is on getting Projects efficently and robustly done in
+short time.
+
+The core of mµOS is a Scheduler which serves function calls from
+few queues (Timer and 2 Priorities by default). This approach was choosen to
+minimize resource demands. Everything is served only by one Stack. There are
+no threads or context switches, but there is some facility to call the
+Scheduler recursively.
+
+Ideally users code always runs syncronously from these queues which are
+scheduled by the mainloop provided by mµOS. Interrupts are handled by
+'drivers' and do the bare minimum necessary to serve the request, postpone any
+further processing themself onto the work queues.
+
+This means that there are less possiblities of race conditions and in many
+cases a user doesn't need to care for syncronization (unless writing drivers).
+
+Still any resource which is not managed by mµOS is available to the user and
+can be freely accessed and configured. This is a deliberate design decision to
+put mµOS between bare-metal programming and some more complete OS.
+
+Everything is implemented in modern C (with some GNU extensions) as far as
+possible. While space conserving is high priority, obscure optimizations in
+assembler are not!
+
+When possible mµOS reuses existing Platform and C libraries, but also adds its
+own concepts and API's breaking history with POSIX and other common API's
+whenever there are some reasons to do so.
+
+== Features
+
+* Most things in mµOS are configurable in very small detail. The build system
+  only links parts which are really referenced into the resulting firmware,
+  thus it hard to tell what size mµOS has, because it depends on the
+  application build on top. When slimmed down then sizes smaller than 1kByte
+  and RAM usage of only few bytes are possible.
+
+* The mainloop pops functions from work queues, executing them and puts the µC
+  to sleep when nothing needs to be done. Any Interrupt wakes the mainloop,
+  the Interupt handler may put work onto the queues which in turn get called
+  as soon the interrupt handler finishes. Scheduling latency is typically 20µs
+  on a 8MHz AVR with the code yet unoptimized.
+
+* 'muos_yield()' and 'muos_wait()' calls can be used to suspend the current
+  job and call the mainloop recursively.
+
+* mµOS uses one Hardware counter as main-timer, any timer, 8 or 16 bit can be
+  used for this. The prescaler of this timer is configureable to give a lot
+  freedom on the desired clock granularity and interrupt load. The overflow
+  interrupt is used to increment a global counter and one of the output
+  compare units is used to schedule wakeups of the mainloop.
+
+* There are (configureable) queues:
+** 'clpq' the timer queue, using a sliding window priority-queue
+   implementation to schedule work within near future, attainable timespans
+   depend on the timer prescaler and 'shortclock' type. 'clpq' jobs are
+   executed with the highest priority.
+
+** 'rtq' and 'bgq' are simple queues for high and low priority jobs. The
+   scheduler executes from the front of this queues, first all jobs in the
+   'rtq' and then all jobs in the 'bgq'. One can push new jobs to then end or
+   to the front of these queues, giving roughly 4 different priority levels.
+   One should split work to be done into reasonable small parts and queue them
+   to either work queue. Drivers are also supposed to do most of the work
+   outside of Interrupts by pushing them to the queues.
+
+* Errors can happen asynchronously in interrupt handlers. Any error has a
+  correspondending bit in a bit-array which flags its occurence. When any
+  errors happened in interrupt handlers are not handled there, then the
+  mainloop first calls a user-defined error handling function.
+
+== Supported Hardware
+
+Hardware support is added on demand. The following Platforms are tested and
+known to work. But not all features are supported on all microcontrollers.
+Other ones may work and can be added with little effort.
+
+
+=== AVR
+
+attiny84::
+        Bare chip, programmed with usbasp/avrdude.
+
+attiny85::
+        Digispark (http://digistump.com/products/1) with micronucleus
+        bootloader.
+
+atmega328p::
+        Arduino Nano. This is the reference Platform. Most things are tested
+        and developed here.
 
 
 
-* Dependencies
-  When versions are noted, this are the versions which are proven to work (in
-  my development environment) if for some reason only older versions are
-  available and work for you, please report this. The exact package names may
-  differ depending on the Distribution you are using.
 
-  - git
-    For cloning and maintaining the source tree
+== Requirements
 
-  - make (>= 4.0)
-    GNU make
+mµOS is developed on Linux with GNU-Tools. As far these are available it
+should be useable on other Operating Systems as well.
 
-  - gcc-avr (>= 4.7)
-    GNU C compiler, version 4.7 is needed at least for '__flash' memory
-    support. MµOS relies on -flto which will improve with newer Compiler versions.
+When versions are noted, this are the versions which are proven to work, if
+for some reason only older versions are available and work for you, please
+report this. The exact package names may differ depending on the Distribution.
 
-  - avr-libc (>= 1.8)
-    The GNU libc for AVR processors
+=== For building Projects
 
-  - binutils-avr
-    Tools for building
+make (>= 4.0) ::
+ GNU make
 
-  - avrdude (>= 6.1)
-    Needed for flashing via USBasp or Arduino bootloaders (and possibly some
-    more in future)
+gcc-avr (>= 4.7) ::
+ GNU C compiler, version 4.7 is needed at least for '__flash' memory support.
+ MµOS relies on -flto which will improve with newer Compiler versions.
 
-  - micronucleus (>= 2.0)
-    Needed for flashing micronucleus based bootloaders (DigiSpark and other
-    attiny based products)
+avr-libc (>= 1.8) ::
+ The GNU libc for AVR processors
 
+binutils-avr ::
+ Tools for building
 
+=== For flashing
+
+avrdude (>= 6.1) ::
+ Needed for flashing via USBasp or Arduino bootloaders (and possibly some more
+ in future)
+
+micronucleus (>= 2.0) ::
+ Needed for flashing micronucleus based bootloaders (DigiSpark and other
+ attiny based products)
+
+=== Revision control
+
+git ::
+ For cloning and maintaining the mµOS source tree
+
+=== Building the Documentation
+
+lua ::
+ used by the 'pipadoc' documentation extractor (included in mµOS)
+
+asciidoc ::
+ for generating HTML
+
+a2x, dblatex, ... ::
+ For generating PDF documentation

@@ -1,0 +1,12 @@
+== Development
+
+The first versions of mµOS are developed for the avr-gcc/avr-libc toolchain,
+on 8-bit AVR's (ATTiny, ATMega) with some portability in mind. It is later
+planned to extend this to other platforms like 32bit ARM (STM32). General
+direction is still to stay as simple as the avr toolchain is to make
+mirgration for any programmer coming from Atmel programming to STM32 (and
+perhaps others) as easy as possible. Still we will make no compromises in
+functionality where required.
+
+As Free Software project, mµOS is open to any contributor. Development will
+progress on demand. Whatever is needed will be integrated.

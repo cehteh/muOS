@@ -1,0 +1,22 @@
+== Supported Hardware
+
+Hardware support is added on demand. The following Platforms are tested and
+known to work. But not all features are supported on all microcontrollers.
+Other ones may work and can be added with little effort.
+
+
+=== AVR
+
+attiny84::
+        Bare chip, programmed with usbasp/avrdude.
+
+attiny85::
+        Digispark (http://digistump.com/products/1) with micronucleus
+        bootloader.
+
+atmega328p::
+        Arduino Nano. This is the reference Platform. Most things are tested
+        and developed here.
+
+
+
