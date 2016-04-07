@@ -1,0 +1,49 @@
+== Requirements
+
+mµOS is developed on Linux with GNU-Tools. As far these are available it
+should be useable on other Operating Systems as well.
+
+When versions are noted, this are the versions which are proven to work, if
+for some reason only older versions are available and work for you, please
+report this. The exact package names may differ depending on the Distribution.
+
+=== For building Projects
+
+make (>= 4.0) ::
+ GNU make
+
+gcc-avr (>= 4.7) ::
+ GNU C compiler, version 4.7 is needed at least for '__flash' memory support.
+ MµOS relies on -flto which will improve with newer Compiler versions.
+
+avr-libc (>= 1.8) ::
+ The GNU libc for AVR processors
+
+binutils-avr ::
+ Tools for building
+
+=== For flashing
+
+avrdude (>= 6.1) ::
+ Needed for flashing via USBasp or Arduino bootloaders (and possibly some more
+ in future)
+
+micronucleus (>= 2.0) ::
+ Needed for flashing micronucleus based bootloaders (DigiSpark and other
+ attiny based products)
+
+=== Revision control
+
+git ::
+ For cloning and maintaining the mµOS source tree
+
+=== Building the Documentation
+
+lua ::
+ used by the 'pipadoc' documentation extractor (included in mµOS)
+
+asciidoc ::
+ for generating HTML
+
+a2x, dblatex, ... ::
+ For generating PDF documentation

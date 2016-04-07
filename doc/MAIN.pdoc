@@ -1,5 +1,4 @@
-mµOS - My micro OS
-==================
+= mµOS - My micro OS
 :author:        Christian Thäter
 :email:         <ct@pipapo.org>
 :date:          {$DATE}
@@ -7,6 +6,8 @@ mµOS - My micro OS
 a small operating system for microcontrollers
 
 PIPADOC:=intro
+
+PIPADOC:=features
 
 PIPADOC:=development
 

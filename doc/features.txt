@@ -1,0 +1,41 @@
+== Features
+
+* Most things in mµOS are configurable in very small detail. The build system
+  only links parts which are really referenced into the resulting firmware,
+  thus it hard to tell what size mµOS has, because it depends on the
+  application build on top. When slimmed down then sizes smaller than 1kByte
+  and RAM usage of only few bytes are possible.
+
+* The mainloop pops functions from work queues, executing them and puts the µC
+  to sleep when nothing needs to be done. Any Interrupt wakes the mainloop,
+  the Interupt handler may put work onto the queues which in turn get called
+  as soon the interrupt handler finishes. Scheduling latency is typically 20µs
+  on a 8MHz AVR with the code yet unoptimized.
+
+* 'muos_yield()' and 'muos_wait()' calls can be used to suspend the current
+  job and call the mainloop recursively.
+
+* mµOS uses one Hardware counter as main-timer, any timer, 8 or 16 bit can be
+  used for this. The prescaler of this timer is configureable to give a lot
+  freedom on the desired clock granularity and interrupt load. The overflow
+  interrupt is used to increment a global counter and one of the output
+  compare units is used to schedule wakeups of the mainloop.
+
+* There are (configureable) queues:
+** 'clpq' the timer queue, using a sliding window priority-queue
+   implementation to schedule work within near future, attainable timespans
+   depend on the timer prescaler and 'shortclock' type. 'clpq' jobs are
+   executed with the highest priority.
+
+** 'rtq' and 'bgq' are simple queues for high and low priority jobs. The
+   scheduler executes from the front of this queues, first all jobs in the
+   'rtq' and then all jobs in the 'bgq'. One can push new jobs to then end or
+   to the front of these queues, giving roughly 4 different priority levels.
+   One should split work to be done into reasonable small parts and queue them
+   to either work queue. Drivers are also supposed to do most of the work
+   outside of Interrupts by pushing them to the queues.
+
+* Errors can happen asynchronously in interrupt handlers. Any error has a
+  correspondending bit in a bit-array which flags its occurence. When any
+  errors happened in interrupt handlers are not handled there, then the
+  mainloop first calls a user-defined error handling function.
