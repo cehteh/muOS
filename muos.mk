@@ -142,3 +142,7 @@ muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS)
 	$(PRINTFMT) $@ ISSUES
 	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >muos_issues.txt
 
+README: $(TXTS) $(SOURCES) $(HEADERS)
+	$(PRINTFMT) $@ README
+	lua muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >../README
+
