@@ -22,15 +22,17 @@
 local LINE = 0
 local FILE = "<startup>"
 
-local docvars = {
-  --docvars:nl `NL`::
-  --docvars:nl   The linebreak character sequence, usually '\n' on unix systems but
-  --docvars:nl   can be changed with a commandline option
+CONTEXT = {}
+
+DOCVARS = {
+  --DOCVARS:nl `NL`::
+  --DOCVARS:nl   The linebreak character sequence, usually '\n' on unix systems but
+  --DOCVARS:nl   can be changed with a commandline option
   --FIXME: define in config? needs escapes
   NL = "\n",
 
   -- defaults
-  MARKUP = "plain",
+  MARKUP = "text",
 }
 
 local args_done = false
@@ -38,7 +40,7 @@ local opt_verbose = 1
 local opt_nodefaults = false
 local opt_toplevel = "MAIN"
 local opt_inputs = {false}
-local opt_config = "pipadoc.pconf"
+local opt_config = "pipadoc_config.lua"
 
 
 --PLANNED: log to PIPADOC_LOG section, later hooked in here
@@ -77,15 +79,15 @@ end
 --: variable argument list. Any Argument passed to them will be converted to a string and printed
 --: to stderr when the verbosity level is high enough.
 --:
-function warn(...) msg(1, ...) end  --: {$$$FUNCTION}::{$NL} report a important but non fatal failure
-function echo(...) msg(2, ...) end  --: {$$$FUNCTION}::{$NL} report normal progress
-function dbg(...) msg(3, ...) end   --: {$$$FUNCTION}::{$NL} show debugging information
-function trace(...) msg(4, ...) end --: {$$$FUNCTION}::{$NL} show more detailed progress information
+function warn(...) msg(1, ...) end  --: {FUNCTION} report a important but non fatal failure
+function echo(...) msg(2, ...) end  --: {FUNCTION} report normal progress
+function dbg(...) msg(3, ...) end   --: {FUNCTION} show debugging information
+function trace(...) msg(4, ...) end --: {FUNCTION} show more detailed progress information
 
 
 --PLANNED: use echo() for progress
 
-function die(...) --: {$$$FUNCTION}::{$NL} report a fatal error and exit the programm
+function die(...) --: {FUNCTION} report a fatal error and exit the programm
   printerr(...)
   os.exit(1)
 end
@@ -116,7 +118,7 @@ end
 --: When luarocks is installed, then the 'luarocks.loader' is loaded by default to make any module installed by
 --: luarocks available.
 --:
-function request(name) --: {$$$FUNCTION}::{$NL} try to load optional modules
+function request(name) --: {FUNCTION} try to load optional modules
   --:    wraps lua 'require' in a pcall so that failure to load a module results in 'nil' rather than a error
   local ok,handle = pcall(require, name)
   if ok then
@@ -143,29 +145,6 @@ request "luarocks.loader"
 --lfs = request "lfs"
 --posix = request "posix"
 
-local strsubst
-
-local function load_modules()
-  strsubst = request "strsubst" or fake
-  {
-    __index = function (tab, key)
-      return tab._index[key]
-    end,
-
-    __newindex = function (tab, key, value)
-      tab._index[key] = value
-    end,
-
-    __call = function(tab, op, ...)
-      if type(op) == 'table' then
-        rawset(tab, "__index", op)
-      end
-      return op
-    end
-  }
-
-  strsubst (docvars)
-end
 
 
 --api:
@@ -176,32 +155,99 @@ end
 --: Some wrapers around 'assert' to check externally supplied data. On success 'var' will be returned
 --: otherwise an assertion error is raised.
 --:
-function assert_type(var, expected) --: {$$$FUNCTION}::{$NL} checks that the 'var' is of 'type'
+function assert_type(var, expected) --: {FUNCTION} checks that the 'var' is of 'type'
   assert(type(var) == expected, "type error: "..expected.." expected, got "..type(var))
   return var
 end
 
-function maybe_type(var, expected) --: {$$$FUNCTION}::{$NL} checks that the 'var' is of 'type' or nil
+function maybe_type(var, expected) --: {FUNCTION} checks that the 'var' is of 'type' or nil
   assert(var == nil or type(var) == expected, "type error: "..expected.." or nil expected, got "..type(var))
   return var
 end
 
-function assert_char(var) --: {$$$FUNCTION}::{$NL} checks that 'var' is a single character
+function assert_char(var) --: {FUNCTION} checks that 'var' is a single character
   assert(type(var) == "string" and #var == 1, "type error: single character expected")
   return var
 end
 
-function assert_notnil(var) --: {$$$FUNCTION}::{$NL} checks that 'var' is not 'nil'
+function assert_notnil(var) --: {FUNCTION} checks that 'var' is not 'nil'
   assert(type(var) ~= "nil", "Value expected")
   return var
 end
 
 
-function to_table(v) --: {$$$FUNCTION}::{$NL} if 'v' is not a table then return {v}
+function to_table(v) --: {FUNCTION} if 'v' is not a table then return {v}
   if type(v) ~= 'table' then
     v = {v}
   end
   return v
+end
+
+function to_text (v) --: {FUNCTION} convert 'v' to a string, returns 'nil' when that string would be empty
+  v = v and tostring (v)
+  return v ~= "" and v or nil
+end
+
+
+-- need to be global, used for escaping in streval
+__BACKSLASH__ = "\\"
+__BACKTICK__ = "`"
+__BRACEOPEN__ = "{"
+__BRACECLOSE__ = "}"
+
+--api:
+--:
+--: String evaluation
+--: ~~~~~~~~~~~~~~~~~
+--:
+--: Documentation text is passed to the streval() function which recursively evaluates lua expression inside
+--: curly braces. This can be used to retrieve the value of variables, call or define functions. when the
+--: text inside curly braces can not be evaluated it is retained verbatim. One can escape curly braces
+--: the backslash and the backtick itself by prepending them with a backslash or backtick.
+--:
+function streval (str) --: {FUNCTION} evaluate lua code inside curly braces in str
+  assert_type (str, "string")
+
+  local function streval_intern (str)
+    local ret= ""
+
+    for pre,braced in str:gmatch("([^{]*)(%b{})") do
+      braced=braced:sub(2,-2)
+
+      if #braced > 0 then
+        braced = streval_intern(braced.."{}")
+        if #braced > 0 then
+
+          local success,result = pcall(load ("return ("..braced..")"))
+
+          if success and result then
+            braced = result or ""
+          else
+            success,result = pcall(load (braced))
+            if success then
+              braced = result or ""
+            end
+          end
+        end
+      end
+      ret = ret..pre..tostring(braced)
+    end
+
+    return ret
+  end
+
+  return streval_intern(str:gsub("[`\\]([{}\\])",
+                                 {
+                                   ["\\"] = "{__BACKSLASH__}",
+                                   ["`"] = "{__BACKTICK__}",
+                                   ["{"] = "{__BRACEOPEN__}",
+                                   ["}"] = "{__BRACECLOSE__}",
+                                 }
+                                ).."{}")
+end
+
+local function pattern_escape (p)
+  return (p:gsub("%W", "%%%1"))
 end
 
 --sections:
@@ -261,9 +307,9 @@ local sections_keys_usecnt = {}
 --: ~~~~~~~~
 --:
 
---PLANNED: maybe append the context       , docvars.SECTION, docvars.ARG, docvars.OP,  docvars.TEXT, docvars.PRE
+--PLANNED: maybe append the context       , DOCVARS.SECTION, DOCVARS.ARG, DOCVARS.OP,  DOCVARS.TEXT, DOCVARS.PRE
 
-function section_append(section, key, context) --: {$$$FUNCTION}::
+function section_append(section, key, context) --: {FUNCTION} Append data to the given section/key
   --:   section:::
   --:     name of the section to append to, must be a string
   assert_type(section, "string")
@@ -274,7 +320,6 @@ function section_append(section, key, context) --: {$$$FUNCTION}::
   --FIXME: DOCME    the parameter for the action, usually the text to be included in the output.
   maybe_type(context, "table")
   --:
-  --:   Append data to the given section/key
   trace("append:", section, key, context)
   sections[section] = sections[section] or {keys = {}}
   if key and #key > 0 then
@@ -287,7 +332,7 @@ function section_append(section, key, context) --: {$$$FUNCTION}::
 end
 
 --api:
-function section_get(section, key, index) --: {$$$FUNCTION}::
+function section_get(section, key, index) --: {FUNCTION} query the value of the given section/key at index (or at end)
   --:   section:::
   --:     name of the section to append to, must be a string
   assert_type(section, "string")
@@ -298,7 +343,6 @@ function section_get(section, key, index) --: {$$$FUNCTION}::
   --:   returns:::
   --:     value or nil
   --:
-  --:   query the value of the given section/key at index (or at end)
   if not sections[section] then
     return
   end
@@ -348,15 +392,13 @@ local filetypes = {}
 --: Filetypes
 --: ~~~~~~~~~
 --:
-function filetype_register(name, filep, linecommentseqs) --: {$$$FUNCTION}::
+function filetype_register(name, filep, linecommentseqs) --: {FUNCTION} Register a new filetype
   --:     name:::
   --:       name of the language
   --:     filep:::
   --:       a Lua pattern or list of patterns matching filename
   --:     linecommentseqs:::
   --:       a string or list of strings matching comments of the registered filetype
-  --:
-  --: Register a new filetype.
   --:
   --: For example, C and C++ Filetypes are registered like:
   --:
@@ -377,8 +419,8 @@ function filetype_register(name, filep, linecommentseqs) --: {$$$FUNCTION}::
   for i=1,#filep do
     filetypes[filep[i]] = filetypes[filep[i]] or {language = name}
     for j=1,#linecommentseqs do
-      dbg("register filetype:", name, filep[i], linecommentseqs[j])
-      filetypes[filep[i]][#filetypes[filep[i]]+1] = linecommentseqs[j]
+      dbg("register filetype:", name, filep[i], pattern_escape (linecommentseqs[j]))
+      filetypes[filep[i]][#filetypes[filep[i]]+1] = pattern_escape(linecommentseqs[j])
     end
   end
 end
@@ -392,7 +434,7 @@ function filetype_get(filename)
   end
 end
 
-function filetype_select(line, linecommentseqs)
+function comment_select (line, linecommentseqs)
   for i=1,#linecommentseqs do
     if string.match(line, linecommentseqs[i]) then
       return linecommentseqs[i]
@@ -400,6 +442,48 @@ function filetype_select(line, linecommentseqs)
   end
 end
 
+local preprocessors = {}
+
+function preprocessor_register (langpat, preprocess)
+  assert_type (langpat, "string")
+  dbg ("register preprocessor:", langpat, preprocess)
+
+  if type (preprocess) == "table" then
+    preprocess = function (str)
+      return str:gsub (preprocess, preprocess[1], preprocess[2], preprocess[3])
+    end
+  end
+
+  if type (preprocess) == "function" then
+    table.insert(preprocessors, {pattern=langpat, preprocessor=preprocess})
+  else
+    warn ("Unsupported preprocessor type")
+  end
+end
+
+-- internal, hook preprocessors into the filetype descriptors
+local function preprocessors_attach ()
+  for i=1,#preprocessors do
+    local ppdesc = preprocessors[i]
+    for k,v in pairs(filetypes) do
+      if ppdesc.pattern == "" or v.language:match(ppdesc.pattern) then
+        local filetype_preprocessors = v.preprocessors or {}
+        local skip = false
+        for i=1,#filetype_preprocessors do
+          if filetype_preprocessors[i] == ppdesc.preprocess then
+            skip = true
+            break
+          end
+        end
+        if not skip then
+          trace ("add preprocessor for:", k, ppdesc.preprocessor)
+          table.insert(filetype_preprocessors, ppdesc.preprocessor)
+          v.preprocessors = filetype_preprocessors
+        end
+      end
+    end
+  end
+end
 
 --op:
 --: Operators define the core functionality of pipadoc. They are mandatory in the pipadoc syntax
@@ -410,7 +494,7 @@ local operators = {}
 
 --TODO: operator_register(char, read, generate) .. add generator function here too
 --api:
-function operator_register(char, func) --: {$$$FUNCTION}::
+function operator_register(char, func) --: {FUNCTION} Register a new operator
   --:   char:::
   --:     single punctuation character defining this operator
   --:   func:::
@@ -434,22 +518,22 @@ end
 
 --usage:
 local options = {
-  "pipadoc [options...] [inputs..]",  --:  {$$$STRING}
-  "  options are:", --:  {$$$STRING}
+  "pipadoc [options...] [inputs..]",  --:  {STRING}
+  "  options are:", --:  {STRING}
 
-  "    -v, --verbose                           increment verbosity level", --:  {$$$STRING}
+  "    -v, --verbose                           increment verbosity level", --:  {STRING}
   ["-v"] = "--verbose",
   ["--verbose"] = function () opt_verbose = opt_verbose+1 end,
 
-  "    -q, --quiet                             supresses any messages", --:  {$$$STRING}
+  "    -q, --quiet                             supresses any messages", --:  {STRING}
   ["-q"] = "--quiet",
   ["--quiet"] = function () opt_verbose = 0 end,
 
-  "    -d, --debug                             set verbosity to maximum", --:  {$$$STRING}
+  "    -d, --debug                             set verbosity to maximum", --:  {STRING}
   ["-d"] = "--debug",
   ["--debug"] = function () opt_verbose = 3 end,
 
-  "    -h, --help                              show this help", --:  {$$$STRING}
+  "    -h, --help                              show this help", --:  {STRING}
   ["-h"] = "--help",
   ["--help"] = function ()
     print("usage:")
@@ -460,8 +544,8 @@ local options = {
   end,
 
 
-  "    -r, --register <name> <file> <comment>  register a filetype pattern", --:  {$$$STRING}
-  "                                            for files matching a file pattern", --:  {$$$STRING}
+  "    -r, --register <name> <file> <comment>  register a filetype pattern", --:  {STRING}
+  "                                            for files matching a file pattern", --:  {STRING}
   ["-r"] = "--register",
   ["--register"] = function (arg,i)
     assert(type(arg[i+3]))
@@ -470,7 +554,7 @@ local options = {
   end,
 
 
-  "    -t, --toplevel <name>                   sets 'name' as toplevel node [MAIN]", --:  {$$$STRING}
+  "    -t, --toplevel <name>                   sets 'name' as toplevel node [MAIN]", --:  {STRING}
   ["-t"] = "--toplevel",
   ["--toplevel"] = function (arg, i)
     assert(type(arg[i+1]))
@@ -478,7 +562,7 @@ local options = {
     return 1
   end,
 
-  "    -c, --config <name>                     selects a configfile [pipadoc.conf]", --:  {$$$STRING}
+  "    -c, --config <name>                     selects a configfile [pipadoc.conf]", --:  {STRING}
   ["-c"] = "--config",
   ["--config"] = function (arg, i)
     assert(type(arg[i+1]))
@@ -487,20 +571,20 @@ local options = {
   end,
 
 
-  "    --no-defaults                           disables default filetypes and processors", --:  {$$$STRING}
+  "    --no-defaults                           disables default filetypes and processors", --:  {STRING}
   ["--no-defaults"] = function () opt_nodefaults = true end,
 
 
-  "    -m, --markup <name>                     selects the markup engine for the output [plain]", --:  {$$$STRING}
+  "    -m, --markup <name>                     selects the markup engine for the output [text]", --:  {STRING}
   ["-m"] = "--markup",
   ["--markup"] = function (arg, i)
     assert(type(arg[i+1]))
-    docvars.MARKUP = arg[i+1]
+    DOCVARS.MARKUP = arg[i+1]
     return 1
   end,
 
-  "    --                                      stops parsing the options and treats each", --:  {$$$STRING}
-  "                                            following argument as input file", --:  {$$$STRING}
+  "    --                                      stops parsing the options and treats each", --:  {STRING}
+  "                                            following argument as input file", --:  {STRING}
   ["--"] = function () args_done=true end,
 
   --TODO: --alias match pattern --file-as match filename
@@ -517,8 +601,8 @@ local options = {
   --TODO: wrap at blank/intelligent
   --PLANNED: wordwrap
 
-  "", --:  {$$$STRING}
-  "  inputs are filenames or a '-' which indicates standard input", --:  {$$$STRING}
+  "", --:  {STRING}
+  "  inputs are filenames or a '-' which indicates standard input", --:  {STRING}
 }
 
 function parse_args(arg)
@@ -546,35 +630,32 @@ function parse_args(arg)
   end
 end
 
+
+local SECTION
+local ARG
+
 function setup()
   parse_args(arg)
-  load_modules()
 
   do
     local date = os.date ("*t")
-    --docvars:date `YEAR, MONTH, DAY, HOUR, MINUTE`::
-    --docvars:date   Current date information
-    docvars.YEAR = date.year
-    docvars.MONTH = date.month
-    docvars.DAY = date.day
-    docvars.HOUR = date.hour
-    docvars.MINUTE = date.min
-    --docvars:date `DATE`::
-    --docvars:date   Current date in YEAR/MONTH/DAY format
-    docvars.DATE = date.year.."/"..date.month.."/"..date.day
+    --DOCVARS:date `YEAR, MONTH, DAY, HOUR, MINUTE`::
+    --DOCVARS:date   Current date information
+    DOCVARS.YEAR = date.year
+    DOCVARS.MONTH = date.month
+    DOCVARS.DAY = date.day
+    DOCVARS.HOUR = date.hour
+    DOCVARS.MINUTE = date.min
+    --DOCVARS:date `DATE`::
+    --DOCVARS:date   Current date in YEAR/MONTH/DAY format
+    DOCVARS.DATE = date.year.."/"..date.month.."/"..date.day
   end
 
   if not opt_nodefaults then
     --PLANNED: read style file like a config, lower priority, differnt paths (./ /etc/ ~/ ...)
-    if not strsubst.FAKE then
-      local config = io.open(opt_config)
-      if config then
-        dbg("load config:", opt_config)
-        strsubst(config:read("*a"))
-        config:close()
-      else
-        warn("failed config:", opt_config)
-      end
+    if opt_config then
+      dbg ("load config:", opt_config)
+      loadfile (opt_config)()
     end
 
     --filetypes_builtin:scons * SCons
@@ -599,13 +680,10 @@ function setup()
     filetype_register("shell", {"%.sh$", "%.pl$", "%.awk$", }, "#")
 
     --filetypes_builtin:prolog * Prolog
-    filetype_register("prolog", {"%.pro$", "%.P$"}, "%")
+    filetype_register("prolog", {"%.yap$", "%.pro$", "%.P$"}, "%")
 
     --filetypes_builtin:text * Textfiles, Pipadoc (`.pdoc`)
-    filetype_register("plain", {"%.txt$", "%.TXT$", "%.pdoc$", "^-$"}, {"PIPADOC:", ""})
-
-    --filetypes_builtin:pipadocconfig * Pipadoc config (`.pconf`)
-    filetype_register("pconf", "%.pconf$", {"#", "^ "})
+    filetype_register("text", {"%.txt$", "%.TXT$", "%.pdoc$", "^-$"}, {"PIPADOC:", ""})
 
     --filetypes_builtin:java * Java, C#
     filetype_register("java", {"%.java$", "%.cs$"}, {"//", "/*"})
@@ -635,6 +713,14 @@ function setup()
     filetype_register("sql", {"%.sql$", "%.SQL$"}, {"#", "--", "/*"})
   end
 
+  local function set_section (context)
+    context.SECTION = to_text (context.SECTION) or SECTION
+  end
+
+  local function set_arg (context)
+    context.ARG = to_text (context.ARG) or ARG
+  end
+
   --op_builtin:
   --: `:` ::
   --:   The documentation operator. Defines normal documentation text. Each pipadoc comment using the `:`
@@ -643,6 +729,14 @@ function setup()
   operator_register(
     ":",
     function (context)
+      if context.TEXT == "" and (to_text (context.SECTION) or to_text(context.ARG)) then
+        SECTION = to_text (context.SECTION) or SECTION
+        ARG = to_text (context.ARG) or ""
+      end
+
+      set_section (context)
+      set_arg (context)
+
       section_append(context.SECTION, context.ARG, context)
     end
   )
@@ -654,7 +748,9 @@ function setup()
   operator_register(
     "=",
     function (context)
-      --PLANNED: how to use docvars.text?
+      set_section (context)
+
+      --PLANNED: how to use DOCVARS.text?
       if #context.ARG > 0 then
         section_append(context.SECTION, nil, context)
       else
@@ -671,10 +767,12 @@ function setup()
   operator_register(
     "@",
     function (context)
+      set_section (context)
+
       if #context.ARG > 0 then
         section_append(context.SECTION, nil, context)
       else
-        warn("sort section missing:")
+        warn("sort argument missing:")
       end
     end
   )
@@ -687,18 +785,20 @@ function setup()
   operator_register(
     "#",
     function (context)
+      set_section (context)
+
       if #context.ARG > 0 then
         section_append(context.SECTION, nil, context)
       else
-        warn("sort section missing:")
+        warn("sort argument missing:")
       end
     end
   )
+
+  preprocessors_attach ()
 end
 
 local dbg_section
-local SECTION
-local ARG
 
 function process_line (line, comment)
   local context = {}
@@ -708,43 +808,26 @@ function process_line (line, comment)
     context.PRE, context.COMMENT, context.SECTION, context.OP, context.ARG, context.TEXT =
       "", " ", "", ":", "", line
   else
+    local pattern = "^(.-)("..comment..")([%w_.]*)([:=@#])([%w_.]*)%s?(.*)$"
+    --FIXME: create opchars dynamically from defined ops
     context.PRE, context.COMMENT, context.SECTION, context.OP, context.ARG, context.TEXT =
-      --FIXME: create opchars dynamically
-      string.match(line,"^(.-)("..comment..")([%w_.]*)([:=@#])([%w_.]*)%s?(.*)$")
+      string.match(line,pattern)
   end
 
-  context.LANGUAGE = docvars.LANGUAGE
+  context.LANGUAGE = DOCVARS.LANGUAGE
 
   --FIXME: wrong section
-  --docvars:file `FILE`::
-  --docvars:file   The file or section name currently processed or some special annotation
-  --docvars:file   in angle brakets (eg '<startup>') on other processing phases
-  --docvars:line `LINE`::
-  --docvars:line   Current line number of input or section, or indexing key
-  --docvars:line   Lines start at 1, if set to 0 then some output formatters skip over it
+  --DOCVARS:file `FILE`::
+  --DOCVARS:file   The file or section name currently processed or some special annotation
+  --DOCVARS:file   in angle brakets (eg '<startup>') on other processing phases
+  --DOCVARS:line `LINE`::
+  --DOCVARS:line   Current line number of input or section, or indexing key
+  --DOCVARS:line   Lines start at 1
   context.FILE, context.LINE = FILE, LINE
 
-  warn("parsed section:", context.SECTION, SECTION)
-
-  
   if context.PRE then
-    if context.SECTION == "" then
-      context.SECTION = SECTION
-      -- context.ARG = ARG
-      trace("pre:", context.PRE, "section:", context.SECTION, "op:", context.OP, "arg:", context.ARG, "text:", context.TEXT)
 
-    else
-      if dbg_section ~= context.SECTION then
-        dbg("pre:", context.PRE, "section:", context.SECTION, "op:", context.OP, "arg:", context.ARG, "text:", context.TEXT)
-        dbg_section = context.SECTION
-      end
-
-      if context.TEXT == "" then
-        SECTION = context.SECTION
-        -- ARG = context.ARG
-        return
-      end
-    end
+    trace("pre:", context.PRE, "section:", context.SECTION, "op:", context.OP, "arg:", context.ARG, "text:", context.TEXT)
 
     local op = context.OP
     if op then
@@ -762,7 +845,7 @@ end
 
 function process_file(file)
   --FIXME: first check if file is available, then warn
-  local descriptor, pattern = filetype_get(file)
+  local descriptor, pattern = filetype_get (file)
   if not descriptor then
     warn("unknown file type:", file)
     return
@@ -784,21 +867,33 @@ function process_file(file)
   end
 
   --FIXME: wrong docsection
-  --docvars:section `SECTION`::
-  --docvars:section   stores the current section name
+  --DOCVARS:section `SECTION`::
+  --DOCVARS:section   stores the current section name
   SECTION = FILE:match("[^./]+%f[.\0]")
   LINE = 0
   dbg("section:", SECTION)
 
-  docvars.LANGUAGE = descriptor.language
-  dbg("LANGUAGE:", docvars.LANGUAGE)
+  DOCVARS.LANGUAGE = descriptor.language
+  dbg("LANGUAGE:", DOCVARS.LANGUAGE)
 
   for line in fh:lines() do
     LINE = LINE+1
     trace("input:", line)
-    local comment = filetype_select(line, descriptor)
+
+    if descriptor.preprocessors then
+      for i=1,#descriptor.preprocessors do
+        local lineold = line
+        line = descriptor.preprocessors[i](line)
+        if to_text (line) and line ~= lineold then
+          trace("preprocessed:", line)
+        end
+      end
+    end
+
+    local comment = comment_select(line, descriptor)
+
     if comment then
-      process_line(line, comment)
+      process_line(line, comment, descriptor.preprocessors)
     end
   end
   fh:close()
@@ -818,23 +913,26 @@ end
 
 local default_generators = {
   [":"] = function (context)
-    local ret = strsubst(context.TEXT, context)
-    if ret == "" and context.TEXT ~= "" then
+    CONTEXT=context
+    local ret = streval(context.TEXT)
+    if ret == "" and to_text (context.TEXT) then
       return ""
     else
-      trace ("generate:", ret)
+      trace ("generate:"..context.FILE..":"..context.LINE, ret)
       return ret.."\n"
     end
   end,
 
   ["="] = function (context)
+    CONTEXT=context
     return generate_output(context.ARG)
   end,
 
   ["@"] = function (context)
-    dbg("generate_output_sorted:", order, which, opt)
+    dbg("generate_output_alphasorted:"..context.FILE..":"..context.LINE)
+    CONTEXT=context
     local which = context.ARG
-    local section = sections[context.ARG].keys
+    local section = sections[which] and sections[which].keys
     local text = ""
 
     if section ~= nil then
@@ -846,7 +944,9 @@ local default_generators = {
       local sorted = {}
 
       for k in pairs(section) do
-        table.insert(sorted, k)
+        if not tonumber (k) then
+          table.insert(sorted, k)
+        end
       end
 
       table.sort(sorted, function(a,b) return tostring(a) < tostring(b) end)
@@ -869,7 +969,46 @@ local default_generators = {
     return text
   end,
 
-  ["#"] = nil,
+  ["#"] = function (context)
+    dbg("generate_output_numasorted:"..context.FILE..":"..context.LINE)
+    CONTEXT=context
+    local which = context.ARG
+    local section = sections[which] and sections[which].keys
+    local text = ""
+
+    if section ~= nil then
+      sections_keys_usecnt[which] = sections_keys_usecnt[which] + 1
+
+      local oldfile = FILE
+      FILE ='<output>:'..which
+
+      local sorted = {}
+
+      for k in pairs(section) do
+        if tonumber (k) then
+          table.insert(sorted, k)
+        end
+      end
+
+      table.sort(sorted, function(a,b) return (tonumber(a) or 0) < (tonumber(b) or 0) end)
+
+      if #sorted == 0 then
+        warn("section is empty:",which)
+        return ""
+      end
+
+      for i=1,#sorted do
+        LINE=sorted[i]
+        for j=1,#section[sorted[i]] do
+          text = text..section[sorted[i]][j].TEXT..'\n'
+        end
+      end
+      FILE = oldfile
+    else
+      warn("no section named:", which)
+    end
+    return text
+  end,
 }
 
 
@@ -959,8 +1098,9 @@ end
 --MAIN:
 --: pipadoc - Documentation extractor
 --: =================================
---: Christian Thaeter <ct@pipapo.org>
---: {$DATE}
+--: :author:   Christian Thaeter
+--: :email:    ct@pipapo.org
+--: :date:     {os.date()}
 --:
 --:
 --: Introduction
@@ -1037,8 +1177,6 @@ end
 --: Pipadoc operates in some phases. First all given files are read and parsed and finally the output is
 --: generated by bringing all accumulated documentation parts together into proper order.
 --:
---: When the 'strsubst' lua package is available, pipadoc adds uses this to add some extra functionality.
---:
 --: [[syntax]]
 --: Pipadoc Syntax
 --: ~~~~~~~~~~~~~~
@@ -1077,20 +1215,13 @@ end
 --: Reading files is done on a line by line base.
 --:
 --: After all files are read the output is generated by starting assembling the toplevel section
---: ('MAIN' if not otherwise defined). 'Strsubst' may be used to expand each generated line.
+--: ('MAIN' if not otherwise defined).
 --:
 --:
 --: Sections and Keys
 --: -----------------
 --:
 --=sections
---:
---:
---: String Substitation
---: -------------------
---:
---TODO: DOCME
---:
 --:
 --: Filetypes
 --: ---------
@@ -1116,21 +1247,21 @@ end
 --=op_builtin
 --:
 --:
---: [[docvars]]
+--: [[DOCVARS]]
 --: Documentation Variables
 --: -----------------------
 --:
---: The 'docvars' Lua table holds key/value pairs of variables with the global state
+--: The 'DOCVARS' Lua table holds key/value pairs of variables with the global state
 --: of pipadoc. These can be used by the core and plugins in various ways. Debugging
 --: for example prints the FILE:LINE processed and there is the 'varsubst' processor
---: to substitute them in the documentation text. The user can set arbitary docvars
+--: to substitute them in the documentation text. The user can set arbitary DOCVARS
 --: from commandline.
 --TODO: optarg
 --:
---: Predefined docvars
+--: Predefined DOCVARS
 --: ~~~~~~~~~~~~~~~~~~
 --:
---@docvars
+--@DOCVARS
 --:
 --:
 --: Programming API for extensions
@@ -1190,12 +1321,6 @@ end
 --: ISSUES
 --: ------
 --:
---: ASSIGNED
---: ~~~~~~~~
---:
---@ASSIGNED
---=ASSIGNED
---:
 --: FIXME
 --: ~~~~~
 --:
@@ -1225,8 +1350,7 @@ end
 --PLANNED: how to join (and then wordwrap) lines?
 --PLANNED: bash like parameter expansion, how to apply that to sections/keys too --%{section}:%{key}
 --PLANNED: org-mode processor
---PLANNED: INIT section initialize strsubst etc
---ASSIGNED:ct PLANNED: merge docvars and context to one table
+--PLANNED: INIT section for configuration
 
 
 --TODO: special sections
@@ -1234,6 +1358,4 @@ end
 --TODO: CONFIG:POST
 --TODO: CONFIG:GENERATE
 --PLANNED: include operator
---PLANNED: include from strsubst/config? how?
-
-
+--PLANNED: git blame support for issues, include date/committer reference
