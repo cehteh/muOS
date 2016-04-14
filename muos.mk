@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 SOURCES += $(wildcard muos/*.c)
 SOURCES += $(wildcard muos/lib/*.c)
 SOURCES += $(wildcard muos/hw/$(PLATFORM)/*.c)
@@ -25,6 +26,8 @@ HEADERS += $(wildcard muos/lib/*.h)
 HEADERS += $(wildcard muos/hw/$(PLATFORM)/*.h)
 
 TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc)
+# Makefiles can include documentation too
+MAKEFILE_DOCS += Makefile muos/muos.mk $(wildcard muos/prg_*.mk) $(widcard muos/hw/*.mk)
 
 OBJECTS += $(SOURCES:.c=.o)
 
@@ -118,7 +121,7 @@ mrproper: clean .v/IMAGES
 #documentation targets
 
 
-doc: manual issues
+doc: manual issues README
 
 txt: muos_manual.txt muos_issues.txt
 
@@ -134,15 +137,16 @@ issues: muos_issues.html
 	$(PRINTFMT) $@ ASCIIDOC
 	asciidoc -d book -a toc $<
 
-muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS)
+muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 	$(PRINTFMT) $@ PIPADOC
-	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >muos_manual.txt
+	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >muos_manual.txt
 
-muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS)
+muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 	$(PRINTFMT) $@ ISSUES
-	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >muos_issues.txt
+	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >muos_issues.txt
 
-README: $(TXTS) $(SOURCES) $(HEADERS)
+
+README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 	$(PRINTFMT) $@ README
-	lua muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc.pconf $(TXTS) $(SOURCES) $(HEADERS) >../README
+	lua muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
 
