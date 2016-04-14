@@ -107,7 +107,7 @@ size: $(IMAGES) .v/SIZE
 	$(PRINTFMT) $@ SIZE
 	$(SIZE) --target=ihex $(IMAGES)
 
-clean: depclean
+clean: depclean docclean
 	$(PRINTFMT) $@ CLEAN
 	rm -f *.elf *.a $(OBJECTS)
 
@@ -120,6 +120,9 @@ mrproper: clean .v/IMAGES
 
 #documentation targets
 
+docclean:
+	$(PRINTFMT) $@ DOCCLEAN
+	rm -f *.html *.txt *.pdf *.xml
 
 doc: manual issues README
 
@@ -139,11 +142,11 @@ issues: muos_issues.html
 
 muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 	$(PRINTFMT) $@ PIPADOC
-	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >muos_manual.txt
+	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 
 muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 	$(PRINTFMT) $@ ISSUES
-	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >muos_issues.txt
+	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 
 
 README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
