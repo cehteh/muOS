@@ -25,7 +25,7 @@ HEADERS += $(wildcard muos/*.h)
 HEADERS += $(wildcard muos/lib/*.h)
 HEADERS += $(wildcard muos/hw/$(PLATFORM)/*.h)
 
-TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc)
+TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc) muos/doc/pipadoc_config.lua
 # Makefiles can include documentation too
 MAKEFILE_DOCS += Makefile muos/muos.mk $(wildcard muos/prg_*.mk) $(widcard muos/hw/*.mk)
 
@@ -72,7 +72,7 @@ include muos/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(IMAGES)
+all: $(IMAGES) doc
 	$(PRINTFMT) '$(IMAGES)' IMAGES
 
 # dependencies on variables, stored in .v/
@@ -120,6 +120,22 @@ mrproper: clean .v/IMAGES
 
 #documentation targets
 
+
+LUA := $(shell							\
+	for i in lua5.3 lua-5.3 lua5.2 lua-5.2 lua lua-5.1; do	\
+		program=$$(which "$$i") ;			\
+		if test "$$program" -a -x "$$program"; then	\
+			echo "$$program";			\
+			return;					\
+		fi;						\
+	done;							\
+	)
+
+ASCIIDOC := $(shell which asciidoc)
+
+A2X := $(shell which a2x)
+
+
 docclean:
 	$(PRINTFMT) $@ DOCCLEAN
 	rm -f *.html *.txt *.pdf *.xml
@@ -132,24 +148,45 @@ manual: muos_manual.pdf muos_manual.html
 
 issues: muos_issues.html
 
+README: ../README
+
 %.pdf: %.txt
+ifneq ("$(A2X)","")
 	$(PRINTFMT) $@ A2X
-	a2x -d book -L -k --dblatex-opts "-P latex.output.revhistory=0" $<
+	$(A2X) -d book -L -k --dblatex-opts "-P latex.output.revhistory=0" $<
+else
+	$(PRINTFMT) $@ "A2X NOT AVAILABLE"
+endif
 
 %.html: %.txt
+ifneq ("$(ASCIIDOC)","")
 	$(PRINTFMT) $@ ASCIIDOC
-	asciidoc -d book -a toc $<
+	$(ASCIIDOC) -d book -a toc $<
+else
+	$(PRINTFMT) $@ "ASCIIDOC NOT AVAILABLE"
+endif
 
 muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PIPADOC
-	lua muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
 
 muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ ISSUES
-	lua muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
 
-
-README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+../README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ README
-	lua muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
+	$(LUA) muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
 
