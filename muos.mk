@@ -153,7 +153,7 @@ README: ../README
 %.pdf: %.txt
 ifneq ("$(A2X)","")
 	$(PRINTFMT) $@ A2X
-	$(A2X) -d book -L -k --dblatex-opts "-P latex.output.revhistory=0" $<
+	$(A2X) -d book -L -k --dblatex-opts "-P latex.output.revhistory=0" --dblatex-opts "-b xetex" $<
 else
 	$(PRINTFMT) $@ "A2X NOT AVAILABLE"
 endif
