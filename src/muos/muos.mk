@@ -107,13 +107,9 @@ size: $(IMAGES) .v/SIZE
 	$(PRINTFMT) $@ SIZE
 	$(SIZE) --target=ihex $(IMAGES)
 
-clean: depclean docclean
+clean: depclean docclean .v/IMAGES
 	$(PRINTFMT) $@ CLEAN
-	rm -f *.elf *.a $(OBJECTS)
-
-mrproper: clean .v/IMAGES
-	$(PRINTFMT) $@ MRPROPER
-	rm -f $(IMAGES)
+	rm -f *.elf *.a $(OBJECTS) $(IMAGES)
 
 #gitclean: git stash, git clean -dfx
 
