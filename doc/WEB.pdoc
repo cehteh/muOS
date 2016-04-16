@@ -1,0 +1,43 @@
+== mµOS - My micro OS
+
+a small operating system for microcontrollers
+
+PIPADOC:=intro
+
+PIPADOC:=features
+
+== Documentation
+
+You can read the online documentation http:muos_manual.html[here]
+or download a PDF book http:muos_manual.pdf[here].
+
+== Download
+
+The git repository is available at
+
+ git://git.pipapo.org/muos
+
+Development is mainly done in feature branches, use +git branch -r+ to see
+which ones are available. Development is done on the *devel* branch, the
+*master* branch is tried to be kept stable but often a bit behind. Later on,
+releases may get their own branches and tags.
+
+PIPADOC:TODO: mob repository
+
+
+== Issues
+
+Instead a Bug-Track, mµOS tags and documents bugs right inside its code and
+documentation. The documentation system then generates a list of issues which
+can be viewed http:muos_issues.html[here].
+
+
+PIPADOC:TODO: contact/mailinglist
+
+
+== License
+
+GPLv3
+
+PIPADOC:TODO: license
+
