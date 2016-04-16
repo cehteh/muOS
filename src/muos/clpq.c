@@ -27,11 +27,10 @@
 muos_clpq_type muos_clpq;
 
 
-//PLANNED:
-//: realtime in interrupt function calls
-//: high bit tag
-//: sorting before normal functions
-//: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
+//PLANNED: realtime in interrupt function calls
+//PLANNED: high bit tag
+//PLANNED: sorting before normal functions
+//PLANNED: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
 
 bool
 muos_clpq_schedule (muos_spriq_priority when)

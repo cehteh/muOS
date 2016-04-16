@@ -1,10 +1,10 @@
-== Features
+=== Features
 
 * Most things in mµOS are configurable in very small detail. The build system
-  only links parts which are really referenced into the resulting firmware,
-  thus it hard to tell what size mµOS has, because it depends on the
-  application build on top. When slimmed down then sizes smaller than 1kByte
-  and RAM usage of only few bytes are possible.
+  only links parts which are referenced into the resulting firmware, thus it
+  hard to tell what size mµOS has, because it depends on the application build
+  on top. When slimmed down then sizes smaller than 1kByte and RAM usage of
+  only few bytes are possible.
 
 * The mainloop pops functions from work queues, executing them and puts the µC
   to sleep when nothing needs to be done. Any Interrupt wakes the mainloop,

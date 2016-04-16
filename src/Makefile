@@ -22,24 +22,34 @@
 
 PLATFORM = atmel/avr
 
+#muos_config:MCU
+#: 
 #MCU = atmega328p
 #MCU = attiny85
 MCU = attiny84
 
+#muos_config:MAIN
+#: 
 MAIN = example
 
+#main_config:PROGRAMMER
+#: 
 PROGRAMMER = avrdude
 #PROGRAMMER = micronucleus
 
+#avrdude_config:
+#: 
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
 AVRDUDE_PROGRAMMER = usbasp
 #AVRDUDE_PROGRAMMER = arduino
 
+#build_config:
 # additional C Source file
 SOURCES += $(wildcard *.c)
 
-# Common CC Flags
+#build_config:CCFLAGS
+#: Common CC Flags
 CCFLAGS += -g
 #CCFLAGS += -DF_CPU=62500UL
 #CCFLAGS += -DF_CPU=125000UL
@@ -51,48 +61,48 @@ CCFLAGS += -g
 CCFLAGS += -DF_CPU=8000000UL
 #CCFLAGS += -DF_CPU=16000000UL
 
-# Dependency generation Flags
+#build_config:DEPFLAGS
+#: Dependency generation Flags
 #DEPFLAGS +=
 
-# Preprocessor Flags
+#build_config:CPPFLAGS
+#: Preprocessor Flags
 #CPPFLAGS +=
 
-# Compile Flags
+#build_config:CFLAGS
+#: Compile Flags
 CFLAGS += -Wall -Wextra -Werror
 
 
-# Linker flags
+#build_config:LDFLAGS
+#: # Linker flags
 LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
 
-#configuration:
-#: detailed configuration
 
-
-
-#:MUOS_DEBUG_BUSY
+#muos_config:MUOS_DEBUG_BUSY
 #: Uses a GPIO to indicate when the cpu is busy,
 #: otherwise, while sleeping the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
-#:MUOS_DEBUG_INTR
+#muos_config:MUOS_DEBUG_INTR
 #: Uses a GPIO to indicate when the cpu is handling interrupts,
 #: otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
 
 
-#:MUOS_DEBUG_ERROR
+#muos_config:MUOS_DEBUG_ERROR
 #: Uses a GPIO to indicate when an error got set,
 #: otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
 
-#:MUOS_INITFN
+#muos_config:MUOS_INITFN
 #: Name of the user-defined initialization function.
 #: This function is pushed on the rtq (or, if not available the bgq) when starting up. It is
 #: responsible for initializing the system. Interrupts are still diabled and the clock is
@@ -101,7 +111,7 @@ MUOS_CONFIG += -DMUOS_INITFN=init
 
 
 
-#:MUOS_ERRORFN
+#muos_config:MUOS_ERRORFN
 #: Name of the user-defined function which is called when am error is pending.
 #: Errors can happen synchronusly and be handled right where they are happen or asynchronously
 #: from interrupts. If any undhandled error stays pending, this function will be called
@@ -110,7 +120,7 @@ MUOS_CONFIG += -DMUOS_ERRORFN=error
 
 
 
-#:MUOS_EXPLICIT_INIT
+#muos_config:MUOS_EXPLICIT_INIT
 #: when set to 1, then all static initialization of muos internal datastructures is disabled
 #: initialization will then be done explicitly in init sections or in main before any of these
 #: facilities are used
@@ -119,19 +129,19 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 
 
 
-#:MUOS_SCHED_DEPTH
+#muos_config:MUOS_SCHED_DEPTH
 #: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield())
 MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
 
-#:MUOS_SCHED_SLEEP
+#muos_config:MUOS_SCHED_SLEEP
 #: Set sleep mode for the main loop if supported
 MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 
 
 
-#:MUOS_QUEUE_INDEX
+#queue_config:MUOS_QUEUE_INDEX
 #: the bits used for indexing queues
 #: comes in 3 variants
 #:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
@@ -143,7 +153,7 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 
 
 
-#:MUOS_RTQ_LENGTH
+#queue_config:MUOS_RTQ_LENGTH
 #: How many entries the realtime queue can hold, set to 0 to disable the rtq
 #MUOS_CONFIG += -DMUOS_RTQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_RTQ_LENGTH=8
@@ -152,7 +162,7 @@ MUOS_CONFIG += -DMUOS_RTQ_LENGTH=8
 
 
 
-#:MUOS_BGQ_LENGTH
+#queue_config:MUOS_BGQ_LENGTH
 #: How many entries the background queue can hold, set to 0 to disable the bgq
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
@@ -168,7 +178,7 @@ MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
 
 
 
-#:MUOS_SPRIQ_TYPE
+#spriq_config:MUOS_SPRIQ_TYPE
 #: Type used for the 'priorities' of the small priority queue.
 #: This priority queue uses a 'sliding window'. The rtpq uses this.
 #: Scheduler needs to be called at least half of the range provided by this type.
@@ -179,17 +189,16 @@ MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 
 
 
-#:MUOS_SPRIQ_INDEX
+#spriq_config:MUOS_SPRIQ_INDEX
 #: Type to keep track of the size of the spriq.
 #: uint8_t for up to 255 entries, uint16_t for up to 65k entries.
-#: choosing uint8_t saves only one byte ram, usually not worth it
 MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
 #MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint16_t
 
 
 
-#:MUOS_LPRIQ_TYPE
-#: type used for the 'priorities' of the priority queue
+# :MUOS_LPRIQ_TYPE
+# : type used for the 'priorities' of the priority queue
 MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=MUOS_CLOCK_TYPE
 #MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=uint8_t
 #MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=uint16_t
@@ -197,15 +206,16 @@ MUOS_CONFIG += -DMUOS_LPRIQ_TYPE=MUOS_CLOCK_TYPE
 
 
 
-#:MUOS_LPRIQ_INDEX
-#: Type to keep track of the size of the lpriq.
+# :MUOS_LPRIQ_INDEX
+# : Type to keep track of the size of the lpriq.
 #MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
 MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 
 
-
-#:MUOS_CLPQ_LENGTH
-#: How many entriex the scheduling Queue can hold, set to 0 to disable the clpq
+#clpq_config:MUOS_CLPQ_LENGTH
+#: MUOS_CLPQ_LENGTH::
+#: Number of entries the scheduling Queue can hold, set to 0 to disable the clpq
+#:
 MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
@@ -213,7 +223,7 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 
 
 
-#:MUOS_CLOCK_HW
+#clock_config:MUOS_CLOCK_HW
 #: Which Hardware timer to use.
 #: This is a hardware dependent config. usually a number or a simple name
 #: timer hardware setup is tightly bound to the hardware capabilities and only barely
@@ -223,7 +233,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 
 
-#:MUOS_CLOCK_HW_PRESCALER
+#clock_config:MUOS_CLOCK_HW_PRESCALER
 #: Prescaler from some hardware defined master clock.
 #: Use a 16 bit timer for PRESCALER=1, 8 bit has too high interrupt load
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
@@ -235,7 +245,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 
 
 
-#:MUOS_CLOCK_TYPE
+#clock_config:MUOS_CLOCK_TYPE
 #: MµOS clock configuration above the hardware
 #: The type used for the overflow counter of the clock.
 #: together with the harware register of the clock this gives the full time.
@@ -244,7 +254,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
 
 
 
-#:MUOS_CLOCK_SHORT_TYPE
+#clock_config:MUOS_CLOCK_SHORT_TYPE
 #: The type used for shorter timespans
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
@@ -252,7 +262,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 
 
 
-#:MUOS_CLOCK_CALIBRATE
+#clock_config:MUOS_CLOCK_CALIBRATE
 #: Frequency calibration api for syncing the
 #: master clock with some external signal.
 #:  0 = disabled
@@ -261,7 +271,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 
 
 
-#:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
+#clock_config:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
 #: When the time elapsed since the last sync differs more than
 #: +/- this value, the calibration measurement is reset and starts over.
 #: This filters out glitches from api calls.
@@ -269,7 +279,7 @@ MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
 
 
 
-#:MUOS_CLOCK_CALIBRATE_DEADBAND
+#clock_config:MUOS_CLOCK_CALIBRATE_DEADBAND
 #: Adds a deadband/range around the target clock. On µC where the clock
 #: calibration is rather coarse a exact match can not be reached and constant
 #: readjustments will only result in high jitter.
@@ -277,20 +287,20 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
 
-#:MUOS_BUFFER_INDEX
+#buffer_config:MUOS_BUFFER_INDEX
 #: type used to the cyclic buffer length and indexing
 MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
 #MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint16_t
 
 
 
-#:MUOS_SERIAL_HW
+#serial_config:MUOS_SERIAL_HW
 #: Which serial hardware to use
 MUOS_CONFIG += -DMUOS_SERIAL_HW=0
 
 
 
-#:MUOS_SERIAL_BAUD
+#serial_config:MUOS_SERIAL_BAUD
 #: Baudrate for the serial interface
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=50UL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=300UL
@@ -301,7 +311,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
 
 
 
-#:MUOS_SERIAL_BAUD_TXBOOST
+#serial_config:MUOS_SERIAL_BAUD_TXBOOST
 #: Inrcease the TX baudrate by this much permille
 #: Setting the TX speed little higher makes the link a bit more
 #: reliable when the clocks are out of sync, esp when one echos back each
@@ -320,7 +330,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 
 
 
-#:MUOS_SERIAL_TXBUFFER
+#serial_config:MUOS_SERIAL_TXBUFFER
 #: length of the transmission buffer
 #: 0 disables sending data
 #: >1 creates a buffer of that size
@@ -336,7 +346,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 
 
 
-#:MUOS_SERIAL_TXQUEUE
+#serial_config:MUOS_SERIAL_TXQUEUE
 #: use a tagged queue for TX requests.
 #: A tagged queue can store data as references and in binary
 #: format. This may reduce the memory needed for queueing
@@ -371,7 +381,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 
 
 
-#:MUOS_SERIAL_RXBUFFER
+#serial_config:MUOS_SERIAL_RXBUFFER
 #: length of the receive buffer
 #: 0 disables receiving data
 #: >1 creates a buffer of that size
@@ -386,16 +396,13 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
 
 
 
-#:MUOS_SERIAL_RXSYNC
-#: Starting
-#: 0 disables receiving data
-#: >1 creates a buffer of that size
+#serial_config:MUOS_SERIAL_RXSYNC
 MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
 
 
 
 
-#:MUOS_SERIAL_RXCALLBACK
+#serial_config:MUOS_SERIAL_RXCALLBACK
 #: function to be called from rtq when a character is received
 #: either a user defined function or muos_lineedit for a default line editor
 #MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
@@ -403,7 +410,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 
 
-#:MUOS_LINEEDIT_BUFFER
+#lineedit_config:MUOS_LINEEDIT_BUFFER
 #: length of the linedit buffer
 MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
@@ -413,7 +420,7 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
 
 
 
-#:MUOS_LINEEDIT_UTF8
+#lineedit_config:MUOS_LINEEDIT_UTF8
 #: enable UTF8 support for lineedit
 #: when disabled only 7bit ascii is used
 #MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8=0
@@ -428,7 +435,7 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8=1
 
 
 
-#:MUOS_LINEEDIT_RECALL
+#lineedit_config:MUOS_LINEEDIT_RECALL
 #: most simple history, only one byte in ram and litte flash needed
 #: One can recall the previous line with cursor up, immediately after pressing return
 #MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=0
@@ -439,13 +446,13 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=1
 #:MUOS_LINEEDIT_HISTORY
 #: buffers for history
 
-#:MUOS_LINEEDIT_CALLBACK
+#lineedit_config:MUOS_LINEEDIT_CALLBACK
 #: user defined function to call when a line from lineedit is done (return pressed)
 MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 
 
-#:MUOS_CPPM_CHANNELS
+#cppm_config:MUOS_CPPM_CHANNELS
 #: enable the CPPM Parser for Radio Control Signals
 #MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=0
 MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
@@ -453,20 +460,20 @@ MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 
 
 
-#:MUOS_CPPM_RAW
+#cppm_config:MUOS_CPPM_RAW
 #: store the raw cppm timing data in
 #:  uint16_t muos_cppm_channel_raw[]
 MUOS_CONFIG += -DMUOS_CPPM_RAW
 
 
 
-#:MUOS_CPPM_RAW_FILTER
+#cppm_config:MUOS_CPPM_RAW_FILTER
 #: filter expression for raw channel data
 MUOS_CONFIG += -D'MUOS_CPPM_RAW_FILTER(old,new)=(old + new)/2'
 
 
 
-#:MUOS_CPPM_COOKED
+#cppm_config:MUOS_CPPM_COOKED
 #: store the cppm data (glitch filtered) in
 #:  int8_t muos_cppm_channel_cooked[]
 #: with a range from -125 to 125 this simplifies access
@@ -475,59 +482,59 @@ MUOS_CONFIG += -DMUOS_CPPM_COOKED
 
 
 
-#:MUOS_CPPM_COOKED_MIN
+#cppm_config:MUOS_CPPM_COOKED_MIN
 #: defines the minimum signal length for cooked values
 MUOS_CONFIG += -DMUOS_CPPM_COOKED_MIN='MUOS_CLOCK_MICROSECONDS(1000)'
 
 
 
-#:MUOS_CPPM_COOKED_MAX
+#cppm_config:MUOS_CPPM_COOKED_MAX
 #: defines the maximum signal length for cooked values
 MUOS_CONFIG += -DMUOS_CPPM_COOKED_MAX='MUOS_CLOCK_MICROSECONDS(2000)'
 
 
 
-#:MUOS_CPPM_CAPTURE
+#cppm_config:MUOS_CPPM_CAPTURE
 #: Select Input Capture driver
 #: Input capture is more precise than pinchange
 MUOS_CONFIG += -DMUOS_CPPM_CAPTURE='(1)'
 
 
 
-#:MUOS_CPPM_PCINT
+# cppm_config:MUOS_CPPM_PCINT
 #PLANNED: cppm pcint
-#: Select PinChange driver
-#: Pin change interrupt bit
+# : Select PinChange driver
+# : Pin change interrupt bit
 #MUOS_CONFIG += -DMUOS_CPPM_PCINT=8
 
 
 
-#:MUOS_CPPM_FRAME
+#cppm_config:MUOS_CPPM_FRAME
 #: Length of a full CPPM frame
 MUOS_CONFIG += -DMUOS_CPPM_FRAME='MUOS_CLOCK_MILLISECONDS(27)'
 
 
 
-#:MUOS_CPPM_FRAME_CLOCKSYNC
+#cppm_config:MUOS_CPPM_FRAME_CLOCKSYNC
 #: Use the MUOS_CLOCK_CALIBRATE to synchronize the µC clock with the CPPM frames
 #MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=0
 MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=1
 
 
 
-#:MUOS_CPPM_MIN
+#cppm_config:MUOS_CPPM_MIN
 #: Minimum CPPM Pulse length
 MUOS_CONFIG += -DMUOS_CPPM_MIN='MUOS_CLOCK_MICROSECONDS(750)'
 
 
 
-#:MUOS_CPPM_MAX
+#cppm_config:MUOS_CPPM_MAX
 #: Maximum CPPM Pulse length, also any longer pulse defines the frame start
 MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
 
 
 
-#:MUOS_CPPM_CALLBACK
+#cppm_config:MUOS_CPPM_CALLBACK
 #: function to be called from rtq when a frame got received
 MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
 

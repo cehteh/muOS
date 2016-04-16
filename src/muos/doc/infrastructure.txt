@@ -1,0 +1,58 @@
+mµOS comes comes with a Makefile managing all project tasks. For the example
+Project bundled with the mµOS source, everytihng is configured inside this
+Makefile (this may be refined in future).
+
+==== Build System
+
+The build-system tries to do exact dependency tracking and building things in
+parallel. There are sub Makefiles to support different flashing tools and
+different platforms.
+
+By default the make output is quite silent. If one adds the "MAKE_DEBUG=1"
+flag to the make invocation then parallel builds are disabled and the it
+produces verbose output.
+
+Following main build targets are available:
+
+all::
+        Builds everything
+
+upload::
+        Flashes the firmware to the target
+
+doc::
+        Build the documentation
+
+issues::
+        Extracts +muos_issues.txt+ and builds +muos_issues.html+
+
+clean::
+        Deletes anything that got build
+
+
+==== Documenation
+
+The Documentation is writiten in 'asciidoc' and distributed in serveral .txt
+files and added as special comments to the sources. The 'pipadoc' tool
+included with mµOS is used to extract this Documentation into single text
+files. For building the Documentation one needs a 'lua' interpreter, the
+'asciidoc' toolchain and perhaps 'dblatex' for pdf generation. Because of
+these dependencies building the documentation kept optional.
+
+==== Issues
+
+Issues are (only) tagged inside source and documentation files. 'pipadoc'
+takes care of generating a +muos_issues.txt+ and +muos_issues.html+.
+There are deliberately only 3 tags for issues:
+
++FIXME+::
+        Known bug/problem which leads to failures and must be fixed.
+
++TODO+::
+        Intended functionality which is not yet implemented/finished. If not
+        used this should not run into errorneous behaviour.
+
++PLANNED+::
+        Notes about future features and ideas, may be subject to refinement
+        and should not affect the existing functionality at all.
+

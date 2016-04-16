@@ -37,9 +37,29 @@ extern muos_clpq_type muos_clpq;
 bool
 muos_clpq_schedule (muos_spriq_priority when);
 
+
 void
 muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
+
+//clpq_api:
+//: .Schedule a function at the given time
+//: ----
+//:  void muos_clpq_at (
+//:         muos_spriq_priority base,
+//:         muos_spriq_priority when,
+//:         muos_spriq_function what
+//:  )
+//: ----
+//:
+//: `base`::
+//:   time used as relative base for the timing calculation, usually
+//:   muos_now() or the events start time for regular events
+//: `when`::
+//:   offset to base for the destination time
+//: `what`::
+//:   function to be scheduled
+//:
 static inline void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
@@ -48,6 +68,23 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
   muos_interrupt_enable ();
 }
 
+
+//clpq_api:
+//:
+//: .Reschedule an event
+//: ----
+//:  void muos_repeat (
+//:         const struct muos_spriq_entry* event,
+//:         muos_spriq_priority when
+//:  )
+//: ----
+//:
+//:
+//: `event`::
+//:   the event pointer passed which get passed into queued functions
+//: `when`::
+//:   time when to repeat this event
+//:
 static inline void
 muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when)
 {

@@ -2,7 +2,7 @@ mµOS - My micro OS
 
 a small operating system for microcontrollers
 
-== Concept and Goals
+=== Concept and Goals
 
 mµOS is supposed to be a general purpose Operating-System for small
 Microcontrollers. With small/proper configuration it scales down to AVR ATTiny
@@ -16,13 +16,13 @@ minimize resource demands. Everything is served only by one Stack. There are
 no threads or context switches, but there is some facility to call the
 Scheduler recursively.
 
-Ideally users code always runs syncronously from these queues which are
+Ideally users code always runs synchronously from these queues which are
 scheduled by the mainloop provided by mµOS. Interrupts are handled by
 'drivers' and do the bare minimum necessary to serve the request, postpone any
 further processing themself onto the work queues.
 
 This means that there are less possiblities of race conditions and in many
-cases a user doesn't need to care for syncronization (unless writing drivers).
+cases a user doesn't need to care for synchronization (unless writing drivers).
 
 Still any resource which is not managed by mµOS is available to the user and
 can be freely accessed and configured. This is a deliberate design decision to
@@ -36,13 +36,13 @@ When possible mµOS reuses existing Platform and C libraries, but also adds its
 own concepts and API's breaking history with POSIX and other common API's
 whenever there are some reasons to do so.
 
-== Features
+=== Features
 
 * Most things in mµOS are configurable in very small detail. The build system
-  only links parts which are really referenced into the resulting firmware,
-  thus it hard to tell what size mµOS has, because it depends on the
-  application build on top. When slimmed down then sizes smaller than 1kByte
-  and RAM usage of only few bytes are possible.
+  only links parts which are referenced into the resulting firmware, thus it
+  hard to tell what size mµOS has, because it depends on the application build
+  on top. When slimmed down then sizes smaller than 1kByte and RAM usage of
+  only few bytes are possible.
 
 * The mainloop pops functions from work queues, executing them and puts the µC
   to sleep when nothing needs to be done. Any Interrupt wakes the mainloop,
@@ -78,11 +78,13 @@ whenever there are some reasons to do so.
   errors happened in interrupt handlers are not handled there, then the
   mainloop first calls a user-defined error handling function.
 
-== Supported Hardware
+=== Supported Hardware
 
 Hardware support is added on demand. The following Platforms are tested and
 known to work. But not all features are supported on all microcontrollers.
 Other ones may work and can be added with little effort.
+
+Future plans include to port mµOS to STM32 and other platforms.
 
 
 === AVR
@@ -101,7 +103,7 @@ atmega328p::
 
 
 
-== Requirements
+=== Requirements
 
 mµOS is developed on Linux with GNU-Tools. As far these are available it
 should be useable on other Operating Systems as well.
@@ -110,7 +112,7 @@ When versions are noted, this are the versions which are proven to work, if
 for some reason only older versions are available and work for you, please
 report this. The exact package names may differ depending on the Distribution.
 
-=== For building Projects
+==== For building Projects
 
 make (>= 4.0) ::
  GNU make
@@ -125,7 +127,7 @@ avr-libc (>= 1.8) ::
 binutils-avr ::
  Tools for building
 
-=== For flashing
+==== For flashing
 
 avrdude (>= 6.1) ::
  Needed for flashing via USBasp or Arduino bootloaders (and possibly some more
@@ -135,12 +137,12 @@ micronucleus (>= 2.0) ::
  Needed for flashing micronucleus based bootloaders (DigiSpark and other
  attiny based products)
 
-=== Revision control
+==== Revision control
 
 git ::
  For cloning and maintaining the mµOS source tree
 
-=== Building the Documentation
+==== Building the Documentation
 
 lua ::
  used by the 'pipadoc' documentation extractor (included in mµOS)

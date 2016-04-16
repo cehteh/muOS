@@ -1,8 +1,10 @@
-== Supported Hardware
+=== Supported Hardware
 
 Hardware support is added on demand. The following Platforms are tested and
 known to work. But not all features are supported on all microcontrollers.
 Other ones may work and can be added with little effort.
+
+Future plans include to port mµOS to STM32 and other platforms.
 
 
 === AVR

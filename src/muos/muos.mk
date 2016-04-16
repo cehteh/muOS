@@ -162,7 +162,7 @@ endif
 muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PIPADOC
-	$(LUA) muos/doc/pipadoc.lua -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) muos/doc/pipadoc.lua -q -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -170,7 +170,7 @@ endif
 muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ ISSUES
-	$(LUA) muos/doc/pipadoc.lua -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) muos/doc/pipadoc.lua -q -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -178,7 +178,7 @@ endif
 ../README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ README
-	$(LUA) muos/doc/pipadoc.lua -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
+	$(LUA) muos/doc/pipadoc.lua -q -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
