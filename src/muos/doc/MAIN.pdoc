@@ -13,6 +13,8 @@ PIPADOC:=features
 
 PIPADOC:=supported_hardware
 
+PIPADOC:TODO: license
+
 == Infrastructure
 
 PIPADOC:=requirements

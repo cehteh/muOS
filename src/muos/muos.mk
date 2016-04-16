@@ -133,7 +133,7 @@ docclean:
 	$(PRINTFMT) $@ DOCCLEAN
 	rm -f *.html *.txt *.pdf *.xml
 
-doc: manual issues README
+doc: manual issues README WEB
 
 txt: muos_manual.txt muos_issues.txt
 
@@ -142,6 +142,8 @@ manual: muos_manual.pdf muos_manual.html
 issues: muos_issues.html
 
 README: ../README
+
+WEB: index.html
 
 %.pdf: %.txt
 ifneq ("$(A2X)","")
@@ -183,3 +185,15 @@ else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
 
+index.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
+	$(PRINTFMT) $@ WEBPAGE
+	$(LUA) muos/doc/pipadoc.lua -q -t WEB -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
+
+# maintainer target
+publish: doc
+	$(PRINTFMT) $@ PUBLISH
+	rsync *.html muos_*.pdf www.pipapo.org:/var/local/www_muos/
