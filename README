@@ -16,10 +16,10 @@ minimize resource demands. Everything is served only by one Stack. There are
 no threads or context switches, but there is some facility to call the
 Scheduler recursively.
 
-Ideally users code always runs synchronously from these queues which are
-scheduled by the mainloop provided by mµOS. Interrupts are handled by
-'drivers' and do the bare minimum necessary to serve the request, postpone any
-further processing themself onto the work queues.
+Users code always runs synchronously from these queues which are scheduled by
+the mainloop provided by mµOS. Interrupts are handled by 'drivers' and do the
+bare minimum necessary to serve the request, postpone any further processing
+themself onto the work queues.
 
 This means that there are less possiblities of race conditions and in many
 cases a user doesn't need to care for synchronization (unless writing drivers).
@@ -27,10 +27,6 @@ cases a user doesn't need to care for synchronization (unless writing drivers).
 Still any resource which is not managed by mµOS is available to the user and
 can be freely accessed and configured. This is a deliberate design decision to
 put mµOS between bare-metal programming and some more complete OS.
-
-Everything is implemented in modern C (with some GNU extensions) as far as
-possible. While space conserving is high priority, obscure optimizations in
-assembler are not!
 
 When possible mµOS reuses existing Platform and C libraries, but also adds its
 own concepts and API's breaking history with POSIX and other common API's
@@ -65,9 +61,9 @@ whenever there are some reasons to do so.
    depend on the timer prescaler and 'shortclock' type. 'clpq' jobs are
    executed with the highest priority.
 
-** 'rtq' and 'bgq' are simple queues for high and low priority jobs. The
+** 'hpq' and 'bgq' are simple queues for high and low priority jobs. The
    scheduler executes from the front of this queues, first all jobs in the
-   'rtq' and then all jobs in the 'bgq'. One can push new jobs to then end or
+   'hpq' and then all jobs in the 'bgq'. One can push new jobs to then end or
    to the front of these queues, giving roughly 4 different priority levels.
    One should split work to be done into reasonable small parts and queue them
    to either work queue. Drivers are also supposed to do most of the work
