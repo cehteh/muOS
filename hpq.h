@@ -60,6 +60,23 @@ muos_hpq_pushback_unsafe (muos_queue_function f)
     }
 }
 
+
+//hpq_api:
+//: .Schedule functions at high priority
+//: ----
+//: void muos_hpq_pushback (muos_queue_function fn)
+//: void muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
+//: void muos_hpq_pushfront (muos_queue_function fn)
+//: void muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: ----
+//:
+//: +fn+::
+//: function to schedule
+//: +arg+::
+//:  argument to pass to the function when it gets called
+//:
+
+//FIXME: refine error handling, return bool or error number on synchronous calls
 static inline void
 muos_hpq_pushback (muos_queue_function f)
 {

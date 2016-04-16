@@ -4,51 +4,54 @@ In default configuration mµOS provides a mainloop which schedules queues
 holding user-defined functions to be called. 'main()' is part of mµOS and not
 defined in user programs.
 
-At startup mµOS first schedules a (configureable) 'init()' function which does
+At start up mµOS first schedules a (configurable) 'init()' function which does
 the initialization defined by the user. This init is called with the timer and
 drivers still uninitialized/stopped, second after the 'init()' function
 'muos_start()' is scheduled which then sets up all drivers and starts the
-timer. Upon its completion everything is initalized and the system runs.
+timer. Upon its completion everything is initialized and the system runs.
 
-Some drivers provide configureable hooks which are scheduled when some event
-happend (examples are like lineedit commpleted with the user pressing
+Some drivers provide configurable hooks which are scheduled when some event
+happened (examples are like lineedit completed with the user pressing
 +[RETURN]+)
 
 For every iteration the mainloop sets a global variable to the current time
-which then can be queried with 'muos_now()'. This time guranteed to stay
+which then can be queried with 'muos_now()'. This time guaranteed to stay
 stable for the whole mainloop iteration with only the exceptions that nested
 mainloop invocation ('muos_wait()' and 'muos_yield()' will update it). Using
-this should be the prefered way to get the current time over the direct clock
+this should be the preferred way to get the current time over the direct clock
 api's because it is faster to access and provides the necessary stability as
 time tag for this iteration.
 
-If there are any pending errors left from asychronous calls (Interrupts) it
-calls a user defined error handler. This is done at first with interrupts
-disabled. The error-handler is called only once per mainloop iteration, even
-if it leaves errors pending.
+If there are any pending errors left from asynchronous calls (Interrupts and
+Drivers) it calls a user defined error handler. This is done at highest
+priority with interrupts still disabled. The error-handler is called only once
+per mainloop iteration, even if it leaves errors pending.
 
 Then the mainloop checks if there is any work on the queues (see below) and
-exceutes these functions approbiately. When there is nothing left to do it
+executes these functions appropriately. When there is nothing left to do it
 either puts the µC into sleep or, for very short times, does a busy loop to
 ensure exact timing.
 
 === Scheduler Queues
 
-By default there are 3 queues served by the mainloop:
+By default there are 3 queues served by the mainloop. Each of them can be
+configured in some details and disabled if not required.
 
-==== clpq clock priority queue
+==== clpq; clock priority queue
 
-Schedules by timer events in 'near future'. Whatever is considered 'near
-future' is defined by the timer configuration, times longer than the
+Uses the clock to wake the mainloop for scheduling events in 'near future'.
+'near future' is defined by the clock configuration, times longer than the
 'muos_shortclock' type can not be handled. This times are also affected by the
-timers prescaler, the faster the clock runs, the shorter are the timespans it
+timers prescaler, the faster the clock runs, the shorter are the time spans it
 can handle. Common ranges are from few milliseconds to many hours.
 
+Events scheduled by the clpq have the highest priority, but are still
+called synchronously within the mainloop and interrupts enabled.
 
 ===== clpq API
 
-The priority queue uses a sliding-window implementation, this
-allows to add times covering the while range of the 'muos_shortclock' datatype.
+The priority queue uses a sliding-window implementation, this allows to add
+times covering the while range of the 'muos_shortclock' datatype.
 
 The 'clpq' uses the priority-queue implementation (and thus the types) from
 
@@ -65,48 +68,134 @@ from the clock and spriq configuration see below.
 PIPADOC:@clpq_config
 
 
-==== hpq high priority queue
+==== Work Queues
 
-note: pending rename to hpq
+The mainloop will schedule work on the Workqueues until nothing left to be
+done. Work is always popped from the front of these queues. There are API's to
+push work on the back (preferred case) and on the front of this queues.
+Pushing something on the front of a queue means that it will be scheduled
+immediately before anything else pending. Thus one get 4 priority levels for
+work from this queues.
 
+One can push an optional 'intptr_t' argument together with each scheduled
+function to give a limited ability to pass data around. If this argument is
+used it will use additional memory in the queue.
+
+The underlying queue implementation in <<lib_queue>> can be configured in
+several ways.
+
+==== hpq; high priority queue
+
+Scheduled with a priority below the clpq and above bgq.
 
 ===== hpq API
-
-// <<lib_spriq,lib/spriq>>.
-
 
 PIPADOC:=hpq_api
 
 ===== hpq configuration
 
-
 PIPADOC:@hpq_config
 
+==== 'bgq; background queue
 
-
-==== 'bgq' background queue
-
-
+Scheduled with the lowest priority.
 
 ===== bgq API
-
-// <<lib_spriq,lib/spriq>>.
-
 
 PIPADOC:=bgq_api
 
 ===== bgq configuration
 
-
 PIPADOC:@bgq_config
 
+==== Mainloop Control
 
 
+===== API
 
-//=== Main Loop Control
+PIPADOC:=muos_api
+
+===== configuration
+
+PIPADOC:@muos_config
+
+=== The Clock
+
+The 'clock' is one of the most important parts of the OS. Many core parts and
+other drivers rely on it.
+
+Only one hardware timer is used mµOS to implement the global clock. This can
+be any timer (8bit, 16bit). MµOS uses its overflow interrupt and needs one
+compare-match unit timer for scheduling wake ups. The configuration of this
+timer (prescaler, which hardware timer to be used) is fully customize-able to
+the user.
+
+The clock is started at the begin of the operations (after the users 'init'
+job got called) and then left freely running.
+
+The clock API also holds a function to calibrate the µC main frequency with
+some external signal, as far this is supported by the hardware.
+
+.Datatypes
+
+The full time is defined by the global overflow counter and the timers
+internal hardware register. This overflow counter can be selected from various
+unsigned integer types (16, 32, 64 bit wide), the internal timer counter
+register extends this value by its size, enabling rather high resolution
+clocks from 24 up to 80 bits precision. Depending on the circumstances one
+should select a proper size so that overflows don't happen or do not matter.
 
 
+There are following types used:
 
++muos_clock+::
+ Generic type used for moderate long time spans. Depending on configuration
+ it overflows rarely (or preferably never). This is the primary datatype for
+ the clock and the 'global overflow counter'
+
++muos_shortclock+::
+ Type for short time intervals. Used in the clock priority for events which
+ are scheduled within shorter times.
+
++muos_hwclock+::
+ The type of the hardware timer. Usually 8 or 16 bits wide
+
++muos_fullclock+::
+  a structure containing the whole clock state with the high bits stored
+  as muos_clock and the low bits stored as muos_hwclock. When properly
+  configured this state should never overflow for the application run time.
+
+.Some conclusions about the Datatypes
+
+* The default for the overflow counter is 'uint32_t', calculations show that
+  16bit makes hardly any sense, because it would overflow quite often even in
+  slow increment configurations.
+
+* More than 32 bit is only needed for fast running clocks or when very long
+  run times are intended.
+
+* Choosing 16 bit hwclock when it is available will have less interrupt
+  load but needs more memory. When in doubt, it is not mandatory when the
+  timer prescaler is not on the fastest setting. This is especially useful if
+  only one 16 bit timer is available and is needed for something else.
+  However some mµOS drivers may require a 16 bit timer.
+
+* 'muos_clock' alone overflows quite often but using a 64 bit datatype for it
+  would need a lot memory in the queues (and 64 bit math libs).
+
+//* use 'fullclock' for ltpq scheduling, 'clock' alone would need another
+//       sliding window pq implementation with no much benefits.
+
+==== API
+
+PIPADOC:=clock_api
+
+==== configuration
+
+PIPADOC:@clock_config
+
+
+=== Error handling
 
 //=== How to use this
 

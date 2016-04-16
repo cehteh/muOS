@@ -50,6 +50,21 @@ muos_bgq_check (uint8_t need)
     }
 }
 
+//bgq_api:
+//: .Schedule functions at high priority
+//: ----
+//: void muos_bgq_pushback (muos_queue_function fn)
+//: void muos_bgq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
+//: void muos_bgq_pushfront (muos_queue_function fn)
+//: void muos_bgq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: ----
+//:
+//: +fn+::
+//: function to schedule
+//: +arg+::
+//:  argument to pass to the function when it gets called
+//:
+
 static inline void
 muos_bgq_pushback (muos_queue_function f)
 {

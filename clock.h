@@ -26,7 +26,28 @@
 #include <muos/muos.h>
 
 //FIXME: *_now called from interrupts might be off because pending timer overflows
+//PLANNED: dont inline clock functions
 
+//PLANNED: macros compensating drift over long timespans; using rationals thereof
+
+//PLANNED: make it possible to configure muos w/o a clock
+
+//clock_api:
+//: .Time calculation macros
+//: ----
+//: MUOS_CLOCK_SECONDS(t)
+//: MUOS_CLOCK_MILLISECONDS(t)
+//: MUOS_CLOCK_MICROSECONDS(t)
+//: ----
+//:
+//: +t+::
+//:   time to be converted
+//:
+//: The clock runs on timer ticks. These macros convert time from second, ms, µs to ticks.
+//: Because this needs to result in a integer number of ticks, the result might be inexact
+//: and add a slight drift.
+//:
+//: The correct configuration of F_CPU is mandatory for these macros to work correctly.
 #define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALER)
 #define MUOS_CLOCK_MILLISECONDS(s) (MUOS_CLOCK_SECONDS(s)/1000)
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
@@ -37,6 +58,20 @@ typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 typedef MUOS_CLOCK_TYPE muos_clock;
 typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
 
+//clock_api:
+//: .The fullclock datatype
+//: ----
+//: typedef struct {
+//:  muos_clock coarse;
+//:  muos_hwclock fine;
+//: } muos_fullclock;
+//: ----
+//:
+//: +coarse+::
+//:   the global counter for hardware overflows
+//: +fine+::
+//:   the hardware part of the clock
+//:
 typedef struct {
   muos_clock coarse;
   muos_hwclock fine;
@@ -47,8 +82,17 @@ extern volatile muos_clock muos_clock_count_;
 
 extern muos_clock muos_now_;
 
+//clock_api:
+//: .Event time
+//: ----
+//: muos_clock muos_now (void)
+//: ----
+//:
+//: This function is very cheap and gives a consistent time throughout the whole mainloop iteration.
+//:
+//: Returns time if each mainloop (also recursive from 'muos_wait()' and 'muos_yield()') iteration start.
 static inline muos_clock
-muos_now ()
+muos_now (void)
 {
   return muos_now_;
 }
@@ -61,6 +105,13 @@ muos_clock_start (void)
 }
 
 
+//clock_api:
+//: .Query Time
+//: ----
+//: muos_clock muos_clock_now (void)
+//: ----
+//:
+//: Returns the current time as queried from the hardware.
 static inline muos_clock
 muos_clock_now (void)
 {
@@ -76,6 +127,12 @@ muos_clock_now (void)
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
 
+//clock_api:
+//: ----
+//: muos_shortclock muos_clock_shortnow (void)
+//: ----
+//:
+//: Returns the current time as queried from the hardware, using the 'muos_shortclock' datatype.
 static inline muos_shortclock
 muos_clock_shortnow (void)
 {
@@ -97,6 +154,12 @@ muos_clock_shortnow (void)
 }
 
 
+//clock_api:
+//: ----
+//: muos_fullclock muos_clock_fullnow (void)
+//: ----
+//:
+//: Returns the current time as queried from the hardware, using the 'muos_fullclock' datatype.
 static inline muos_fullclock
 muos_clock_fullnow (void)
 {
@@ -111,11 +174,47 @@ muos_clock_fullnow (void)
   return clock;
 }
 
+//clock_api:
+//: .Time difference between two timestamps
+//: ----
+//: muos_clock muos_clock_elapsed (muos_clock now, muos_clock start)
+//: ----
+//:
+//: +now+::
+//:   End of the timespan to be calculated
+//: +start+::
+//:   Begin of the timespan to to be calculated
+//:
+//: returns the time difference between 'now' and 'start'. The result is
+//: always positive or zero. Simple overflows on the arguments are respected.
+//: Thus the full range of 'muos_clock' is available.
 muos_clock
 muos_clock_elapsed (muos_clock now, muos_clock start);
 
 
-#if MUOS_CLOCK_CALIBRATE != 0
+#ifdef MUOS_CLOCK_CALIBRATE
+//clock_api:
+//: .Calibrate the µC Frequency
+//: ----
+//: void muos_clock_calibrate (const muos_clock now, const muos_clock sync)
+//: ----
+//:
+//: +now+::
+//:   Time at which the external sync signal happened
+//: +sync+::
+//:   Timespan which should be elapsed since the last call of this function
+//:
+//: For µC's which support it, the main frequency can be calibrated by some external signal.
+//: For example with some 1 second pulse from a RTC one could call
+//: +muos_clock_calibrate (muos_clock_now(), MUOS_CLOCK_SECONDS(1))+ upon receiving this signal.
+//:
+//: There is a special case that if 'sync' is 0 then only the internal state is recorded but
+//: no frequency calibration is executed. This is to be used for initialization or when the time elapsed
+//: since the last call can't be determined.
+//:
+//: Note that frequency calibration is often too coarse to archive perfect synchronization. You should
+//: expect some drift remaining. The configuration specially includes a deadband for this. Otherwise
+//: when calibration tries to constantly change the frequency there would be very much jitter on the timing.
 void
 muos_clock_calibrate (const muos_clock now, const muos_clock sync);
 #endif
