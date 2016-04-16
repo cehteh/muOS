@@ -4,15 +4,6 @@ this document is WIP!
 * Why
   Because we can..
 
-* Development
-  The first WIP versions of mµOS are developed for the avr-gcc/avr-libc
-  toolchain, with some portability in mind. It is later planned to extend this
-  to other platforms like stm32 which *may* require some refinements on the
-  API's. General aim is still to stay as simple as the avr toolchain to make
-  mirgration for any programmer coming from Atmel programming to Stm32 (and
-  perhaps others) as easy as possible. Still we will make no compromises in
-  functionality where required.
-
 * Howto
 ** Configuring
    edit Makefile
@@ -85,17 +76,17 @@ pending bit -> dont read clock in interrupts
 
 **** Some math about datatypes and overflows
      |   |    F_CPU |     CLOCK | clock | hwclock | shortclock |     tick |  shortclock |    fullclock |      clock |             |
-     |   |      MHZ | PRESCALER |  bits |    bits |       bits |       µs |        (ms) |      (years) |     (days) | Notes       |
+     |   |      MHZ | PRESCALER |  bits |    bits |       bits |       µs |          ms |        years |       days | Notes       |
      |---+----------+-----------+-------+---------+------------+----------+-------------+--------------+------------+-------------|
      | # | 0.032768 |      1024 |    32 |       8 |          8 | 31250.00 |    8000.000 |      1089.54 |    1553.45 | watch osc   |
      | # |    0.125 |      1024 |    16 |       8 |          8 |  8192.00 |    2097.152 |         0.00 |       0.01 | unuseable   |
      | # |   0.0625 |      1024 |    32 |       8 |         16 | 16384.00 | 1073741.800 |       571.23 |     814.45 | slow avr    |
      | # |    0.125 |      1024 |    32 |       8 |          8 |  8192.00 |    2097.152 |       285.62 |     407.23 | slow avr    |
      | # |        1 |        64 |    32 |       8 |         16 |    64.00 |    4194.304 |         2.23 |       3.18 |             |
+     | # |        8 |         1 |    32 |      16 |         32 |     0.12 |  536870.910 |         1.12 |       0.01 | highres     |
      | # |        8 |      1024 |    32 |       8 |         16 |   128.00 |    8388.608 |         4.46 |       6.36 |             |
      | # |       16 |      1024 |    32 |       8 |          8 |    64.00 |      16.384 |         2.23 |       3.18 | 8bit timer  |
      | # |       16 |      1024 |    32 |       8 |         16 |    64.00 |    4194.304 |         2.23 |       3.18 | 8bit timer  |
-     | # |       16 |         8 |    32 |       8 |         24 |     0.50 |    8388.608 |         0.02 |       0.02 |             |
      | # |       16 |      1024 |    32 |      16 |         16 |    64.00 |    4194.304 |       571.23 |       3.18 | 16bit timer |
      | # |       16 |        64 |    32 |      16 |         16 |     4.00 |     262.144 |        35.70 |       0.20 |             |
      | # |       16 |         1 |    32 |      16 |         16 |     0.06 |       4.096 |         0.56 |       0.00 | fast avr    |
@@ -336,3 +327,34 @@ pending bit -> dont read clock in interrupts
    * debug() function
    * debug interrupt
    * 
+
+
+** F_OSC for oscillator clock
+   automatic prescale setting etc
+
+** random generator
+   byte queue
+   quality
+   sources
+   - poll
+   - interrupt
+   - push
+   quality limit low/high
+
+* Reorganization
+  Split config hierarchically
+  config.h
+   - how to depend on used config vars only?
+
+
+  muos/muos.h -> main header
+  muos/muos.c -> main program
+
+  muos/config.h -> configuration management
+
+  muos/$feature.h -> header for subsystem
+  muos/$feature.c -> portable subsystem interface implementaton
+  muos/hw/$vendor/$architecture/$feature.h|c hardware specific
+
+
+  Resource management at compiletime
