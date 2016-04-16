@@ -36,7 +36,7 @@ uint8_t
 muos_serial_rx_byte (void);
 
 void
-muos_serial_rxrtq_again (muos_queue_function f);
+muos_serial_rxhpq_again (muos_queue_function f);
 
 #if MUOS_SERIAL_TXBUFFER > 1
 typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXBUFFER) muos_txbuffer_type;

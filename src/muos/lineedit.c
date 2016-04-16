@@ -144,7 +144,7 @@ muos_lineedit (void)
         {
           if (utf8cont (data))
             {
-              muos_serial_rxrtq_again (muos_lineedit);
+              muos_serial_rxhpq_again (muos_lineedit);
               return;
             }
           else
@@ -154,7 +154,7 @@ muos_lineedit (void)
       if (data > 127)
         {
           muos_output_char (7);
-          muos_serial_rxrtq_again (muos_lineedit);
+          muos_serial_rxhpq_again (muos_lineedit);
           return;
         }
 #endif
@@ -460,6 +460,6 @@ muos_lineedit (void)
       muos_status.lineedit_pending = false;
     }
 
-  muos_serial_rxrtq_again (muos_lineedit);
+  muos_serial_rxhpq_again (muos_lineedit);
 }
 

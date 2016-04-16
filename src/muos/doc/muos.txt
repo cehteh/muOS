@@ -36,7 +36,7 @@ ensure exact timing.
 
 By default there are 3 queues served by the mainloop:
 
-==== 'clpq' clock priority queue
+==== clpq clock priority queue
 
 Schedules by timer events in 'near future'. Whatever is considered 'near
 future' is defined by the timer configuration, times longer than the
@@ -65,22 +65,22 @@ from the clock and spriq configuration see below.
 PIPADOC:@clpq_config
 
 
-==== 'rtq' high priority queue
+==== hpq high priority queue
 
 note: pending rename to hpq
 
 
-===== rtq API
+===== hpq API
 
 // <<lib_spriq,lib/spriq>>.
 
 
-PIPADOC:=rtq_api
+PIPADOC:=hpq_api
 
-===== rtq configuration
+===== hpq configuration
 
 
-PIPADOC:@rtq_config
+PIPADOC:@hpq_config
 
 
 

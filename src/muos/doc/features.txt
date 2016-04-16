@@ -27,9 +27,9 @@
    depend on the timer prescaler and 'shortclock' type. 'clpq' jobs are
    executed with the highest priority.
 
-** 'rtq' and 'bgq' are simple queues for high and low priority jobs. The
+** 'hpq' and 'bgq' are simple queues for high and low priority jobs. The
    scheduler executes from the front of this queues, first all jobs in the
-   'rtq' and then all jobs in the 'bgq'. One can push new jobs to then end or
+   'hpq' and then all jobs in the 'bgq'. One can push new jobs to then end or
    to the front of these queues, giving roughly 4 different priority levels.
    One should split work to be done into reasonable small parts and queue them
    to either work queue. Drivers are also supposed to do most of the work

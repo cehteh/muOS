@@ -18,10 +18,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <muos/rtq.h>
+#include <muos/hpq.h>
 
-#if MUOS_RTQ_LENGTH > 0
-volatile muos_rtq_type muos_rtq;
+#if MUOS_HPQ_LENGTH > 0
+volatile muos_hpq_type muos_hpq;
 #endif
 
 

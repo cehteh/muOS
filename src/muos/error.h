@@ -31,7 +31,7 @@
   MUOS_ERROR(error_txqueue_overflow)            \
   MUOS_ERROR(error_clpq_overflow)               \
   MUOS_ERROR(error_bgq_overflow)                \
-  MUOS_ERROR(error_rtq_overflow)                \
+  MUOS_ERROR(error_hpq_overflow)                \
   MUOS_ERROR(error_rx_buffer_overflow)          \
   MUOS_ERROR(error_rx_buffer_underflow)         \
   MUOS_ERROR(error_rx_frame)                    \

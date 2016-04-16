@@ -21,7 +21,7 @@
 #include <muos/muos.h>
 #include <muos/error.h>
 #include <muos/clock.h>
-#include <muos/rtq.h>
+#include <muos/hpq.h>
 #include <muos/bgq.h>
 #include <muos/clpq.h>
 #include <muos/serial.h>
@@ -123,7 +123,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                 }
                while (muos_clpq_schedule (muos_now_));
             }
-          while (muos_rtq_schedule ());
+          while (muos_hpq_schedule ());
         }
       while (muos_bgq_schedule ());
 
@@ -170,7 +170,7 @@ muos_yield (uint8_t count)
             }
           while (count && muos_clpq_schedule (muos_now_));
         }
-      while (count && muos_rtq_schedule ());
+      while (count && muos_hpq_schedule ());
     }
   while (count && muos_bgq_schedule ());
   muos_interrupt_enable ();
@@ -223,9 +223,9 @@ main()
   PORTB = _BV(PINB5);
 #endif
 
-#if MUOS_RTQ_LENGTH >= 2
-  muos_rtq_pushback (MUOS_INITFN);
-  muos_rtq_pushback (muos_start);
+#if MUOS_HPQ_LENGTH >= 2
+  muos_hpq_pushback (MUOS_INITFN);
+  muos_hpq_pushback (muos_start);
 #elif MUOS_BGQ_LENGTH >= 2
   muos_bgq_pushback (MUOS_INITFN);
   muos_bgq_pushback (muos_start);
@@ -252,7 +252,7 @@ main()
                 }
               while (muos_clpq_schedule (muos_now_));
             }
-          while (muos_rtq_schedule ());
+          while (muos_hpq_schedule ());
         }
       while (muos_bgq_schedule ());
 
