@@ -25,7 +25,7 @@ HEADERS += $(wildcard muos/*.h)
 HEADERS += $(wildcard muos/lib/*.h)
 HEADERS += $(wildcard muos/hw/$(PLATFORM)/*.h)
 
-TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc) muos/doc/pipadoc_config.lua
+TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc) muos/doc/pipadoc_config.lua VERSION
 # Makefiles can include documentation too
 MAKEFILE_DOCS += Makefile muos/muos.mk $(wildcard muos/prg_*.mk) $(widcard muos/hw/*.mk)
 
@@ -192,6 +192,9 @@ ifneq ("$(LUA)","")
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
+
+VERSION: FORCE
+	echo ":version:  $$(git describe --tags --dirty)" | cmp - $@ 2>/dev/null >/dev/null || { echo ":version:  $$(git describe --tags --dirty)" > $@; $(PRINTFMT) $* VERSION;}
 
 # maintainer target
 publish: doc
