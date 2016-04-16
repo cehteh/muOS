@@ -20,7 +20,7 @@
 
 #include <muos/muos.h>
 #include <muos/serial.h>
-#include <muos/rtq.h>
+#include <muos/hpq.h>
 
 #if MUOS_SERIAL_TXBUFFER > 1
 muos_txbuffer_type muos_txbuffer;
@@ -82,14 +82,14 @@ muos_serial_rx_byte (void)
 
 
 void
-muos_serial_rxrtq_again (muos_queue_function f)
+muos_serial_rxhpq_again (muos_queue_function f)
 {
   muos_interrupt_disable ();
 
   if (MUOS_CBUFFER_USED (muos_rxbuffer))
-    muos_rtq_pushback_unsafe (f);
+    muos_hpq_pushback_unsafe (f);
   else
-    muos_status.serial_rxrtq_pending = false;
+    muos_status.serial_rxhpq_pending = false;
 
   muos_interrupt_enable ();
 }

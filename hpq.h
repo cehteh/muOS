@@ -18,85 +18,85 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MUOS_RTQ_H
-#define MUOS_RTQ_H
+#ifndef MUOS_HPQ_H
+#define MUOS_HPQ_H
 
 #include <muos/muos.h>
 #include <muos/error.h>
 #include <muos/lib/queue.h>
 
-#if MUOS_RTQ_LENGTH > 0
+#if MUOS_HPQ_LENGTH > 0
 
-typedef MUOS_QUEUEDEF(MUOS_RTQ_LENGTH) muos_rtq_type;
-extern volatile muos_rtq_type muos_rtq;
+typedef MUOS_QUEUEDEF(MUOS_HPQ_LENGTH) muos_hpq_type;
+extern volatile muos_hpq_type muos_hpq;
 
 
 static inline bool
-muos_rtq_schedule (void)
+muos_hpq_schedule (void)
 {
-  return MUOS_QUEUE_SCHEDULE (muos_rtq);
+  return MUOS_QUEUE_SCHEDULE (muos_hpq);
 }
 
 static inline bool
-muos_rtq_check (uint8_t need)
+muos_hpq_check (uint8_t need)
 {
-  if (MUOS_QUEUE_FREE (muos_rtq) >= need)
+  if (MUOS_QUEUE_FREE (muos_hpq) >= need)
     {
       return true;
     }
   else
     {
-      muos_error_set_unsafe (muos_error_rtq_overflow);
+      muos_error_set_unsafe (muos_error_hpq_overflow);
       return false;
     }
 }
 
 static inline void
-muos_rtq_pushback_unsafe (muos_queue_function f)
+muos_hpq_pushback_unsafe (muos_queue_function f)
 {
-  if (muos_rtq_check (1))
+  if (muos_hpq_check (1))
     {
-      MUOS_QUEUE_PUSHBACK (muos_rtq, (f));
+      MUOS_QUEUE_PUSHBACK (muos_hpq, (f));
     }
 }
 
 static inline void
-muos_rtq_pushback (muos_queue_function f)
+muos_hpq_pushback (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_rtq_pushback_unsafe (f);
+  muos_hpq_pushback_unsafe (f);
   muos_interrupt_enable ();
 }
 
 static inline void
-muos_rtq_pushback_arg (muos_queue_function_arg f, intptr_t a)
+muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a)
 {
   muos_interrupt_disable ();
-  if (muos_rtq_check (2))
+  if (muos_hpq_check (2))
     {
-      MUOS_QUEUE_PUSHBACK_ARG(muos_rtq, (f), (a));
-    }
-  muos_interrupt_enable ();
-}
-
-static inline void
-muos_rtq_pushfront (muos_queue_function f)
-{
-  muos_interrupt_disable ();
-  if (muos_rtq_check (1))
-    {
-      MUOS_QUEUE_PUSHFRONT(muos_rtq, (f));
+      MUOS_QUEUE_PUSHBACK_ARG(muos_hpq, (f), (a));
     }
   muos_interrupt_enable ();
 }
 
 static inline void
-muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+muos_hpq_pushfront (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  if (muos_rtq_check (2))
+  if (muos_hpq_check (1))
     {
-      MUOS_QUEUE_PUSHFRONT_ARG(muos_rtq, (f), (a));
+      MUOS_QUEUE_PUSHFRONT(muos_hpq, (f));
+    }
+  muos_interrupt_enable ();
+}
+
+static inline void
+muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+{
+  muos_interrupt_disable ();
+  if (muos_hpq_check (2))
+    {
+      MUOS_QUEUE_PUSHFRONT_ARG(muos_hpq, (f), (a));
     }
   muos_interrupt_enable ();
 }
@@ -104,7 +104,7 @@ muos_rtq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 #else
 // stub for the schedule loop
 static inline bool
-muos_rtq_schedule (void)
+muos_hpq_schedule (void)
 {
   return false;
 }

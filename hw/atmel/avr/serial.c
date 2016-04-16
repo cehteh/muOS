@@ -20,7 +20,7 @@
 
 #include <muos/muos.h>
 #include <muos/serial.h>
-#include <muos/rtq.h>
+#include <muos/hpq.h>
 
 extern void
 MUOS_SERIAL_RXCALLBACK (void);
@@ -116,10 +116,10 @@ ISR(USART_RX_vect)
   if (!err)
     {
       MUOS_CBUFFER_PUSH (muos_rxbuffer, data);
-      if (!muos_status.serial_rxrtq_pending)
+      if (!muos_status.serial_rxhpq_pending)
         {
-          muos_status.serial_rxrtq_pending = true;
-          muos_rtq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK);
+          muos_status.serial_rxhpq_pending = true;
+          muos_hpq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK);
         }
     }
 

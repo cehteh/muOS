@@ -21,7 +21,7 @@
 #if MUOS_CPPM_CHANNELS > 0
 
 #include <muos/clock.h>
-#include <muos/rtq.h>
+#include <muos/hpq.h>
 #include <muos/cppm.h>
 
 static volatile muos_clock cppm_time;
@@ -69,7 +69,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
     {
       cppm_channel = 0;
 #ifdef MUOS_CPPM_FRAME_CLOCKSYNC
-      muos_rtq_pushback (muos_cppm_calibrate);
+      muos_hpq_pushback (muos_cppm_calibrate);
 #endif
     }
   else if (cppm_channel < MUOS_CPPM_CHANNELS)
@@ -101,7 +101,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
       ++cppm_channel;
 #ifdef MUOS_CPPM_CALLBACK
       if (cppm_channel == MUOS_CPPM_CHANNELS)
-        muos_rtq_pushback (MUOS_CPPM_CALLBACK);
+        muos_hpq_pushback (MUOS_CPPM_CALLBACK);
 #endif
     }
 }
