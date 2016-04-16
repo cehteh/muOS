@@ -104,7 +104,7 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 
 #muos_config:MUOS_INITFN
 #: Name of the user-defined initialization function.
-#: This function is pushed on the rtq (or, if not available the bgq) when starting up. It is
+#: This function is pushed on the hpq (or, if not available the bgq) when starting up. It is
 #: responsible for initializing the system. Interrupts are still diabled and the clock is
 #: stopped and will be started after this init function returns.
 MUOS_CONFIG += -DMUOS_INITFN=init
@@ -153,12 +153,12 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 
 
 
-#queue_config:MUOS_RTQ_LENGTH
-#: How many entries the realtime queue can hold, set to 0 to disable the rtq
-#MUOS_CONFIG += -DMUOS_RTQ_LENGTH=0
-MUOS_CONFIG += -DMUOS_RTQ_LENGTH=8
-#UOS_CONFIG += -DMUOS_RTQ_LENGTH=32
-#MUOS_CONFIG += -DMUOS_RTQ_LENGTH=128
+#queue_config:MUOS_HPQ_LENGTH
+#: How many entries the realtime queue can hold, set to 0 to disable the hpq
+#MUOS_CONFIG += -DMUOS_HPQ_LENGTH=0
+MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
+#UOS_CONFIG += -DMUOS_HPQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_HPQ_LENGTH=128
 
 
 
@@ -403,7 +403,7 @@ MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
 
 
 #serial_config:MUOS_SERIAL_RXCALLBACK
-#: function to be called from rtq when a character is received
+#: function to be called from hpq when a character is received
 #: either a user defined function or muos_lineedit for a default line editor
 #MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
 MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
@@ -535,7 +535,7 @@ MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
 
 
 #cppm_config:MUOS_CPPM_CALLBACK
-#: function to be called from rtq when a frame got received
+#: function to be called from hpq when a frame got received
 MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
 
 
