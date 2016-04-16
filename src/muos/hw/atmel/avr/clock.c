@@ -36,7 +36,7 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW));
 
 
-#if MUOS_CLOCK_CALIBRATE != 0
+#ifdef MUOS_CLOCK_CALIBRATE
 static muos_clock calibrate_last;
 static int32_t divert;
 

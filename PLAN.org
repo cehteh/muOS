@@ -27,52 +27,6 @@ this document is WIP!
 ** Schedule functioncalls
    mµOS is about events and scheduling functions from different queues.
 
-** Clock
-   One hardware timer is used to implement a global clock. Events can be
-   scheduled based on this clock. The configuration of this timer (prescaler,
-   which hardware timer to be used) is left open to the user.
-
-FIXME what happens when hwclock wraps around but time is read in another
-interrupt while global clock counter is not incremented yet? -> add intr
-pending bit -> dont read clock in interrupts
-
-
-*** Adjustments and Skew
-    Once started the clock generally only increments.
-
-    PLANNED: when syncronization with the real time is intended one may set it
-    once in the initialization routine and later call some apis to adjust it
-    slowly, by skipping a beat or increment the counter in small increments
-    (the api ensures that not events get lost).
-
-*** Datatypes
-    The full time is defined by the global overflow counter and the timers
-    internal count register. The global overflow counter can be selected from
-    various unsigned integer types (16, 32, 64 bit wide), the internal timer
-    counter register extends this value by its size, enabling rather high
-    resolution clocks from 24 up to 80 bits precision. Depending on the
-    circumstances one should select a proper size so that overflows dont
-    happen or don't matter.
-
-    There are following types defined:
-
-    * muos_clock
-      Generic type used for modeate long timespans. Depending on configuration
-      overflows may occur rarely (or preferably never).
-
-      Also type for the overflow counter.
-
-    * muos_shortclock
-      Type for short time intervals. Used in the realtime priority quite for
-      events which are scheduled closely.
-
-    * muos_hwclock
-      The type of the hardware timer
-
-    * muos_fullclock
-      a structure containing the whole clock state with the high bits stored
-      as muos_clock and the low bits stored as muos_hwclock. When properly
-      configured this state should never overflow for the application runtime.
 
 **** Some math about datatypes and overflows
      |   |    F_CPU |     CLOCK | clock | hwclock | shortclock |     tick |  shortclock |    fullclock |      clock |             |
@@ -171,7 +125,6 @@ pending bit -> dont read clock in interrupts
 
 ***** DONE Realtime Queue (rtq)
       Will be processed before any bgq events
-****** TODO rename to hpq (high priority queue)
 
 ***** DONE Background Queue (bgq)
       Is processed in the mainloop when nothing else (rtq) is to do. when the

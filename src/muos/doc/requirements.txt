@@ -1,7 +1,7 @@
 === Requirements
 
 mµOS is developed on Linux with GNU-Tools. As far these are available it
-should be useable on other Operating Systems as well.
+should be compilable on other Operating Systems as well.
 
 When versions are noted, this are the versions which are proven to work, if
 for some reason only older versions are available and work for you, please
@@ -47,3 +47,4 @@ asciidoc ::
 
 a2x, dblatex, ... ::
  For generating PDF documentation
+

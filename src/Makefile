@@ -22,33 +22,33 @@
 
 PLATFORM = atmel/avr
 
-#muos_config:MCU
-#: 
+# muos_config:MCU
+# : 
 #MCU = atmega328p
 #MCU = attiny85
 MCU = attiny84
 
-#muos_config:MAIN
-#: 
+# muos_config:MAIN
+# : 
 MAIN = example
 
-#main_config:PROGRAMMER
-#: 
+# main_config:PROGRAMMER
+# : 
 PROGRAMMER = avrdude
 #PROGRAMMER = micronucleus
 
-#avrdude_config:
-#: 
+# avrdude_config:
+# : 
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
 AVRDUDE_PROGRAMMER = usbasp
 #AVRDUDE_PROGRAMMER = arduino
 
-#build_config:
+# build_config:
 # additional C Source file
 SOURCES += $(wildcard *.c)
 
-#build_config:CCFLAGS
+# build_config:CCFLAGS
 #: Common CC Flags
 CCFLAGS += -g
 #CCFLAGS += -DF_CPU=62500UL
@@ -61,48 +61,48 @@ CCFLAGS += -g
 CCFLAGS += -DF_CPU=8000000UL
 #CCFLAGS += -DF_CPU=16000000UL
 
-#build_config:DEPFLAGS
+# build_config:DEPFLAGS
 #: Dependency generation Flags
 #DEPFLAGS +=
 
-#build_config:CPPFLAGS
+# build_config:CPPFLAGS
 #: Preprocessor Flags
 #CPPFLAGS +=
 
-#build_config:CFLAGS
+# build_config:CFLAGS
 #: Compile Flags
 CFLAGS += -Wall -Wextra -Werror
 
 
-#build_config:LDFLAGS
+# build_config:LDFLAGS
 #: # Linker flags
 LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
 
 
-#muos_config:MUOS_DEBUG_BUSY
-#: Uses a GPIO to indicate when the cpu is busy,
-#: otherwise, while sleeping the GPIO is turned off.
+# muos_config:MUOS_DEBUG_BUSY
+# : Uses a GPIO to indicate when the cpu is busy,
+# : otherwise, while sleeping the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
-#muos_config:MUOS_DEBUG_INTR
-#: Uses a GPIO to indicate when the cpu is handling interrupts,
-#: otherwise, the GPIO is turned off.
+# muos_config:MUOS_DEBUG_INTR
+# : Uses a GPIO to indicate when the cpu is handling interrupts,
+# : otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
 
 
-#muos_config:MUOS_DEBUG_ERROR
-#: Uses a GPIO to indicate when an error got set,
-#: otherwise, the GPIO is turned off.
+# muos_config:MUOS_DEBUG_ERROR
+# : Uses a GPIO to indicate when an error got set,
+# : otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 #MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
-
 #muos_config:MUOS_INITFN
+#: MUOS_INITFN::
 #: Name of the user-defined initialization function.
 #: This function is pushed on the hpq (or, if not available the bgq) when starting up. It is
 #: responsible for initializing the system. Interrupts are still diabled and the clock is
@@ -112,30 +112,35 @@ MUOS_CONFIG += -DMUOS_INITFN=init
 
 
 #muos_config:MUOS_ERRORFN
+#: MUOS_ERRORFN::
 #: Name of the user-defined function which is called when am error is pending.
 #: Errors can happen synchronusly and be handled right where they are happen or asynchronously
 #: from interrupts. If any undhandled error stays pending, this function will be called
-#: synchronously to handle it at very high priority (before any queues)
+#: synchronously to handle it at very high priority (before any work from the queues)
 MUOS_CONFIG += -DMUOS_ERRORFN=error
 
 
 
-#muos_config:MUOS_EXPLICIT_INIT
-#: when set to 1, then all static initialization of muos internal datastructures is disabled
-#: initialization will then be done explicitly in init sections or in main before any of these
-#: facilities are used
+#PLANNED: MUOS_EXPLICIT_INIT
+# muos_config:MUOS_EXPLICIT_INIT
+# : when set to 1, then all static initialization of muos internal datastructures is disabled
+# : initialization will then be done explicitly in init sections or in main before any of these
+# : facilities are used
 MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 #MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=1 #PLANNED: not implemented yet
 
 
 
 #muos_config:MUOS_SCHED_DEPTH
-#: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield())
+#: MUOS_SCHED_DEPTH::
+#: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield()).
+#: When this depth is exceeded, these calls return immediatly, flagging 'muos_warn_sched_depth'.
 MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
 
 #muos_config:MUOS_SCHED_SLEEP
+#: MUOS_SCHED_SLEEP::
 #: Set sleep mode for the main loop if supported
 MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 
@@ -153,8 +158,9 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 
 
 
-#queue_config:MUOS_HPQ_LENGTH
-#: How many entries the realtime queue can hold, set to 0 to disable the hpq
+#hpq_config:MUOS_HPQ_LENGTH
+#: MUOS_HPQ_LENGTH::
+#: How many entries the high priority queue can hold, set to 0 to disable the hpq
 #MUOS_CONFIG += -DMUOS_HPQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
 #UOS_CONFIG += -DMUOS_HPQ_LENGTH=32
@@ -162,7 +168,8 @@ MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
 
 
 
-#queue_config:MUOS_BGQ_LENGTH
+#bgq_config:MUOS_BGQ_LENGTH
+#: MUOS_BGQ_LENGTH::
 #: How many entries the background queue can hold, set to 0 to disable the bgq
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=0
 MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
@@ -178,10 +185,10 @@ MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
 
 
 
-#spriq_config:MUOS_SPRIQ_TYPE
-#: Type used for the 'priorities' of the small priority queue.
-#: This priority queue uses a 'sliding window'. The rtpq uses this.
-#: Scheduler needs to be called at least half of the range provided by this type.
+# spriq_config:MUOS_SPRIQ_TYPE
+# : Type used for the 'priorities' of the small priority queue.
+# : This priority queue uses a 'sliding window'. The rtpq uses this.
+# : Scheduler needs to be called at least half of the range provided by this type.
 MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 #MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=uint8_t
 #MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=uint16_t
@@ -189,9 +196,9 @@ MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 
 
 
-#spriq_config:MUOS_SPRIQ_INDEX
-#: Type to keep track of the size of the spriq.
-#: uint8_t for up to 255 entries, uint16_t for up to 65k entries.
+# spriq_config:MUOS_SPRIQ_INDEX
+# : Type to keep track of the size of the spriq.
+# : uint8_t for up to 255 entries, uint16_t for up to 65k entries.
 MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
 #MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint16_t
 
@@ -215,7 +222,6 @@ MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 #clpq_config:MUOS_CLPQ_LENGTH
 #: MUOS_CLPQ_LENGTH::
 #: Number of entries the scheduling Queue can hold, set to 0 to disable the clpq
-#:
 MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
@@ -224,18 +230,19 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
 
 
 #clock_config:MUOS_CLOCK_HW
-#: Which Hardware timer to use.
-#: This is a hardware dependent config. usually a number or a simple name
-#: timer hardware setup is tightly bound to the hardware capabilities and only barely
-#: abstracted, check for the respective hardware implementation about possible settings.
+#: MUOS_CLOCK_HW::
+#:  The Hardware timer to use. This is a hardware dependent config.
+#:  Timer hardware setup is tightly bound to the hardware capabilities check
+#:  for the respective hardware documentation about possible settings.
 #MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
 MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 
 
 #clock_config:MUOS_CLOCK_HW_PRESCALER
-#: Prescaler from some hardware defined master clock.
-#: Use a 16 bit timer for PRESCALER=1, 8 bit has too high interrupt load
+#: MUOS_CLOCK_HW_PRESCALER::
+#:  Prescaler from some hardware defined master clock. Possible
+#:  Values depend on the hardware.
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
 MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
@@ -246,16 +253,18 @@ MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 
 
 #clock_config:MUOS_CLOCK_TYPE
-#: MµOS clock configuration above the hardware
-#: The type used for the overflow counter of the clock.
-#: together with the harware register of the clock this gives the full time.
+#: MUOS_CLOCK_TYPE::
+#:  The type used for the primary clock functions. Should be some unsigned integer,
+#:  32 bit width is recommended.
 MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 
 
 #clock_config:MUOS_CLOCK_SHORT_TYPE
-#: The type used for shorter timespans
+#: MUOS_CLOCK_SHORT_TYPE::
+#: The type used for short timespans.  Should be some unsigned integer.
+#: What suits best depends on the application, often 16 bit is enough with higher prescalers.
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
@@ -263,26 +272,27 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE
-#: Frequency calibration api for syncing the
-#: master clock with some external signal.
-#:  0 = disabled
-#MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=0
+#: MUOS_CLOCK_CALIBRATE::
+#:  When defined the frequency calibration api for syncing the
+#:  µC frequency clock with some external signal is enabled.
 MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
 
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
-#: When the time elapsed since the last sync differs more than
-#: +/- this value, the calibration measurement is reset and starts over.
-#: This filters out glitches from api calls.
+#: MUOS_CLOCK_CALIBRATE_MAX_DERVIATION::
+#:  When the time elapsed since the last sync differs more than
+#:  +/- this value, the calibration measurement is reset and starts over.
+#:  This filters out glitches from api calls.
 MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
 
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE_DEADBAND
-#: Adds a deadband/range around the target clock. On µC where the clock
-#: calibration is rather coarse a exact match can not be reached and constant
-#: readjustments will only result in high jitter.
+#: MUOS_CLOCK_CALIBRATE_DEADBAND::
+#:  Adds a deadband/range around the target clock. On µC where the clock
+#:  calibration is rather coarse a exact match can not be reached and constant
+#:  readjustments will only result in high jitter.
 MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
