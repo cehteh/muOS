@@ -36,11 +36,11 @@ IMAGES += $(MAIN).hex $(MAIN).eep
 
 elf: $(MAIN).elf
 
-%.elf: $(OBJECTS) .v/LDFLAGS .v/CC .v/SOURCES
+%.elf: $(OBJECTS) LDFLAGS.v CC.v SOURCES.v
 	$(PRINTFMT) $@ LINK
 	$(CC) $(LDFLAGS) $(OBJECTS) --output $@ 2>&1 | sed 'h;:b;$b;N;N;/appears to be a misspelled signal handler/{N;d};$b;D'
 
-%.asm: %.elf .v/OBJDUMP
+%.asm: %.elf OBJDUMP.v
 	$(PRINTFMT) $@ ASM
 	$(OBJDUMP) -S $< >$@
 

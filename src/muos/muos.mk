@@ -63,7 +63,7 @@ endif
 .DEFAULT_GOAL = all
 
 .SUFFIXES:
-.PRECIOUS: .v/%
+.PRECIOUS: %.v
 .PHONY: clean depclean program
 FORCE:
 
@@ -75,16 +75,13 @@ include muos/hw/$(PLATFORM).mk
 all: $(IMAGES) doc
 	$(PRINTFMT) '$(IMAGES)' IMAGES
 
-# dependencies on variables, stored in .v/
-.v/:
-	mkdir -p .v
-
-.v/%: .v/ FORCE
-	echo "$($*)" | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)" > $@; $(PRINTFMT) $* DEPVAR;}
+# dependencies on variables
+%.v: FORCE
+	echo "$($*)" | md5sum - | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)"  | md5sum - > $@; $(PRINTFMT) $* DEPVAR;}
 
 # Dependency generation and cleanup
 
-%.d: %.c .v/DEPFLAGS .v/CPPFLAGS .v/CC .v/MUOS_CONFIG
+%.d: %.c DEPFLAGS.v CPPFLAGS.v CC.v MUOS_CONFIG.v
 	$(PRINTFMT) $@ DEPGEN
 	$(CC) $(DEPFLAGS) $(CPPFLAGS) $(MUOS_CONFIG) $< | sed 's,^$*.o,$*.o $*.d,g' > $@
 
@@ -93,9 +90,9 @@ all: $(IMAGES) doc
 
 depclean:
 	$(PRINTFMT) $@ DEPCLEAN
-	rm -rf $(SOURCES:.c=.d)	.v/*
+	rm -rf $(SOURCES:.c=.d)	*.v
 
-%.o: %.c .v/CFLAGS .v/CC .v/MUOS_CONFIG
+%.o: %.c CFLAGS.v CC.v MUOS_CONFIG.v
 	$(PRINTFMT) $@ COMPILE
 	$(CC) $(CFLAGS) $(MUOS_CONFIG) -c $< -o $@
 
@@ -103,11 +100,11 @@ depclean:
 asm: $(MAIN).asm
 
 
-size: $(IMAGES) .v/SIZE
+size: $(IMAGES) SIZE.v
 	$(PRINTFMT) $@ SIZE
 	$(SIZE) --target=ihex $(IMAGES)
 
-clean: depclean docclean .v/IMAGES
+clean: depclean docclean IMAGES.v
 	$(PRINTFMT) $@ CLEAN
 	rm -f *.elf *.a $(OBJECTS) $(IMAGES)
 

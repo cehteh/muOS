@@ -23,14 +23,14 @@ MICRONUCLEUS = micronucleus
 hex: $(MAIN).hex
 eep: $(MAIN).eep
 
-%.hex: %.elf .v/OBJCOPY
+%.hex: %.elf OBJCOPY.v
 	$(PRINTFMT) $@ HEX
 	$(OBJCOPY) -O ihex  $< $@
 
-%.eep: %.elf .v/OBJCOPY
+%.eep: %.elf OBJCOPY.v
 	$(PRINTFMT) $@ EEP
 	$(OBJCOPY) -j .eeprom  --change-section-lma .eeprom=0 -O ihex $< $@ 2>/dev/null
 
-upload: all .v/MICRONUCLEUS .v/MAIN
+upload: all MICRONUCLEUS.v MAIN.v
 	$(PRINTFMT) $(MAIN) UPLOAD
 	$(MICRONUCLEUS) $(MICRONUCLEUS_FLAGS) $(MAIN).hex
