@@ -1,27 +1,37 @@
 = mµOS - My micro OS
 :author:        Christian Thäter
-:email:         <ct@pipapo.org>
-:date:          {$DATE}
+:email:         ct@pipapo.org
+:date:          {DOCVARS.DATE}
 
 a small operating system for microcontrollers
+
+== Introduction
 
 PIPADOC:=intro
 
 PIPADOC:=features
 
-PIPADOC:=development
-
 PIPADOC:=supported_hardware
+
+== Infrastructure
 
 PIPADOC:=requirements
 
-PIPADOC:=configuring
+PIPADOC:=development
 
-PIPADOC:=building
+PIPADOC:=infrastructure
 
-PIPADOC:=flashing
+== mµOS
 
-PIPADOC:=core_api
+PIPADOC:=muos
+
+=== Library
+
+PIPADOC:TODO: document lib/
+
+
+== Drivers
 
 PIPADOC:=drivers
+
 

@@ -1,4 +1,4 @@
-== Concept and Goals
+=== Concept and Goals
 
 mµOS is supposed to be a general purpose Operating-System for small
 Microcontrollers. With small/proper configuration it scales down to AVR ATTiny
@@ -12,13 +12,13 @@ minimize resource demands. Everything is served only by one Stack. There are
 no threads or context switches, but there is some facility to call the
 Scheduler recursively.
 
-Ideally users code always runs syncronously from these queues which are
+Ideally users code always runs synchronously from these queues which are
 scheduled by the mainloop provided by mµOS. Interrupts are handled by
 'drivers' and do the bare minimum necessary to serve the request, postpone any
 further processing themself onto the work queues.
 
 This means that there are less possiblities of race conditions and in many
-cases a user doesn't need to care for syncronization (unless writing drivers).
+cases a user doesn't need to care for synchronization (unless writing drivers).
 
 Still any resource which is not managed by mµOS is available to the user and
 can be freely accessed and configured. This is a deliberate design decision to

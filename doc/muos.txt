@@ -1,0 +1,119 @@
+=== The Mainloop
+
+In default configuration mµOS provides a mainloop which schedules queues
+holding user-defined functions to be called. 'main()' is part of mµOS and not
+defined in user programs.
+
+At startup mµOS first schedules a (configureable) 'init()' function which does
+the initialization defined by the user. This init is called with the timer and
+drivers still uninitialized/stopped, second after the 'init()' function
+'muos_start()' is scheduled which then sets up all drivers and starts the
+timer. Upon its completion everything is initalized and the system runs.
+
+Some drivers provide configureable hooks which are scheduled when some event
+happend (examples are like lineedit commpleted with the user pressing
++[RETURN]+)
+
+For every iteration the mainloop sets a global variable to the current time
+which then can be queried with 'muos_now()'. This time guranteed to stay
+stable for the whole mainloop iteration with only the exceptions that nested
+mainloop invocation ('muos_wait()' and 'muos_yield()' will update it). Using
+this should be the prefered way to get the current time over the direct clock
+api's because it is faster to access and provides the necessary stability as
+time tag for this iteration.
+
+If there are any pending errors left from asychronous calls (Interrupts) it
+calls a user defined error handler. This is done at first with interrupts
+disabled. The error-handler is called only once per mainloop iteration, even
+if it leaves errors pending.
+
+Then the mainloop checks if there is any work on the queues (see below) and
+exceutes these functions approbiately. When there is nothing left to do it
+either puts the µC into sleep or, for very short times, does a busy loop to
+ensure exact timing.
+
+=== Scheduler Queues
+
+By default there are 3 queues served by the mainloop:
+
+==== 'clpq' clock priority queue
+
+Schedules by timer events in 'near future'. Whatever is considered 'near
+future' is defined by the timer configuration, times longer than the
+'muos_shortclock' type can not be handled. This times are also affected by the
+timers prescaler, the faster the clock runs, the shorter are the timespans it
+can handle. Common ranges are from few milliseconds to many hours.
+
+
+===== clpq API
+
+The priority queue uses a sliding-window implementation, this
+allows to add times covering the while range of the 'muos_shortclock' datatype.
+
+The 'clpq' uses the priority-queue implementation (and thus the types) from
+
+<<lib_spriq,lib/spriq>>.
+
+
+PIPADOC:=clpq_api
+
+===== clpq configuration
+
+Only the length is configured for the 'clpq', most of its configurations come
+from the clock and spriq configuration see below.
+
+PIPADOC:@clpq_config
+
+
+==== 'rtq' high priority queue
+
+note: pending rename to hpq
+
+
+===== rtq API
+
+// <<lib_spriq,lib/spriq>>.
+
+
+PIPADOC:=rtq_api
+
+===== rtq configuration
+
+
+PIPADOC:@rtq_config
+
+
+
+==== 'bgq' background queue
+
+
+
+===== bgq API
+
+// <<lib_spriq,lib/spriq>>.
+
+
+PIPADOC:=bgq_api
+
+===== bgq configuration
+
+
+PIPADOC:@bgq_config
+
+
+
+
+//=== Main Loop Control
+
+
+
+
+//=== How to use this
+
+
+
+
+//== User Application
+
+
+
