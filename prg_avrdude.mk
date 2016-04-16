@@ -27,20 +27,20 @@ AVRDUDE_DEFAULT_SCK += -B 8
 hex: $(MAIN).hex
 eep: $(MAIN).eep
 
-%.hex: %.elf .v/OBJCOPY
+%.hex: %.elf OBJCOPY.v
 	$(PRINTFMT) $@ HEX
 	$(OBJCOPY) -O ihex  $< $@
 
-%.eep: %.elf .v/OBJCOPY
+%.eep: %.elf OBJCOPY.v
 	$(PRINTFMT) $@ EEP
 	$(OBJCOPY) -j .eeprom  --change-section-lma .eeprom=0 -O ihex $< $@ 2>/dev/null
 
-upload: all .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
+upload: all AVRDUDE.v AVRDUDE_FLAGS.v AVRDUDE_DEFAULT_SCK.v MAIN.v
 	$(PRINTFMT) $(MAIN) UPLOAD
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:w:$(MAIN).hex:i
 #-U eeprom:w:$(MAIN).eep:i
 
-download: .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
+download: AVRDUDE.v AVRDUDE_FLAGS.v AVRDUDE_DEFAULT_SCK.v MAIN.v
 	$(PRINTFMT) $(MAIN) DOWNLOAD
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -U flash:r:$(MAIN).hex:i -U eeprom:r:$(MAIN).eep:i
 
@@ -50,6 +50,6 @@ download: .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/MAIN
 #fuse_128khz:
 #	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) $(FUSE_RELEASE)
 
-reset_device: .v/AVRDUDE .v/AVRDUDE_FLAGS .v/AVRDUDE_DEFAULT_SCK .v/FUSE_DEFAULT
+reset_device: AVRDUDE.v AVRDUDE_FLAGS.v AVRDUDE_DEFAULT_SCK.v FUSE_DEFAULT.v
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_DEFAULT_SCK) -e $(FUSE_DEFAULT)
 
