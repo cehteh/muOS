@@ -17,10 +17,12 @@ The git repository is available at
 
  git://git.pipapo.org/muos
 
+and can be browsed online at http://git.pipapo.org/?p=muos
+
 Development is mainly done in feature branches, use +git branch -r+ to see
 which ones are available. Development is done on the *devel* branch, the
 *master* branch is tried to be kept stable but often a bit behind. Later on,
-releases may get their own branches and tags.
+releases will get their own branches and tags.
 
 PIPADOC:TODO: mob repository
 
@@ -28,8 +30,8 @@ PIPADOC:TODO: mob repository
 == Issues
 
 Instead a Bug-Track, mµOS tags and documents bugs right inside its code and
-documentation. The documentation system then generates a list of issues which
-can be viewed http:muos_issues.html[here].
+documentation. The documentation system then generates a list of known issues
+which can be viewed http:muos_issues.html[here].
 
 
 PIPADOC:TODO: contact/mailinglist

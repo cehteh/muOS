@@ -2,6 +2,7 @@
 :author:        Christian Thäter
 :email:         ct@pipapo.org
 :date:          {DOCVARS.DATE}
+PIPADOC:=VERSION
 
 a small operating system for microcontrollers
 
