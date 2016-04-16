@@ -14,7 +14,7 @@ SAVE.*
 a.out
 \#*
 .#*
-.v
+*.v
 muos_issues.*
 muos_manual.*
 
