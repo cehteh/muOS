@@ -61,10 +61,10 @@ typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
 //clock_api:
 //: .The fullclock datatype
 //: ----
-//: typedef struct {
+//: typedef struct \{
 //:  muos_clock coarse;
 //:  muos_hwclock fine;
-//: } muos_fullclock;
+//: \} muos_fullclock;
 //: ----
 //:
 //: +coarse+::

@@ -197,6 +197,25 @@ PIPADOC:@clock_config
 
 === Error handling
 
+
+
+Errors can happen synchronously in queued functions or asynchronously from
+interrupts and drivers.
+
+// If any unhandled error stays pending, this function will be called
+// #: synchronously to handle it at very high priority (before any work from the queues)
+
+PIPADOC:=defined_errors
+
+==== API
+
+PIPADOC:=error_api
+
+==== configuration
+
+PIPADOC:@error_config
+
+
 //=== How to use this
 
 

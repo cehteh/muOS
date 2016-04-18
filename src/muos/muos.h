@@ -22,12 +22,10 @@
 #define MUOS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 #include MUOS_HW_HEADER
-
-
-#define MDEBUG(c) do { muos_serial_tx_byte (c);} while (0)
 
 void
 muos_sleep (void);

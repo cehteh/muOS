@@ -42,3 +42,5 @@ PIPADOC:TODO: document lib/
 PIPADOC:=drivers
 
 
+PIPADOC:PLANNED: example/howto
+PIPADOC:PLANNED: project structure structure
