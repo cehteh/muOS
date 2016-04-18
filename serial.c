@@ -40,7 +40,7 @@ muos_serial_init (void)
 
 
 #if MUOS_SERIAL_TXBUFFER > 1
-void
+muos_error
 muos_serial_tx_byte (uint8_t b)
 {
   muos_hw_serial_tx_stop ();
@@ -51,10 +51,11 @@ muos_serial_tx_byte (uint8_t b)
     }
   else
     {
-      muos_error_set (muos_error_tx_buffer_overflow);
+      return muos_error_tx_buffer_overflow;
     }
 
   muos_hw_serial_tx_run ();
+  return muos_success;
 }
 #endif
 

@@ -61,33 +61,26 @@ void
 muos_start (void)
 {
   //FIXME: conditional muos_serial_init ();
-  muos_cppm_init ();
+  muos_serial_init ();
+  //FIXME: conditional  muos_cppm_init ();
+  //muos_cppm_init ();
   muos_clock_start ();
 }
 
 
 static uint8_t sched_depth_;
 
-static bool
-muos_sched_enter (void)
-{
-  if (sched_depth_ >= MUOS_SCHED_DEPTH)
-    {
-      muos_error_set (muos_warn_sched_depth);
-      return false;
-    }
-  return true;
-}
 
 //muos_api:
 //: .Wait for some condition come true
 //: ----
-//: bool muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
+//: muos_error muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: ----
-//:
+//FIXME: doc for error
 //: +fn+::
 //:   function checking for some condition, must return 'false' while the condition
 //:   is not met and finally 'true' on success
+//FIXME: can be NULL
 //: +param+::
 //:   an optinal intptr_t argument passed to the test function
 //: +timeout+::
@@ -103,16 +96,13 @@ muos_sched_enter (void)
 //: Because of stack limits entering the mainloop recursively is limited. One should always
 //: expect that a wait can return instantly with 'false' and the error 'muos_warn_sched_depth'
 //: being flaged.
-bool
+muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 {
-  if (fn && fn (param))
+  if (sched_depth_ >= MUOS_SCHED_DEPTH)
     {
-      return true;
+      return muos_warn_sched_depth;
     }
-
-  if (!muos_sched_enter ())
-    return false;
 
   bool overflow = false;
   muos_clock end = muos_now_ + timeout;
@@ -126,6 +116,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
   while (overflow || muos_now_<end)
     {
+      //FIXME: use elapsed
       if (overflow && muos_now_<end)
         {
           overflow = false;
@@ -137,6 +128,13 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
             {
               do
                 {
+                  if (fn && fn (param))
+                    {
+                      muos_interrupt_enable ();
+                      --sched_depth_;
+                      return muos_success;
+                    }
+
                   muos_now_ = muos_clock_now ();
 
                   if (muos_error_pending ())
@@ -151,27 +149,21 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
         }
       while (muos_bgq_schedule ());
 
-      if (fn && fn (param))
-        {
-          --sched_depth_;
-          return true;
-        }
-
       muos_sleep ();
     }
 
   muos_interrupt_enable ();
   --sched_depth_;
-  return false;
+  return muos_warn_wait_timeout;
 }
 
 
 //muos_api:
 //: .Enter Mainloop recursively, scheduling other jobs
 //: ----
-//: void muos_yield (uint8_t count)
+//: muos_error muos_yield (uint8_t count)
 //: ----
-//:
+//FIXME: doc, error
 //: +count+::
 //:   number of jobs to schedule, must be less than 254
 //:
@@ -184,11 +176,13 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: not stall the work to be done *and* this code will never be called recursively.
 //:
 //PLANNED: add priority, which queues to schedule
-void
+muos_error
 muos_yield (uint8_t count)
 {
-  if (!muos_sched_enter ())
-    return;
+  if (sched_depth_ >= MUOS_SCHED_DEPTH)
+    {
+      return muos_warn_sched_depth;
+    }
 
   ++sched_depth_;
   ++count;
@@ -214,8 +208,11 @@ muos_yield (uint8_t count)
       while (count && muos_hpq_schedule ());
     }
   while (count && muos_bgq_schedule ());
+
   muos_interrupt_enable ();
   --sched_depth_;
+
+  return muos_success;
 }
 
 

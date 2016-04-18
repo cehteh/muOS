@@ -27,6 +27,7 @@
 #define MUOS_ERRORS                             \
   MUOS_ERROR(error_error)                       \
   MUOS_ERROR(warn_sched_depth)                  \
+  MUOS_ERROR(warn_wait_timeout)                 \
   MUOS_ERROR(error_tx_buffer_overflow)          \
   MUOS_ERROR(error_txqueue_overflow)            \
   MUOS_ERROR(error_clpq_overflow)               \
@@ -40,14 +41,14 @@
   MUOS_ERROR(error_cppm_frame)                  \
 
 
-enum muos_errorcode
+typedef enum
   {
     muos_success,
 #define MUOS_ERROR(name) muos_##name,
     MUOS_ERRORS
 #undef MUOS_ERROR
     muos_errors_end,
-  };
+  } muos_error;
 
 extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 extern volatile uint8_t muos_errors_pending_;
@@ -60,18 +61,15 @@ muos_error_pending (void)
 }
 
 void
-muos_error_set_unsafe (enum muos_errorcode err);
+muos_error_set_unsafe (muos_error err);
 
 void
-muos_error_set (enum muos_errorcode err);
-
-static inline bool
-muos_error_peek (enum muos_errorcode err)
-{
-  return muos_errors_[err/8] & 1<<(err%8);
-}
+muos_error_set (muos_error err);
 
 bool
-muos_error_check (enum muos_errorcode err);
+muos_error_peek (muos_error err);
+
+bool
+muos_error_check (muos_error err);
 
 #endif

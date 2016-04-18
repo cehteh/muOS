@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <muos/error.h>
+
 //TODO: remove 'repeat' variants
 
 struct fmtconfig_type {
@@ -118,13 +120,13 @@ ctrl
 
 #if MUOS_SERIAL_TXQUEUE == 0
 
-#define OUTPUTFN(name, ...) void muos_output_##name (__VA_ARGS__);
+#define OUTPUTFN(name, ...) muos_error muos_output_##name (__VA_ARGS__);
 MUOS_OUTPUTFNS
 #undef OUTPUTFN
 
 #else // TXQUEUE enabled
 
-#define OUTPUTFN(name, ...) void muos_txqueue_output_##name (__VA_ARGS__);
+#define OUTPUTFN(name, ...) muos_error muos_txqueue_output_##name (__VA_ARGS__);
 MUOS_OUTPUTFNS
 #undef OUTPUTFN
 

@@ -21,8 +21,88 @@
 #include <muos/hpq.h>
 
 #if MUOS_HPQ_LENGTH > 0
-volatile muos_hpq_type muos_hpq;
+
+muos_hpq_type muos_hpq;
+
+muos_error
+muos_hpq_pushback_unsafe (muos_queue_function f)
+{
+  if (!muos_hpq_check (1))
+    return muos_error_hpq_overflow;
+
+  MUOS_QUEUE_PUSHBACK(muos_hpq, (f));
+  return muos_success;
+}
+
+muos_error
+muos_hpq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+{
+  if (!muos_hpq_check (2))
+    return muos_error_hpq_overflow;
+
+  MUOS_QUEUE_PUSHBACK_ARG(muos_hpq, (f), (a));
+  return muos_success;
+}
+
+muos_error
+muos_hpq_pushfront_unsafe (muos_queue_function f)
+{
+  if (!muos_hpq_check (1))
+    return muos_error_hpq_overflow;
+
+  MUOS_QUEUE_PUSHFRONT(muos_hpq, (f));
+  return muos_success;
+}
+
+muos_error
+muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+{
+  if (!muos_hpq_check (2))
+    return muos_error_hpq_overflow;
+
+  MUOS_QUEUE_PUSHFRONT_ARG(muos_hpq, (f), (a));
+  return muos_success;
+}
+
+
+muos_error
+muos_hpq_pushback (muos_queue_function f)
+{
+  muos_interrupt_disable ();
+  muos_error ret = muos_hpq_pushback_unsafe (f);
+  muos_interrupt_enable ();
+  return ret;
+}
+
+muos_error
+muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a)
+{
+  muos_interrupt_disable ();
+  muos_error ret = muos_hpq_pushback_arg_unsafe (f, a);
+  muos_interrupt_enable ();
+  return ret;
+}
+
+muos_error
+muos_hpq_pushfront (muos_queue_function f)
+{
+  muos_interrupt_disable ();
+  muos_error ret = muos_hpq_pushfront_unsafe (f);
+  muos_interrupt_enable ();
+  return ret;
+}
+
+muos_error
+muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+{
+  muos_interrupt_disable ();
+  muos_error ret = muos_hpq_pushfront_arg_unsafe (f, a);
+  muos_interrupt_enable ();
+  return ret;
+}
+
 #endif
+
 
 
 

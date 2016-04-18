@@ -26,7 +26,7 @@ volatile uint8_t muos_errors_pending_;
 volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 
 void
-muos_error_set_unsafe (enum muos_errorcode err)
+muos_error_set_unsafe (muos_error err)
 {
   if (!(muos_errors_[err/8] & 1<<(err%8)))
       {
@@ -39,16 +39,22 @@ muos_error_set_unsafe (enum muos_errorcode err)
 }
 
 void
-muos_error_set (enum muos_errorcode err)
+muos_error_set (muos_error err)
 {
   muos_interrupt_disable ();
   muos_error_set_unsafe (err);
   muos_interrupt_enable ();
 }
 
+bool
+muos_error_peek (muos_error err)
+{
+  return muos_errors_[err/8] & 1<<(err%8);
+}
+
 
 bool
-muos_error_check (enum muos_errorcode err)
+muos_error_check (muos_error err)
 {
   bool ret = false;
 

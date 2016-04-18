@@ -39,75 +39,88 @@ muos_bgq_schedule (void)
 static inline bool
 muos_bgq_check (uint8_t need)
 {
-  if (MUOS_QUEUE_FREE (muos_bgq) >= need)
-    {
-      return true;
-    }
-  else
-    {
-      muos_error_set_unsafe (muos_error_bgq_overflow);
-      return false;
-    }
+  return MUOS_QUEUE_FREE (muos_bgq) >= need;
 }
 
+
 //bgq_api:
-//: .Schedule functions at high priority
+//: .Schedule functions at background priority
 //: ----
-//: void muos_bgq_pushback (muos_queue_function fn)
-//: void muos_bgq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
-//: void muos_bgq_pushfront (muos_queue_function fn)
-//: void muos_bgq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_pushback (muos_queue_function fn)
+//: muos_error muos_bgq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_pushfront (muos_queue_function fn)
+//: muos_error muos_bgq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_pushback_unsafe (muos_queue_function fn)
+//: muos_error muos_bgq_pushback_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_pushfront_unsafe (muos_queue_function fn)
+//: muos_error muos_bgq_pushfront_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
 //: ----
 //:
 //: +fn+::
 //: function to schedule
 //: +arg+::
-//:  argument to pass to the function when it gets called
+//:  argument to pass to the function
+//:
+//: The *_unsafe variants of these functions are intended to be called from Interrupt handlers
+//: or contexts where interrupts are already disabled.
+//:
+//: These functions return 'muos_success' on success and 'muos_error_bgq_overflow' on error.
 //:
 
-static inline void
-muos_bgq_pushback (muos_queue_function f)
+static inline muos_error
+muos_bgq_pushback_unsafe (muos_queue_function f)
 {
-  muos_interrupt_disable ();
-  if (muos_bgq_check (1))
-    {
-      MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
-    }
-  muos_interrupt_enable ();
+  if (!muos_bgq_check (1))
+    return muos_error_bgq_overflow;
+
+  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
+  return muos_success;
 }
 
-static inline void
-muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a)
+static inline muos_error
+muos_bgq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
 {
-  muos_interrupt_disable ();
-  if (muos_bgq_check (2))
-    {
-      MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
-    }
-  muos_interrupt_enable ();
+  if (!muos_bgq_check (2))
+    return muos_error_bgq_overflow;
+
+  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
+  return muos_success;
 }
 
-static inline void
-muos_bgq_pushfront (muos_queue_function f)
+static inline muos_error
+muos_bgq_pushfront_unsafe (muos_queue_function f)
 {
-  muos_interrupt_disable ();
-  if (muos_bgq_check (1))
-    {
-      MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
-    }
-  muos_interrupt_enable ();
+  if (!muos_bgq_check (1))
+    return muos_error_bgq_overflow;
+
+  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
+  return muos_success;
 }
 
-static inline void
-muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
+static inline muos_error
+muos_bgq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a)
 {
-  muos_interrupt_disable ();
-  if (muos_bgq_check (2))
-    {
-      MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
-    }
-  muos_interrupt_enable ();
+  if (!muos_bgq_check (2))
+    return muos_error_bgq_overflow;
+
+  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+  return muos_success;
 }
+
+
+muos_error
+muos_bgq_pushback (muos_queue_function f);
+
+muos_error
+muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a);
+
+muos_error
+muos_bgq_pushfront (muos_queue_function f);
+
+muos_error
+muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
+
+
 #else
 // stub for the schedule loop
 static inline bool
