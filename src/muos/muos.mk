@@ -72,7 +72,7 @@ include muos/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(IMAGES) doc
+all: $(IMAGES) doc fixme
 	$(PRINTFMT) '$(IMAGES)' IMAGES
 
 # dependencies on variables
@@ -173,6 +173,30 @@ muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ ISSUES
 	$(LUA) muos/doc/pipadoc.lua -q -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
+
+fixme: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
+	$(PRINTFMT) $@ FIXME
+	$(LUA) muos/doc/pipadoc.lua -q -t FIXME -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
+
+todo: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
+	$(PRINTFMT) $@ TODO
+	$(LUA) muos/doc/pipadoc.lua -q -t TODO -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
+
+planned: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
+	$(PRINTFMT) $@ PLANNED
+	$(LUA) muos/doc/pipadoc.lua -q -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
