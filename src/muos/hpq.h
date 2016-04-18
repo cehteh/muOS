@@ -28,8 +28,7 @@
 #if MUOS_HPQ_LENGTH > 0
 
 typedef MUOS_QUEUEDEF(MUOS_HPQ_LENGTH) muos_hpq_type;
-extern volatile muos_hpq_type muos_hpq;
-
+extern muos_hpq_type muos_hpq;
 
 static inline bool
 muos_hpq_schedule (void)
@@ -40,83 +39,58 @@ muos_hpq_schedule (void)
 static inline bool
 muos_hpq_check (uint8_t need)
 {
-  if (MUOS_QUEUE_FREE (muos_hpq) >= need)
-    {
-      return true;
-    }
-  else
-    {
-      muos_error_set_unsafe (muos_error_hpq_overflow);
-      return false;
-    }
-}
-
-static inline void
-muos_hpq_pushback_unsafe (muos_queue_function f)
-{
-  if (muos_hpq_check (1))
-    {
-      MUOS_QUEUE_PUSHBACK (muos_hpq, (f));
-    }
+  return MUOS_QUEUE_FREE (muos_hpq) >= need;
 }
 
 
 //hpq_api:
 //: .Schedule functions at high priority
 //: ----
-//: void muos_hpq_pushback (muos_queue_function fn)
-//: void muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
-//: void muos_hpq_pushfront (muos_queue_function fn)
-//: void muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushback (muos_queue_function fn)
+//: muos_error muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushfront (muos_queue_function fn)
+//: muos_error muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushback_unsafe (muos_queue_function fn)
+//: muos_error muos_hpq_pushback_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushfront_unsafe (muos_queue_function fn)
+//: muos_error muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
 //: ----
 //:
 //: +fn+::
-//: function to schedule
+//:  function to schedule
 //: +arg+::
-//:  argument to pass to the function when it gets called
+//:  argument to pass to the function
+//:
+//: The *_unsafe variants of these functions are intended to be called from Interrupt handlers
+//: or contexts where interrupts are already disabled.
+//:
+//: These functions return 'muos_success' on success and 'muos_error_hpq_overflow' on error.
 //:
 
-//FIXME: refine error handling, return bool or error number on synchronous calls
-static inline void
-muos_hpq_pushback (muos_queue_function f)
-{
-  muos_interrupt_disable ();
-  muos_hpq_pushback_unsafe (f);
-  muos_interrupt_enable ();
-}
+muos_error
+muos_hpq_pushback (muos_queue_function f);
 
-static inline void
-muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a)
-{
-  muos_interrupt_disable ();
-  if (muos_hpq_check (2))
-    {
-      MUOS_QUEUE_PUSHBACK_ARG(muos_hpq, (f), (a));
-    }
-  muos_interrupt_enable ();
-}
+muos_error
+muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a);
 
-static inline void
-muos_hpq_pushfront (muos_queue_function f)
-{
-  muos_interrupt_disable ();
-  if (muos_hpq_check (1))
-    {
-      MUOS_QUEUE_PUSHFRONT(muos_hpq, (f));
-    }
-  muos_interrupt_enable ();
-}
+muos_error
+muos_hpq_pushfront (muos_queue_function f);
 
-static inline void
-muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
-{
-  muos_interrupt_disable ();
-  if (muos_hpq_check (2))
-    {
-      MUOS_QUEUE_PUSHFRONT_ARG(muos_hpq, (f), (a));
-    }
-  muos_interrupt_enable ();
-}
+muos_error
+muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
+
+
+muos_error
+muos_hpq_pushback_unsafe (muos_queue_function f);
+
+muos_error
+muos_hpq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a);
+
+muos_error
+muos_hpq_pushfront_unsafe (muos_queue_function f);
+
+muos_error
+muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a);
 
 #else
 // stub for the schedule loop
@@ -126,5 +100,6 @@ muos_hpq_schedule (void)
   return false;
 }
 #endif
+
 
 #endif

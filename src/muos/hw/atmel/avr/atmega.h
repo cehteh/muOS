@@ -26,13 +26,23 @@
 
 // one hardware timer is used for the wall clock
 
-//FIXME: #if MUOS_CLOCK_HW=0
-#define MUOS_HW_CLOCK_OFF      0
-#define MUOS_HW_CLOCK_DIV0     _BV(CS00)
-#define MUOS_HW_CLOCK_DIV8     _BV(CS01)
-#define MUOS_HW_CLOCK_DIV64    _BV(CS01) | _BV(CS00)
-#define MUOS_HW_CLOCK_DIV256   _BV(CS02)
-#define MUOS_HW_CLOCK_DIV1024  _BV(CS02) | _BV(CS00)
+//FIXME: check values!
+#define MUOS_HW_CLOCK0_OFF      0
+#define MUOS_HW_CLOCK0_DIV1     _BV(CS00)
+#define MUOS_HW_CLOCK0_DIV8     _BV(CS01)
+#define MUOS_HW_CLOCK0_DIV64    _BV(CS01) | _BV(CS00)
+#define MUOS_HW_CLOCK0_DIV256   _BV(CS02)
+#define MUOS_HW_CLOCK0_DIV1024  _BV(CS02) | _BV(CS00)
+
+//FIXME: check values!
+#define MUOS_HW_CLOCK1_OFF      0
+#define MUOS_HW_CLOCK1_DIV1     _BV(CS10)
+#define MUOS_HW_CLOCK1_DIV8     _BV(CS11)
+#define MUOS_HW_CLOCK1_DIV64    _BV(CS11) | _BV(CS10)
+#define MUOS_HW_CLOCK1_DIV256   _BV(CS12)
+#define MUOS_HW_CLOCK1_DIV1024  _BV(CS12) | _BV(CS10)
+
+
 
 #define ISRNAME_OVERFLOW_(hw, _) TIMER##hw##_OVF_vect
 #define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_ hw
@@ -45,7 +55,7 @@
 
 
 #define MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)  \
-  TCCR##hw##B = MUOS_HW_CLOCK_DIV##prescale
+  TCCR##hw##B = MUOS_HW_CLOCK##hw##_DIV##prescale
 
 #define MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)   \
   MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)

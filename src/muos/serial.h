@@ -25,11 +25,12 @@
 #include <stdbool.h>
 #include <muos/lib/cbuffer.h>
 #include <muos/lib/queue.h>
+#include <muos/error.h>
 
 void
 muos_serial_init (void);
 
-void
+muos_error
 muos_serial_tx_byte (uint8_t b);
 
 uint8_t

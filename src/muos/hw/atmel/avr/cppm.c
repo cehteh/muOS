@@ -24,6 +24,7 @@
 #include <muos/hpq.h>
 #include <muos/cppm.h>
 
+
 static volatile muos_clock cppm_time;
 static uint8_t cppm_channel = 255;
 
@@ -44,8 +45,8 @@ muos_cppm_calibrate (void)
 };
 #endif
 
-
-
+//FIXME: ISR Pushbaks must be _unsafe variants
+//FIXME: CPPM lacks hwdev on atmegas
 
 #ifdef MUOS_CPPM_CALLBACK
 void MUOS_CPPM_CALLBACK (void);
@@ -99,7 +100,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 #endif
 
       ++cppm_channel;
-#ifdef MUOS_CPPM_CALLBACK
+#ifdef MUOS_CPPM_CALLBACK //FIXME: callback when all channels or frame error
       if (cppm_channel == MUOS_CPPM_CHANNELS)
         muos_hpq_pushback (MUOS_CPPM_CALLBACK);
 #endif

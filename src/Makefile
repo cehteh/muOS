@@ -24,9 +24,9 @@ PLATFORM = atmel/avr
 
 # muos_config:MCU
 # : 
-#MCU = atmega328p
+MCU = atmega328p
 #MCU = attiny85
-MCU = attiny84
+#MCU = attiny84
 
 # muos_config:MAIN
 # : 
@@ -41,8 +41,8 @@ PROGRAMMER = avrdude
 # : 
 AVRDUDE_BAUDRATE = 57600
 AVRDUDE_PORT = $(wildcard /dev/ttyUSB?)
-AVRDUDE_PROGRAMMER = usbasp
-#AVRDUDE_PROGRAMMER = arduino
+#AVRDUDE_PROGRAMMER = usbasp
+AVRDUDE_PROGRAMMER = arduino
 
 # build_config:
 # additional C Source file
@@ -58,8 +58,8 @@ CCFLAGS += -g
 #CCFLAGS += -DF_CPU=1000000UL
 #CCFLAGS += -DF_CPU=2000000UL
 #CCFLAGS += -DF_CPU=4000000UL
-CCFLAGS += -DF_CPU=8000000UL
-#CCFLAGS += -DF_CPU=16000000UL
+#CCFLAGS += -DF_CPU=8000000UL
+CCFLAGS += -DF_CPU=16000000UL
 
 # build_config:DEPFLAGS
 #: Dependency generation Flags
@@ -85,21 +85,21 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 # : Uses a GPIO to indicate when the cpu is busy,
 # : otherwise, while sleeping the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-#MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
+MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
 # muos_config:MUOS_DEBUG_INTR
 # : Uses a GPIO to indicate when the cpu is handling interrupts,
 # : otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-#MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
+MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
 
 
 # muos_config:MUOS_DEBUG_ERROR
 # : Uses a GPIO to indicate when an error got set,
 # : otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
-#MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
 #muos_config:MUOS_INITFN
 #: MUOS_INITFN::
@@ -152,8 +152,8 @@ MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 #:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
 #:  8 bits allow queues for up to 256 functions
 #:  16 bits allow huge queues, use only when really required
-MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
-#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
+#MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
+MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
 
 
@@ -162,8 +162,8 @@ MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 #: MUOS_HPQ_LENGTH::
 #: How many entries the high priority queue can hold, set to 0 to disable the hpq
 #MUOS_CONFIG += -DMUOS_HPQ_LENGTH=0
-MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
-#UOS_CONFIG += -DMUOS_HPQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
+MUOS_CONFIG += -DMUOS_HPQ_LENGTH=32
 #MUOS_CONFIG += -DMUOS_HPQ_LENGTH=128
 
 
@@ -172,8 +172,8 @@ MUOS_CONFIG += -DMUOS_HPQ_LENGTH=8
 #: MUOS_BGQ_LENGTH::
 #: How many entries the background queue can hold, set to 0 to disable the bgq
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=0
-MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
-#MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
+#MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
+MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=128
 
 
@@ -222,8 +222,8 @@ MUOS_CONFIG += -DMUOS_LPRIQ_INDEX=uint16_t
 #clpq_config:MUOS_CLPQ_LENGTH
 #: MUOS_CLPQ_LENGTH::
 #: Number of entries the scheduling Queue can hold, set to 0 to disable the clpq
-MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
-#MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
+#MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=4
+MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=32
 #MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=128
 
@@ -256,8 +256,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #: MUOS_CLOCK_TYPE::
 #:  The type used for the primary clock functions. Should be some unsigned integer,
 #:  32 bit width is recommended.
-MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
-#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
+#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
+MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 
 
@@ -275,7 +275,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #: MUOS_CLOCK_CALIBRATE::
 #:  When defined the frequency calibration api for syncing the
 #:  µC frequency clock with some external signal is enabled.
-MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE=1
+#MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE
 
 
 
@@ -345,10 +345,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 #: 0 disables sending data
 #: >1 creates a buffer of that size
 #FIXME: handle the case when txbuffer is smaller than lineedit buffer
-MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=2
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=4
-#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
@@ -364,10 +364,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #:
 #: 0 disables the queue
 #: >1 creates a queue of that size
-MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=80
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
@@ -395,10 +395,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #: length of the receive buffer
 #: 0 disables receiving data
 #: >1 creates a buffer of that size
-MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
 #MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
@@ -422,10 +422,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 #lineedit_config:MUOS_LINEEDIT_BUFFER
 #: length of the linedit buffer
-MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=32
-#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
+MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=128
 
 
@@ -464,8 +464,8 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 #cppm_config:MUOS_CPPM_CHANNELS
 #: enable the CPPM Parser for Radio Control Signals
-#MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=0
-MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
+MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=0
+#MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 #MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=16
 
 

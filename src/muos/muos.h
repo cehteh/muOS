@@ -22,6 +22,7 @@
 #define MUOS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 #include MUOS_HW_HEADER
