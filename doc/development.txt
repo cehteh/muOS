@@ -10,3 +10,5 @@ will make no compromises in functionality where required.
 As Free Software project, mµOS is open to any contributor. Development will
 progress on demand. Whatever is needed will be integrated.
 
+PIPADOC:PLANNED: 'master' branch will have no open FIXME, TODO
+PIPADOC:PLANNED: 'devel' branch will have no open FIXME

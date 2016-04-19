@@ -9,7 +9,9 @@ preprocessor_register ("^lua$",
 
 function git_blame (file, line)
   local result = {}
-  local git = io.popen("git blame '"..file.."' -L "..tostring(line)..",+1 -p 2>/dev/null")
+  local gitcmd = "git blame '"..file.."' -M -L "..tostring(line)..",+1 -p 2>/dev/null"
+  dbg ("git:", gitcmd)
+  local git = io.popen(gitcmd)
 
   for line in git:lines() do
     local k,v = line:match("^([%a-]+) (.*)")

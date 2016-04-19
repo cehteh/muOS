@@ -28,7 +28,7 @@ volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 void
 muos_error_set_unsafe (muos_error err)
 {
-  if (!(muos_errors_[err/8] & 1<<(err%8)))
+  if (err && !(muos_errors_[err/8] & 1<<(err%8)))
       {
 #if MUOS_DEBUG_ERROR ==1
         PORTD |= _BV(PIND2);
@@ -41,9 +41,12 @@ muos_error_set_unsafe (muos_error err)
 void
 muos_error_set (muos_error err)
 {
-  muos_interrupt_disable ();
-  muos_error_set_unsafe (err);
-  muos_interrupt_enable ();
+  if (err)
+    {
+      muos_interrupt_disable ();
+      muos_error_set_unsafe (err);
+      muos_interrupt_enable ();
+    }
 }
 
 bool
