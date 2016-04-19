@@ -1,15 +1,14 @@
 === Concept and Goals
 
 mµOS is supposed to be a general purpose Operating-System for small
-Microcontrollers. With small/proper configuration it scales down to AVR ATTiny
-where some have less than 100 Bytes of RAM and less than 2 kByte of Program
-Flash. The main focus is on getting Projects efficently and robustly done in
-short time.
+Microcontrollers. With small/proper configuration it scales down to be useable
+on AVR ATtiny MPUs. The main focus is on getting Projects efficently and
+robustly done in short time.
 
-The core of mµOS is a Scheduler which serves function calls from
+The core of mµOS is a Scheduler which serves function calls from a
 few queues (Timer and 2 Priorities by default). This approach was choosen to
 minimize resource demands. Everything is served only by one Stack. There are
-no threads or context switches, but there is some facility to call the
+no threads or context switches, but there are some facilities to call the
 Scheduler recursively.
 
 Users code always runs synchronously from these queues which are scheduled by
@@ -24,6 +23,6 @@ Still any resource which is not managed by mµOS is available to the user and
 can be freely accessed and configured. This is a deliberate design decision to
 put mµOS between bare-metal programming and some more complete OS.
 
-When possible mµOS reuses existing Platform and C libraries, but also adds its
+Whenever reasonable mµOS reuses existing Platform and C libraries, but also adds its
 own concepts and API's breaking history with POSIX and other common API's
 whenever there are some reasons to do so.

@@ -60,6 +60,7 @@ muos_error_pending (void)
   return muos_errors_pending_;
 }
 
+// can use muos_success
 void
 muos_error_set_unsafe (muos_error err);
 

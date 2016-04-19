@@ -76,11 +76,10 @@ static uint8_t sched_depth_;
 //: ----
 //: muos_error muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: ----
-//FIXME: doc for error
 //: +fn+::
 //:   function checking for some condition, must return 'false' while the condition
-//:   is not met and finally 'true' on success
-//FIXME: can be NULL
+//:   is not met and finally 'true' on success. Can be NULL, then 'muos_wait()' uses
+//:   only the timeout for the wait.
 //: +param+::
 //:   an optinal intptr_t argument passed to the test function
 //: +timeout+::
@@ -96,6 +95,11 @@ static uint8_t sched_depth_;
 //: Because of stack limits entering the mainloop recursively is limited. One should always
 //: expect that a wait can return instantly with 'false' and the error 'muos_warn_sched_depth'
 //: being flaged.
+//:
+//: .Returns
+//:   'muos_success':: the wait condition got met
+//:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
+//:   'muos_warn_wait_timeout':: timed out
 muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 {
@@ -163,7 +167,6 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: ----
 //: muos_error muos_yield (uint8_t count)
 //: ----
-//FIXME: doc, error
 //: +count+::
 //:   number of jobs to schedule, must be less than 254
 //:
@@ -175,6 +178,9 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: Yielding id applicable when one has code which loops for some extended time but shall
 //: not stall the work to be done *and* this code will never be called recursively.
 //:
+//: .Returns
+//:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
+//:   'muos_success':: yielded at most 'count' times
 //PLANNED: add priority, which queues to schedule
 muos_error
 muos_yield (uint8_t count)

@@ -354,7 +354,7 @@ muos_txqueue_output_repeat_char (uint8_t rep, char c)
 {
   (void) rep;
   (void) c;
-  return muos_error_error;  //FIXME: all unimplemented return error_error
+  return muos_error_error;
 }
 
 muos_error
@@ -440,7 +440,7 @@ muos_txqueue_output_repeat_cstr (uint8_t rep, const char* str)
 {
   (void) rep;
   (void) str;
-  return muos_success;
+  return muos_error_error;
 }
 
 
@@ -450,7 +450,7 @@ muos_txqueue_output_mem (const uint8_t* mem, uint8_t len)
   (void) mem;
   (void) len;
 
-  return muos_success;
+  return muos_error_error;
 }
 
 
@@ -612,7 +612,10 @@ muos_txqueue_output_uint8 (uint8_t n)
     }
 
   fmtconfig = pfmtconfig;
-  muos_txqueue_start ();
+
+  if (!ret)
+    muos_txqueue_start ();
+
   return ret;
 }
 
@@ -652,7 +655,10 @@ muos_txqueue_output_uint16 (uint16_t n)
     }
 
   fmtconfig = pfmtconfig;
-  muos_txqueue_start ();
+
+  if (!ret)
+    muos_txqueue_start ();
+
   return ret;
 }
 
@@ -698,8 +704,10 @@ muos_txqueue_output_uint32 (uint32_t n)
     }
 
   fmtconfig = pfmtconfig;
-  //FIXME: if (!ret) .. also above
-  muos_txqueue_start ();
+  
+  if (!ret)
+    muos_txqueue_start ();
+
   return ret;
 }
 
