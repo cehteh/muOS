@@ -108,24 +108,14 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
       return muos_warn_sched_depth;
     }
 
-  bool overflow = false;
-  muos_clock end = muos_now_ + timeout;
-
-  if (end < muos_now_)
-    overflow = true;
+  muos_clock start = muos_now_ = muos_clock_now ();
 
   ++sched_depth_;
 
   muos_interrupt_disable ();
 
-  while (overflow || muos_now_<end)
+  while (1)
     {
-      //FIXME: use elapsed
-      if (overflow && muos_now_<end)
-        {
-          overflow = false;
-        }
-
       do
         {
           do
@@ -141,6 +131,13 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
                   muos_now_ = muos_clock_now ();
 
+                  if (muos_clock_elapsed (muos_now_, start) > timeout)
+                    {
+                      muos_interrupt_enable ();
+                      --sched_depth_;
+                      return muos_warn_wait_timeout;
+                    }
+
                   if (muos_error_pending ())
                     {
                       MUOS_ERRORFN ();
@@ -155,10 +152,6 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
       muos_sleep ();
     }
-
-  muos_interrupt_enable ();
-  --sched_depth_;
-  return muos_warn_wait_timeout;
 }
 
 
