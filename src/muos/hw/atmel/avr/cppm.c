@@ -45,9 +45,6 @@ muos_cppm_calibrate (void)
 };
 #endif
 
-//FIXME: ISR Pushbacks must be _unsafe variants
-//FIXME: CPPM lacks hwdev on atmegas
-
 #ifdef MUOS_CPPM_CALLBACK
 void MUOS_CPPM_CALLBACK (void);
 #endif
@@ -104,7 +101,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 #ifdef MUOS_CPPM_CALLBACK //TODO: callback when all channels or frame error
       if (cppm_channel == MUOS_CPPM_CHANNELS)
         if (muos_hpq_pushback_unsafe (MUOS_CPPM_CALLBACK))
-          muos_error_set_unsafe (muos_error_cppm_callback);
+          muos_error_set_unsafe (muos_error_cppm_hpq_callback);
 #endif
     }
 }
