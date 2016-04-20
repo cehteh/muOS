@@ -78,9 +78,9 @@ static inline void
 muos_hw_shutdown (void)
 {
   MCUCR |= _BV(PUD);
-  //FIXME:  DDRB = 0;
-  //FIXME:  DDRC = 0;
-  //FIXME:  DDRD = 0;
+  //TODO:  DDRB = 0;
+  //TODO:  DDRC = 0;
+  //TODO:  DDRD = 0;
   muos_hw_sleep_prepare (SLEEP_MODE_PWR_DOWN);
   for (;;)
     {
