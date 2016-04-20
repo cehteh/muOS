@@ -26,7 +26,6 @@
 
 #include <muos/error.h>
 
-//TODO: remove 'repeat' variants
 
 struct fmtconfig_type {
   uint8_t base:6;
@@ -52,11 +51,9 @@ extern struct fmtconfig_type fmtconfig;
 
 #define MUOS_OUTPUTFNS                          \
   OUTPUTFN(char, char)                          \
-  OUTPUTFN(repeat_char, uint8_t, char)          \
   OUTPUTFN(cstr, const char*)                   \
   OUTPUTFN(cstrn, const char*, uint8_t)         \
   OUTPUTFN(fstr, muos_flash_cstr)               \
-  OUTPUTFN(repeat_cstr, uint8_t, const char*)   \
   OUTPUTFN(mem, const uint8_t*, uint8_t)        \
   OUTPUTFN(nl, void)                            \
   OUTPUTFN(csi_char, const char)                \
@@ -136,13 +133,6 @@ muos_output_char (char c)
   muos_txqueue_output_char (c);
 }
 
-static inline void
-muos_output_repeat_char (uint8_t rep, char c)
-{
-  (void) rep;
-  (void) c;
-}
-
 
 static inline void
 muos_output_cstr (const char* str)
@@ -164,13 +154,6 @@ muos_output_fstr (muos_flash_cstr str)
   muos_txqueue_output_fstr (str);
 }
 
-
-static inline void
-muos_output_repeat_cstr (uint8_t rep, const char* str)
-{
-  (void) rep;
-  (void) str;
-}
 
 
 static inline void
