@@ -222,7 +222,13 @@ endif
 VERSION: FORCE
 	echo ":version:  $$(git describe --tags --dirty)" | cmp - $@ 2>/dev/null >/dev/null || { echo ":version:  $$(git describe --tags --dirty)" > $@; $(PRINTFMT) $@ VERSION;}
 
-# maintainer target
-publish: doc FORCE
+# maintainer targets
+gitpush: FORCE
+	$(PRINTFMT) $@ GIT_PUSH
+	git push -q --all --force public
+	git push -q --all --force github
+
+publish: doc gitpush FORCE
 	$(PRINTFMT) $@ PUBLISH
 	rsync *.html muos_*.pdf www.pipapo.org:/var/local/www_muos/
+
