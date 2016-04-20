@@ -121,6 +121,12 @@ cppm_output (void)
 #endif
 }
 
+void
+hello_world (void)
+{
+  muos_output_cstr ("Hello World");
+  muos_output_nl ();
+}
 
 
 void
@@ -133,7 +139,7 @@ init (void)
   //  GIMSK |= _BV(PCIE);
   //PCMSK |= _BV(PCINT2);
 
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (100), toggle_led_timed);
+  //muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (100), toggle_led_timed);
   //muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (1), toggle_led_timed2);
-  muos_bgq_pushback (toggle_led);
+  muos_bgq_pushback (hello_world);
 }
