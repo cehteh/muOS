@@ -80,8 +80,6 @@
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
-
-
 /*
   Serial
 */

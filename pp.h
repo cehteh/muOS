@@ -22,6 +22,7 @@
 #ifndef MUOS_PP_H
 #define MUOS_PP_H
 
+//TODO: DOCME
 
 #define MUOS_PP_FIRST(h,t) h
 #define MUOS_PP_SECOND(h,t) t

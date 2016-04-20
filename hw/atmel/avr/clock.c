@@ -23,11 +23,11 @@
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
 #if MUOS_DEBUG_INTR == 1
-  //FIXME: PORTB |= _BV(PINB4);
+  //TODO: PORTB |= _BV(PINB4);
 #endif
   ++muos_clock_count_;
 #if MUOS_DEBUG_INTR ==1
-  //FIXME: PORTB &= ~_BV(PINB4);
+  //TODO: PORTB &= ~_BV(PINB4);
 #endif
 
 }

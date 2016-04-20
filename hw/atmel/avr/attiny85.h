@@ -66,9 +66,10 @@ static inline void
 muos_hw_shutdown (void)
 {
   MCUCR |= _BV(PUD);
-  //FIXME:  DDRB = 0;
-  //FIXME:  DDRC = 0;
-  //FIXME:  DDRD = 0;
+  //PLANNED: proper shutdown, needs user definition and/or weak symbol or hook
+  // DDRB = 0;
+  // DDRC = 0;
+  // DDRD = 0;
   muos_hw_sleep_prepare (SLEEP_MODE_PWR_DOWN);
   for (;;)
     {

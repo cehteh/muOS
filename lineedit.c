@@ -56,7 +56,7 @@ enum
   };
 
 
-//FIXME: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
+//TODO: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
 
 
 #if MUOS_LINEEDIT_UTF8 == 1
