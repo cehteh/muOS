@@ -82,14 +82,14 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 
 
 # muos_config:MUOS_DEBUG_BUSY
-# : Uses a GPIO to indicate when the cpu is busy,
+# : Uses a GPIO to indicate when the CPU is busy,
 # : otherwise, while sleeping the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
 # muos_config:MUOS_DEBUG_INTR
-# : Uses a GPIO to indicate when the cpu is handling interrupts,
+# : Uses a GPIO to indicate when the CPU is handling interrupts,
 # : otherwise, the GPIO is turned off.
 #FIXME: currently hardcoded GPIO
 MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
@@ -105,25 +105,22 @@ MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 #: MUOS_INITFN::
 #: Name of the user-defined initialization function.
 #: This function is pushed on the hpq (or, if not available the bgq) when starting up. It is
-#: responsible for initializing the system. Interrupts are still diabled and the clock is
+#: responsible for initializing the system. Interrupts are still disabled and the clock is
 #: stopped and will be started after this init function returns.
 MUOS_CONFIG += -DMUOS_INITFN=init
 
 
 
-#muos_config:MUOS_ERRORFN
+#error_config:MUOS_ERRORFN
 #: MUOS_ERRORFN::
 #: Name of the user-defined function which is called when am error is pending.
-#: Errors can happen synchronusly and be handled right where they are happen or asynchronously
-#: from interrupts. If any undhandled error stays pending, this function will be called
-#: synchronously to handle it at very high priority (before any work from the queues)
 MUOS_CONFIG += -DMUOS_ERRORFN=error
 
 
 
 #PLANNED: MUOS_EXPLICIT_INIT
 # muos_config:MUOS_EXPLICIT_INIT
-# : when set to 1, then all static initialization of muos internal datastructures is disabled
+# : when set to 1, then all static initialization of muos internal data structures is disabled
 # : initialization will then be done explicitly in init sections or in main before any of these
 # : facilities are used
 MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
@@ -134,7 +131,7 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 #muos_config:MUOS_SCHED_DEPTH
 #: MUOS_SCHED_DEPTH::
 #: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield()).
-#: When this depth is exceeded, these calls return immediatly, flagging 'muos_warn_sched_depth'.
+#: When this depth is exceeded, these calls return immediately, flagging 'muos_warn_sched_depth'.
 MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
@@ -179,8 +176,8 @@ MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 
 
 #PLANNED: MUOS_QUEUE_ARGTAG
-# : How functions with arguments are tagged in queues, currently only the 'negate is implemened
-# : Works with mpu's with up to 64k flash
+# : How functions with arguments are tagged in queues, currently only the 'negate is implemented
+# : Works with MPUs with up to 64k flash
 #MUOS_CONFIG += -DMUOS_QUEUE_ARGTAG=NEGATE
 
 
@@ -263,8 +260,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 #clock_config:MUOS_CLOCK_SHORT_TYPE
 #: MUOS_CLOCK_SHORT_TYPE::
-#: The type used for short timespans.  Should be some unsigned integer.
-#: What suits best depends on the application, often 16 bit is enough with higher prescalers.
+#: The type used for short time spans.  Should be some unsigned integer.
+#: What suits best depends on the application, often 16 bit is enough with higher Prescaler.
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
@@ -273,26 +270,26 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 
 #clock_config:MUOS_CLOCK_CALIBRATE
 #: MUOS_CLOCK_CALIBRATE::
-#:  When defined the frequency calibration api for syncing the
+#:  When defined the frequency calibration API for syncing the
 #:  µC frequency clock with some external signal is enabled.
 #MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE
 
 
 
-#clock_config:MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
-#: MUOS_CLOCK_CALIBRATE_MAX_DERVIATION::
+#clock_config:MUOS_CLOCK_CALIBRATE_MAX_DERIVATION
+#: MUOS_CLOCK_CALIBRATE_MAX_DEVIATION::
 #:  When the time elapsed since the last sync differs more than
 #:  +/- this value, the calibration measurement is reset and starts over.
-#:  This filters out glitches from api calls.
-MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(x)=((x)/8)'
+#:  This filters out glitches from API calls.
+MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERIVATION(x)=((x)/8)'
 
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE_DEADBAND
 #: MUOS_CLOCK_CALIBRATE_DEADBAND::
 #:  Adds a deadband/range around the target clock. On µC where the clock
-#:  calibration is rather coarse a exact match can not be reached and constant
-#:  readjustments will only result in high jitter.
+#:  calibration is rather coarse an exact match can not be reached and constant
+#:  readjustments will result in high jitter.
 MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
