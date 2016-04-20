@@ -98,6 +98,11 @@ depclean:
 	$(PRINTFMT) $@ COMPILE
 	$(CC) $(CFLAGS) $(MUOS_CONFIG) -c $< -o $@
 
+muos/init.inc: $(filter-out muos/muos.c,$(SOURCES))
+	$(PRINTFMT) $@ INIT_INC
+	sed -e 's/^\(\(muos_[^_]*\)_init\).*/#ifdef \U\2\n\t\L\1 ();\n#endif/p;d' $(SOURCES) > $@
+
+muos/muos.c: muos/init.inc
 
 asm: $(MAIN).asm
 
