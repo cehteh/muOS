@@ -301,6 +301,12 @@ MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
 
 
 
+#serial_config:MUOS_SERIAL
+#: Enable Serial
+MUOS_CONFIG += -DMUOS_SERIAL
+
+
+
 #serial_config:MUOS_SERIAL_HW
 #: Which serial hardware to use
 MUOS_CONFIG += -DMUOS_SERIAL_HW=0
@@ -459,9 +465,13 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 
 
-#cppm_config:MUOS_CPPM_CHANNELS
+#cppm_config:MUOS_CPPM
 #: enable the CPPM Parser for Radio Control Signals
-#MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=0
+MUOS_CONFIG += -DMUOS_CPPM
+
+
+#cppm_config:MUOS_CPPM_CHANNELS
+#: number of CPPM channels
 MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 #MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=16
 
