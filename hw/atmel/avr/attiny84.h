@@ -64,6 +64,9 @@
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
+#define ISRNAME_CAPTURE_(hw) TIM##hw##_CAPT_vect
+#define ISRNAME_CAPTURE(hw) ISRNAME_CAPTURE_ hw
+
 
 // values guessed from datasheet
 // Figure 21-42. Calibrated 8 MHz RC Oscillator Frequency vs. OSCCAL Value

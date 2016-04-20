@@ -43,6 +43,10 @@
 #define MUOS_HW_CLOCK1_DIV256   _BV(CS12)
 #define MUOS_HW_CLOCK1_DIV1024  _BV(CS12) | _BV(CS10)
 
+#define ISRNAME_CAPTURE_(hw) TIMER##hw##_CAPT_vect
+#define ISRNAME_CAPTURE(hw) ISRNAME_CAPTURE_ hw
+
+
 static inline void
 muos_hw_shutdown (void)
 {
