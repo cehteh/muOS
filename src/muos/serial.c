@@ -22,6 +22,8 @@
 #include <muos/serial.h>
 #include <muos/hpq.h>
 
+#ifdef MUOS_SERIAL
+
 #if MUOS_SERIAL_TXBUFFER > 1
 muos_txbuffer_type muos_txbuffer;
 #endif
@@ -94,4 +96,7 @@ muos_serial_rxhpq_again (muos_queue_function f)
 
   muos_interrupt_enable ();
 }
+
+#endif
+
 #endif

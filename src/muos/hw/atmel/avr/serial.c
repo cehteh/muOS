@@ -22,9 +22,10 @@
 #include <muos/serial.h>
 #include <muos/hpq.h>
 
+#ifdef MUOS_SERIAL_RXCALLBACK
 extern void
 MUOS_SERIAL_RXCALLBACK (void);
-
+#endif
 
 #ifdef __AVR_ATmega328P__
 
@@ -105,6 +106,8 @@ ISR(USART_RX_vect)
 
   uint8_t data = MUOS_SERIAL_RX_REGISTER;
 
+  //PLANNED: sync when line is idle
+
   if (!muos_status.serial_rx_sync)
     {
       if (data == MUOS_SERIAL_RXSYNC)
@@ -119,7 +122,9 @@ ISR(USART_RX_vect)
       if (!muos_status.serial_rxhpq_pending)
         {
           muos_status.serial_rxhpq_pending = true;
-          muos_hpq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK);
+#ifdef MUOS_SERIAL_RXCALLBACK
+          muos_error_set (muos_hpq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK));
+#endif
         }
     }
 

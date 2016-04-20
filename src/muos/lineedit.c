@@ -59,7 +59,7 @@ enum
 //TODO: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
 
 
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
 
 static inline bool
 utf8start (const char c)
@@ -139,7 +139,7 @@ muos_lineedit (void)
 
   if (!muos_error_check (muos_error_rx_buffer_underflow))
     {
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
       if (pending == UTF8DROP)
         {
           if (utf8cont (data))
@@ -212,7 +212,7 @@ muos_lineedit (void)
           // right
           if (cursor<used)
             {
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
               cursor += utf8size (buffer+cursor);
               utf8line_redraw ();
 #else
@@ -231,7 +231,7 @@ muos_lineedit (void)
           // left
           if (cursor)
             {
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
               cursor -= utf8size (buffer+cursor-1);
               utf8line_redraw ();
 #else
@@ -254,7 +254,7 @@ muos_lineedit (void)
           // del
           if (used && cursor < used)
             {
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
               utf8del ();
               utf8line_redraw ();
 #else
@@ -319,7 +319,7 @@ muos_lineedit (void)
           pending = 0;
           cursor = used;
 
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
           utf8line_redraw ();
 #else
           muos_output_csi_cstr (NULL);
@@ -362,7 +362,7 @@ muos_lineedit (void)
           // backspace
           if (cursor > 0)
             {
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
               uint8_t len = utf8size (buffer+cursor-1);
 
               used -= len;
@@ -386,7 +386,7 @@ muos_lineedit (void)
 
         default:
 
-#if MUOS_LINEEDIT_UTF8 == 1
+#ifdef MUOS_LINEEDIT_UTF8
 
           if (utf8start (data))
             {

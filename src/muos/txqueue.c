@@ -173,7 +173,6 @@ u##bits##put (uint##bits##_t v, uint8_t base, bool upcase)              \
   while (start)                                                         \
     {                                                                   \
       uint##bits##_t r = v/start;                                       \
-      muos_serial_tx_byte ((r<10?'0':upcase?'A'-10:'a'-10)+r);          \
       if (muos_serial_tx_byte ((r<10?'0':upcase?'A'-10:'a'-10)+r)       \
           == muos_error_tx_buffer_overflow)                             \
         return v;                                                       \
@@ -349,13 +348,6 @@ muos_txqueue_output_char (char c)
   return muos_success;
 }
 
-muos_error
-muos_txqueue_output_repeat_char (uint8_t rep, char c)
-{
-  (void) rep;
-  (void) c;
-  return muos_error_error;
-}
 
 muos_error
 muos_txqueue_output_cstr (const char* str)
@@ -434,14 +426,6 @@ muos_txqueue_output_fstr (muos_flash_cstr str)
   return muos_success;
 }
 
-
-muos_error
-muos_txqueue_output_repeat_cstr (uint8_t rep, const char* str)
-{
-  (void) rep;
-  (void) str;
-  return muos_error_error;
-}
 
 
 muos_error
