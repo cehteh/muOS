@@ -60,10 +60,8 @@ void muos_die (void)
 void
 muos_start (void)
 {
-  //FIXME: conditional muos_serial_init ();
-  muos_serial_init ();
-  //FIXME: conditional  muos_cppm_init ();
-  //muos_cppm_init ();
+#include <muos/init.inc>
+
   muos_clock_start ();
 }
 
