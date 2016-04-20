@@ -48,9 +48,9 @@ muos_clock_calibrate (const muos_clock now, const muos_clock sync)
   calibrate_last = now;
 
   if (sync
-#ifdef MUOS_CLOCK_CALIBRATE_MAX_DERVIATION
-      && elapsed >= sync - MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(sync)
-      && elapsed <= sync + MUOS_CLOCK_CALIBRATE_MAX_DERVIATION(sync)
+#ifdef MUOS_CLOCK_CALIBRATE_MAX_DERIVATION
+      && elapsed >= sync - MUOS_CLOCK_CALIBRATE_MAX_DERIVATION(sync)
+      && elapsed <= sync + MUOS_CLOCK_CALIBRATE_MAX_DERIVATION(sync)
 #endif
       )
     {

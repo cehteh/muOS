@@ -24,21 +24,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MUOS_ERRORS                             \
-  MUOS_ERROR(error_error)                       \
-  MUOS_ERROR(warn_sched_depth)                  \
-  MUOS_ERROR(warn_wait_timeout)                 \
-  MUOS_ERROR(error_tx_buffer_overflow)          \
-  MUOS_ERROR(error_txqueue_overflow)            \
-  MUOS_ERROR(error_clpq_overflow)               \
-  MUOS_ERROR(error_bgq_overflow)                \
-  MUOS_ERROR(error_hpq_overflow)                \
-  MUOS_ERROR(error_rx_buffer_overflow)          \
-  MUOS_ERROR(error_rx_buffer_underflow)         \
-  MUOS_ERROR(error_rx_frame)                    \
-  MUOS_ERROR(error_rx_overrun)                  \
-  MUOS_ERROR(error_rx_parity)                   \
-  MUOS_ERROR(error_cppm_frame)                  \
+//defined_errors:
+#define MUOS_ERRORS                                                                             \
+  MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                   \
+  MUOS_ERROR(warn_sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */             \
+  MUOS_ERROR(warn_wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                         \
+  MUOS_ERROR(error_clpq_overflow) /*: {ERRORDEF} clock priority queue full */                   \
+  MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                     \
+  MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */               \
+  MUOS_ERROR(error_rx_buffer_overflow) /*: {ERRORDEF} dropped received data (user code) */      \
+  MUOS_ERROR(error_rx_buffer_underflow) /*: {ERRORDEF} read while no data available */          \
+  MUOS_ERROR(error_rx_frame) /*: {ERRORDEF} wrong stop bit timing */                            \
+  MUOS_ERROR(error_rx_overrun) /*: {ERRORDEF} dropped received data (uart driver) */            \
+  MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                           \
+  MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                   \
+  MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */           \
+  MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                     \
+  MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
 
 
 typedef enum
@@ -54,6 +56,17 @@ extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 extern volatile uint8_t muos_errors_pending_;
 
 
+//error_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//:
+//:
+//:
+//:
 static inline uint8_t
 muos_error_pending (void)
 {
@@ -64,12 +77,45 @@ muos_error_pending (void)
 void
 muos_error_set_unsafe (muos_error err);
 
+//error_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//:
+//:
+//:
+//:
 void
 muos_error_set (muos_error err);
 
+//error_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//:
+//:
+//:
+//:
 bool
 muos_error_peek (muos_error err);
 
+//error_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//:
+//:
+//:
+//:
 bool
 muos_error_check (muos_error err);
 
