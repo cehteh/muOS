@@ -79,7 +79,7 @@ all: $(IMAGES) doc fixme
 
 # dependencies on variables
 %.v: FORCE
-	echo "$($*)" | md5sum - | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)"  | md5sum - > $@; $(PRINTFMT) $* DEPVAR;}
+	echo "$($*)" | md5sum - | cmp - $@ 2>/dev/null >/dev/null || { echo "$($*)"  | md5sum - > $@; $(PRINTFMT) $@ DEPVAR;}
 
 # Dependency generation and cleanup
 
@@ -220,9 +220,9 @@ else
 endif
 
 VERSION: FORCE
-	echo ":version:  $$(git describe --tags --dirty)" | cmp - $@ 2>/dev/null >/dev/null || { echo ":version:  $$(git describe --tags --dirty)" > $@; $(PRINTFMT) $* VERSION;}
+	echo ":version:  $$(git describe --tags --dirty)" | cmp - $@ 2>/dev/null >/dev/null || { echo ":version:  $$(git describe --tags --dirty)" > $@; $(PRINTFMT) $@ VERSION;}
 
 # maintainer target
-publish: doc
+publish: doc FORCE
 	$(PRINTFMT) $@ PUBLISH
 	rsync *.html muos_*.pdf www.pipapo.org:/var/local/www_muos/

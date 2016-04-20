@@ -7,6 +7,14 @@ preprocessor_register ("^lua$",
 )
 
 
+preprocessor_register ("^c$",
+                       function (str)
+                         return str:gsub("{ERRORDEF}(.-) ?%*/.*",
+                                         '+muos_{CONTEXT.PRE:match("MUOS_ERROR%%((.-)%%)")}+::{DOCVARS.NL} %1')
+                       end
+)
+
+
 function git_blame (file, line)
   local result = {}
   local gitcmd = "git blame '"..file.."' -M -L "..tostring(line)..",+1 -p 2>/dev/null"
