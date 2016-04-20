@@ -25,7 +25,6 @@
 
 #include <muos/muos.h>
 
-//FIXME: *_now called from interrupts might be off because pending timer overflows
 //PLANNED: dont inline clock functions
 
 //PLANNED: macros compensating drift over long timespans; using rationals thereof
@@ -53,6 +52,7 @@
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
 
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
+#define MUOS_CLOCK_OVERFLOW MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW)
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
 typedef MUOS_CLOCK_TYPE muos_clock;
@@ -119,10 +119,10 @@ muos_clock_now (void)
   muos_hwclock hw;
   do
     {
-      counter = muos_clock_count_;
+      counter = muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
       hw = MUOS_CLOCK_REGISTER;
     }
-  while ((uint8_t)counter != (uint8_t)muos_clock_count_);
+  while ((uint8_t)counter != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -142,10 +142,10 @@ muos_clock_shortnow (void)
       muos_hwclock hw;
       do
         {
-          counter = (muos_shortclock)muos_clock_count_;
+          counter = (muos_shortclock)muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
           hw = MUOS_CLOCK_REGISTER;
         }
-      while ((uint8_t)counter != (uint8_t)muos_clock_count_);
+      while ((uint8_t)counter != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
 
       return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
     }
@@ -166,10 +166,10 @@ muos_clock_fullnow (void)
   muos_fullclock clock;
   do
     {
-      clock.coarse = muos_clock_count_;
+      clock.coarse = muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
       clock.fine = MUOS_CLOCK_REGISTER;
     }
-  while ((uint8_t)clock.coarse != (uint8_t)muos_clock_count_);
+  while ((uint8_t)clock.coarse != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
 
   return clock;
 }

@@ -53,6 +53,9 @@
 #define MUOS_HW_CLOCK_REGISTER_(hw, _) TCNT##hw
 #define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_ hw
 
+#define MUOS_HW_CLOCK_OVERFLOW_(hw, _) (!!(TIFR##hw & _BV(TOV##hw)))
+#define MUOS_HW_CLOCK_OVERFLOW(hw) MUOS_HW_CLOCK_OVERFLOW_ hw
+
 
 #define MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)  \
   TCCR##hw##B = MUOS_HW_CLOCK##hw##_DIV##prescale
