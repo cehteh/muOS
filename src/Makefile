@@ -84,21 +84,21 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 # muos_config:MUOS_DEBUG_BUSY
 # : Uses a GPIO to indicate when the CPU is busy,
 # : otherwise, while sleeping the GPIO is turned off.
-#FIXME: currently hardcoded GPIO
+#TODO: currently hardcoded GPIO
 MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
 
 
 # muos_config:MUOS_DEBUG_INTR
 # : Uses a GPIO to indicate when the CPU is handling interrupts,
 # : otherwise, the GPIO is turned off.
-#FIXME: currently hardcoded GPIO
+#TODO: currently hardcoded GPIO
 MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
 
 
 # muos_config:MUOS_DEBUG_ERROR
 # : Uses a GPIO to indicate when an error got set,
 # : otherwise, the GPIO is turned off.
-#FIXME: currently hardcoded GPIO
+#TODO: currently hardcoded GPIO
 MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
 
 #muos_config:MUOS_INITFN
@@ -504,6 +504,7 @@ MUOS_CONFIG += -DMUOS_CPPM_COOKED_MAX='MUOS_CLOCK_MICROSECONDS(2000)'
 #cppm_config:MUOS_CPPM_CAPTURE
 #: Select Input Capture driver
 #: Input capture is more precise than pinchange
+#TODO: derrive from clock definition
 MUOS_CONFIG += -DMUOS_CPPM_CAPTURE='(1)'
 
 
