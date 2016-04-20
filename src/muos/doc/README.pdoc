@@ -9,3 +9,5 @@ PIPADOC:=features
 PIPADOC:=supported_hardware
 
 PIPADOC:=requirements
+
+PIPADOC:=license

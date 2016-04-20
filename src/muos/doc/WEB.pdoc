@@ -33,13 +33,8 @@ Instead a Bug-Track, mµOS tags and documents bugs right inside its code and
 documentation. The documentation system then generates a list of known issues
 which can be viewed http:muos_issues.html[here].
 
-
 PIPADOC:TODO: contact/mailinglist
 
 
-== License
-
-GPLv3
-
-PIPADOC:TODO: license
+PIPADOC:=license
 
