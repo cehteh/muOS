@@ -14,8 +14,6 @@ PIPADOC:=features
 
 PIPADOC:=supported_hardware
 
-PIPADOC:TODO: license
-
 == Infrastructure
 
 PIPADOC:=requirements
@@ -47,3 +45,17 @@ PIPADOC:=drivers
 
 PIPADOC:PLANNED: example/howto
 PIPADOC:PLANNED: project structure structure
+
+
+[appendix]
+== LICENSE
+
+MµOS is licensed under GPLv3. For questions about licensing details and
+possible relicensing conditions contact the author Christian Thäter
+<ct@pipapo.org>. +
+
+ifdef::backend-docbook[]
+....
+include::muos/COPYING[]
+....
+endif::backend-docbook[]
