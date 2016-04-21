@@ -23,11 +23,10 @@ PIPADOC:=development
 PIPADOC:=infrastructure
 
 PIPADOC:TODO: cooperation, mob repository, coding style, docs
-
 PIPADOC:TODO: development workflow
 PIPADOC:TODO: usage workflow
 
-== mµOS
+== MµOS
 
 PIPADOC:PLANNED: note about this documentation, define what terms are used
 

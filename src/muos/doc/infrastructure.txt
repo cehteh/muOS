@@ -42,9 +42,9 @@ files. For building the Documentation one needs a 'lua' interpreter, the
 
 ==== Issues
 
-Issues are (only) tagged inside source and documentation files. 'pipadoc'
-takes care of generating a +muos_issues.txt+ and +muos_issues.html+.
-There are deliberately only 3 tags for issues:
+Issues are tagged inside source and documentation files. 'pipadoc' takes care
+of generating a +muos_issues.txt+ and +muos_issues.html+. There are
+deliberately only 3 tags for issues:
 
 +FIXME+::
         Known bug/problem which leads to failures and must be fixed.
@@ -56,4 +56,12 @@ There are deliberately only 3 tags for issues:
 +PLANNED+::
         Notes about future features and ideas, may be subject to refinement
         and should not affect the existing functionality at all.
+
+The build system also prints these issues lists on stderr, so that the
+relevant source positions are navigateable from an IDE. Which issues are
+presented there is decided on the currently checked out git branch.
+
+In 'master' only +FIXME+ are shown. In 'devel' +FIXME+ and +TODO+ are shown.
+for any other branch +FIXME+, +TODO+ are shown and +PLANNED+ are filtered by
+that only issues where the pathname matches the current branchname are shown.
 

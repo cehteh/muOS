@@ -29,7 +29,7 @@ PIPADOC:TODO: mob repository
 
 == Issues
 
-Instead a Bug-Track, mµOS tags and documents bugs right inside its code and
+Instead a bug-tracking, mµOS tags and documents bugs right inside its code and
 documentation. The documentation system then generates a list of known issues
 which can be viewed http:muos_issues.html[here].
 
