@@ -53,6 +53,8 @@ IMAGES += $(MAIN).elf
 
 PRINTFMT = printf "%-60s[ %8s ]\n"
 
+GITBRANCH := $(shell git symbolic-ref --short HEAD)
+
 PARALLEL = $(shell nproc || echo 2)
 ifndef MAKE_DEBUG
 	MAKEFLAGS = -R -s -j $(PARALLEL)
@@ -74,7 +76,7 @@ include muos/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(IMAGES) doc fixme
+all: $(IMAGES) doc show_issues
 	$(PRINTFMT) '$(IMAGES)' IMAGES
 
 # dependencies on variables
@@ -208,6 +210,10 @@ else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
 
+
+show_issues: $(if $(filter master, $(GITBRANCH)), fixme, $(if $(filter devel, $(GITBRANCH)), todo fixme, planned todo fixme))
+
+
 ../README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ README
@@ -230,8 +236,10 @@ VERSION: FORCE
 # maintainer targets
 gitpush: FORCE
 	$(PRINTFMT) $@ GIT_PUSH
-	git push -q --all --force public
-	git push -q --all --force github
+	git push -q --all --prune --force public
+	git push -q --tags --force public
+	git push -q --all --prune --force github
+	git push -q --tags --force github
 
 publish: doc gitpush FORCE
 	$(PRINTFMT) $@ PUBLISH
