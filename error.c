@@ -30,7 +30,7 @@ muos_error_set_unsafe (muos_error err)
 {
   if (err && !(muos_errors_[err/8] & 1<<(err%8)))
       {
-#if MUOS_DEBUG_ERROR ==1
+#if MUOS_DEBUG_ERROR == 1
         PORTD |= _BV(PIND2);
 #endif
         muos_errors_[err/8] |= 1<<(err%8);
@@ -57,15 +57,13 @@ muos_error_peek (muos_error err)
 
 
 bool
-muos_error_check (muos_error err)
+muos_error_check_unsafe (muos_error err)
 {
   bool ret = false;
 
-  muos_interrupt_disable ();
-
   if (muos_errors_pending_)
     {
-      ret = muos_errors_[err/8] & 1<<(err%8);
+      ret = muos_error_peek (err);
 
       muos_errors_[err/8] &= ~(1<<(err%8));
 
@@ -78,7 +76,18 @@ muos_error_check (muos_error err)
 #endif
     }
 
+  return ret;
+}
+
+bool
+muos_error_check (muos_error err)
+{
+  bool ret = false;
+
+  muos_interrupt_disable ();
+  ret = muos_error_check_unsafe (err);
   muos_interrupt_enable ();
+
   return ret;
 }
 

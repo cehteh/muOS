@@ -194,16 +194,37 @@ PIPADOC:=clock_api
 
 PIPADOC:@clock_config
 
-
 === Error handling
 
+Errors can happen synchronously by returning a error code directly from the
+called function or asynchronously by setting a flag from interrupts and
+drivers. This two approaches are necessary because errors can not always be
+handled where they happen.
 
+The synchronous way is quite straightforward. If a function does return
+anything but 'muos_success' some error happened and can be handled right away.
 
-Errors can happen synchronously in queued functions or asynchronously from
-interrupts and drivers.
+Asynchronous errors are different as they can be flagged at any time (from
+interrupts) which can not handle them appropriately. There is a flag
+(bitfield) for any possible errorcode, but these don't queue up. This means
+asynchronous errors need to be handled as soon as possible.
 
-// If any unhandled error stays pending, this function will be called
-// #: synchronously to handle it at very high priority (before any work from the queues)
+For to do this mµOS supports a global error handling function which is called
+in the main-loop when any error is pending. This error handling function has
+the highest priority and upon enter, interrupts are still disabled. It is
+advised to enable interrupts there as soon as possible (there is no need to
+disabled them again, the main-loop takes care of that). The global error
+handling function only needs to handle most important failures. Any errors not
+handled there can be handled elsewhere from normal queued functions as well.
+
+Errors can be flagged and checked, checking for an error automatically clears
+the flag. There is also a function to check if an error flag is set without
+clearing it.
+
+==== Error codes
+
+The following error codes are used nby mµOS, depending on configuration, some
+might be disabled when the respective subsystem/driver is not enabled.
 
 PIPADOC:=defined_errors
 
