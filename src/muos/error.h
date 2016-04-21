@@ -43,6 +43,11 @@
   MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
 
 
+//error_api:
+//: .The type used for error codes
+//: ----
+//: typedef enum \{...\} muos_error
+//: ----
 typedef enum
   {
     muos_success,
@@ -57,15 +62,12 @@ extern volatile uint8_t muos_errors_pending_;
 
 
 //error_api:
-//: .
+//: .Query number of pending errors
+//: ----
+//: uint8_t muos_error_pending (void)
 //: ----
 //:
-//: ----
-//:
-//: ++::
-//:
-//:
-//:
+//: Returns the number of errors which are flagged.
 //:
 static inline uint8_t
 muos_error_pending (void)
@@ -73,50 +75,69 @@ muos_error_pending (void)
   return muos_errors_pending_;
 }
 
-// can use muos_success
+
+//error_api:
+//: .Flagging asynchronous errors
+//: ----
+//: void muos_error_set (muos_error err)
+//: void muos_error_set_unsafe (muos_error err)
+//: ----
+//:
+//: +err+::
+//:   Errorcode to flag
+//:
+//: When 'err' is 'muos_success' this function just returns. Thus idioms like
+//:
+//:  muos_error_set (function_which_may_return_an_error ());
+//:
+//: are possible.
+//:
+//: When 'err' is already flagged, nothing happens.
+//:
+//: The '*_unsafe' function is for contexts where interrupts are disabled.
+//:
+//PLANNED: do we need a muos_error_again in case a error was already set?
+//:
 void
 muos_error_set_unsafe (muos_error err);
 
-//error_api:
-//: .
-//: ----
-//:
-//: ----
-//:
-//: ++::
-//:
-//:
-//:
-//:
 void
 muos_error_set (muos_error err);
 
+
 //error_api:
-//: .
+//: .Query the status of a error flag
+//: ----
+//: bool muos_error_peek (muos_error err)
 //: ----
 //:
-//: ----
+//: +err+::
+//:   error code to query
 //:
-//: ++::
-//:
-//:
-//:
+//: Returns 'true' when the error is flagged, 'false' otherwise.
 //:
 bool
 muos_error_peek (muos_error err);
 
+
 //error_api:
-//: .
+//: .Check for errors
+//: ----
+//: bool muos_error_check (muos_error err)
+//: bool muos_error_check_unsafe (muos_error err)
 //: ----
 //:
-//: ----
+//: +err+::
+//:   error code to query
 //:
-//: ++::
+//: When 'err' was flagged then return true *and* clear that flag, otherwise return 'false'.
 //:
-//:
-//:
+//: The '*_unsafe' function is for contexts where interrupts are disabled.
 //:
 bool
 muos_error_check (muos_error err);
+
+bool
+muos_error_check_unsafe (muos_error err);
 
 #endif
