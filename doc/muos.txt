@@ -84,7 +84,7 @@ used it will use additional memory in the queue.
 The underlying queue implementation in <<lib_queue>> can be configured in
 several ways.
 
-==== hpq; high priority queue
+==== high priority queue
 
 Scheduled with a priority below the clpq and above bgq.
 
@@ -96,7 +96,7 @@ PIPADOC:=hpq_api
 
 PIPADOC:@hpq_config
 
-==== 'bgq; background queue
+==== background queue
 
 Scheduled with the lowest priority.
 
