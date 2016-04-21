@@ -202,6 +202,8 @@ else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
 
+
+
 planned: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PLANNED
@@ -210,8 +212,16 @@ else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
 
+planned_gitbranch: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
+ifneq ("$(LUA)","")
+	$(PRINTFMT) $@ PLANNED
+	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) | grep -A 5 -i '^[^ ]*$(GITBRANCH).*::' 1>&2
+else
+	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
+endif
 
-show_issues: $(if $(filter master, $(GITBRANCH)), fixme, $(if $(filter devel, $(GITBRANCH)), todo fixme, planned todo fixme))
+
+show_issues: $(if $(filter master, $(GITBRANCH)), fixme, $(if $(filter devel, $(GITBRANCH)), todo fixme, planned_gitbranch todo fixme))
 
 
 ../README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
