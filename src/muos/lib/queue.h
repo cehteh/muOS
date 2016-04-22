@@ -72,6 +72,18 @@ struct muos_queue
 typedef volatile struct muos_queue* muos_queue_vptr;
 
 
+//lib_queue_api:
+//: .Queue definition
+//: ----
+//: MUOS_QUEUEDEF(size)
+//: ----
+//:
+//: +size+::
+//:   number of elements
+//:
+//: Macro defining the type of a queue for the given size. To instantiate a queue
+//: use +MUOS_QUEUEDEF(16) myqueue;+ for example.
+//:
 #define MUOS_QUEUEDEF(size)                     \
 struct                                          \
 {                                               \
@@ -107,8 +119,37 @@ muos_queue_pushfront_arg (muos_queue_vptr queue, const muos_queue_size size, muo
 
 //PLANNED: stowing more than one arg
 
+//lib_queue_api:
+//: .Queue API Macros
+//: ----
+//: MUOS_QUEUE_SIZE(queue)
+//: MUOS_QUEUE_FREE(queue)
+//: MUOS_QUEUE_PUSHBACK(queue, func)
+//: MUOS_QUEUE_PUSHBACK_ARG(queue, func, arg)
+//: MUOS_QUEUE_PUSHFRONT(queue, func)
+//: MUOS_QUEUE_PUSHFRONT_ARG(queue, func, arg)
+//: ----
+//:
+//:  +queue+::
+//:    the queue as defined with +MUOS_QUEUEDEF()+
+//:  +func+::
+//:    function pointer
+//:  +arg+::
+//:    inptr_t argument
+//:
+//: --
+//: * +MUOS_QUEUE_SIZE(queue)+ returns the number of elements with what the queue was defined
+//: * +MUOS_QUEUE_FREE(queue)+ returns the number of elements which are free in the queue
+//: * +MUOS_QUEUE_PUSHBACK(queue, func)+ pushes 'func' onto the back of the queue
+//: * +MUOS_QUEUE_PUSHBACK_ARG(queue, func, arg)+ pushes 'func' and 'arg' onto the back of the queue
+//: * +MUOS_QUEUE_PUSHFRONT(queue, func)+ pushes 'func' onto front of the queue
+//: * +MUOS_QUEUE_PUSHFRONT_ARG(queue, func, arg)+ pushes 'func' and 'arg' onto the front of the queue
+//: --
+//:
+//: NOTE: there are no 'pop' functions yet, only a internal 'schedule' function. Functions for poping
+//:       elements will be added on demand.
+//:
 #define MUOS_QUEUE_SIZE(q)  MUOS_ARRAY_ELEMENTS((q).queue)
-
 #define MUOS_QUEUE_FREE(q) MUOS_QUEUE_SIZE(q)-(q).descriptor.len
 #define MUOS_QUEUE_SCHEDULE(q) muos_queue_schedule (&(q).descriptor, MUOS_QUEUE_SIZE(q))
 #define MUOS_QUEUE_PUSHBACK(q, f) muos_queue_pushback (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))

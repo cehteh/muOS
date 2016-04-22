@@ -143,15 +143,23 @@ MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 
 
 
-#queue_config:MUOS_QUEUE_INDEX
-#: the bits used for indexing queues
-#: comes in 3 variants
-#:  4 bits allow only small queues for up to (8-16) functions, use only for really small targets
-#:  8 bits allow queues for up to 256 functions
-#:  16 bits allow huge queues, use only when really required
+#lib_queue_config:MUOS_QUEUE_INDEX
+#: MUOS_QUEUE_INDEX::
+#:   the bits used for indexing queues
+#:   comes in 3 variants
+#:   - 4 bits allow only small queues for up to 16 elements, use only for really small targets
+#:   - 8 bits allow queues for up to 256 elements, default
+#:   - 16 bits allow huge queues, use only when really required
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
+
+
+
+#PLANNED: MUOS_QUEUE_ARGTAG
+# : How functions with arguments are tagged in queues, currently only the MSB tag is implemented
+# : Works with MPUs with up to 64k flash
+#MUOS_CONFIG += -DMUOS_QUEUE_ARGTAG=NEGATE
 
 
 
@@ -172,13 +180,6 @@ MUOS_CONFIG += -DMUOS_HPQ_LENGTH=32
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=8
 MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 #MUOS_CONFIG += -DMUOS_BGQ_LENGTH=128
-
-
-
-#PLANNED: MUOS_QUEUE_ARGTAG
-# : How functions with arguments are tagged in queues, currently only the 'negate is implemented
-# : Works with MPUs with up to 64k flash
-#MUOS_CONFIG += -DMUOS_QUEUE_ARGTAG=NEGATE
 
 
 

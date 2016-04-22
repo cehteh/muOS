@@ -32,9 +32,9 @@ PIPADOC:PLANNED: note about this documentation, define what terms are used
 
 PIPADOC:=muos
 
-=== Library
+== Library
 
-PIPADOC:TODO: document lib/
+PIPADOC:=library
 
 
 == Drivers
