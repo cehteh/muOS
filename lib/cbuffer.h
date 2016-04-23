@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-typedef MUOS_BUFFER_INDEX muos_cbuffer_index;
+typedef MUOS_CBUFFER_INDEX muos_cbuffer_index;
 
 struct muos_cbuffer
 {
@@ -34,6 +34,18 @@ struct muos_cbuffer
   uint8_t                 cbuffer[];
 };
 
+
+//lib_cbuffer_api:
+//: .Cbuffer definition
+//: ----
+//: MUOS_CBUFFERDEF(size)
+//: ----
+//:
+//: +size+::
+//:   number of elements
+//:
+//: Macro defining the type of a cbuffer for the given size.
+//:
 #define MUOS_CBUFFERDEF(size)                   \
 struct                                          \
 {                                               \
@@ -42,6 +54,18 @@ struct                                          \
 }
 
 
+//lib_cbuffer_api:
+//: .Cbuffer Initialization
+//: ----
+//: void muos_cbuffer_init (struct muos_cbuffer* cbuffer)
+//: ----
+//:
+//: +cbuffer+::
+//:   pointer to the cbuffer
+//:
+//: Initialization is not necessary at startup, it is only required
+//: for to reinitialize and delete an existing queue.
+//:
 static inline void
 muos_cbuffer_init (struct muos_cbuffer* cbuffer)
 {
@@ -61,12 +85,45 @@ muos_cbuffer_popn (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_c
 
 uint8_t
 muos_cbuffer_peek (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index);
+
 void
 muos_cbuffer_poke (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value);
 
 
+//lib_cbuffer_api:
+//: .Cbuffer API Macros
+//: ----
+//: MUOS_CBUFFER_SIZE(cbuffer)
+//: MUOS_CBUFFER_FREE(cbuffer)
+//: MUOS_CBUFFER_USED(cbuffer)
+//: MUOS_CBUFFER_PUSH(cbuffer, value)
+//: MUOS_CBUFFER_POP(cbuffer)
+//: MUOS_CBUFFER_RPOP(cbuffer)
+//: MUOS_CBUFFER_POPN(cbuffer, n)
+//: MUOS_CBUFFER_PEEK(cbuffer, n)
+//: MUOS_CBUFFER_POKE(cbuffer, n, value)
+//: ----
+//:
+//:  +cbuffer+::
+//:    the cbuffer as defined with +MUOS_CBUFFERDEF()+
+//:  +value+::
+//:    byte (+uint8_t+) value
+//:  +n+::
+//:    number or position of elements
+//:
+//: --
+//: * +MUOS_CBUFFER_SIZE(cbuffer)+ returns the size
+//: * +MUOS_CBUFFER_FREE(cbuffer)+ returns how many bytes are free
+//: * +MUOS_CBUFFER_USED(cbuffer)+ returns how many bytes are used
+//: * +MUOS_CBUFFER_PUSH(cbuffer, value)+ pushes a byte to the end
+//: * +MUOS_CBUFFER_POP(cbuffer)+ pops and returns the first byte
+//: * +MUOS_CBUFFER_RPOP(cbuffer)+ pops the last byte (no return)
+//: * +MUOS_CBUFFER_POPN(cbuffer, n)+ pops 'n' bytes frome the begin (no return)
+//: * +MUOS_CBUFFER_PEEK(cbuffer, n)+ returns the byte at position 'n'
+//: * +MUOS_CBUFFER_POKE(cbuffer, n, value)+ changes the byte at position 'n' to 'value'
+//: --
+//:
 #define MUOS_CBUFFER_SIZE(b)  MUOS_ARRAY_ELEMENTS((b).cbuffer)
-
 #define MUOS_CBUFFER_FREE(b) MUOS_CBUFFER_SIZE(b) - (b).descriptor.len
 #define MUOS_CBUFFER_USED(b) (b).descriptor.len
 #define MUOS_CBUFFER_PUSH(b, v) muos_cbuffer_push (&(b).descriptor, MUOS_CBUFFER_SIZE(b), (v))
