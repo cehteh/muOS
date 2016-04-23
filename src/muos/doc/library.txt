@@ -1,0 +1,86 @@
+Some common data structures and algorithms are implemented in a small run time
+library which ships with mµOS. This library functions are meant as simple
+building blocks for other facilities in mµOS. Some things are deliberately
+left out or simplified, if one wants to use parts of the library he has to be
+careful about this.
+
+Notably most library calls usually don't disable/enable interrupts and don't
+check for errors. The user of the library has to implement this.
+
+This is intentionally left out because often one wants more than one single
+operation atomic. Like pushing two elements on a queue, which should either
+fail and leave the queue in the old state or succeed with both elements on the
+queue. This can only be implemented from the callers scope.
+
+=== Queue
+
+The Queue used for the work queues, storing functions and arguments. The size
+of the queue must be given at compile time. The implementation works with any
+size, there is no requirement for the size to be a power of two.
+
+Functions pushed on the queue can take an optional argument along. The current
+implementation flagging this in MSB of the function pointer. This restricts
+the current implementation to 64k address space (AVR, word addressed). Future
+implementation will lift this restriction.
+
+The type used for indexing can be configured to 4, 8 or 16 bits. For extremely
+small microprocessors using 4 bits only makes the queue management data fit
+into a single byte. Queue size is constrained to 16 elements then. Passing
+arguments to functions require one additional element.
+
+The API is made from a small layer of macros above the underlying functions
+which take care of passing the correct type and size along.
+
+
+PIPADOC:PLANNED: rename to fqueue
+
+==== API
+
+PIPADOC:=lib_queue_api
+
+==== configuration
+
+PIPADOC:@lib_queue_config
+
+
+
+
+=== spriq
+
+Priority queue for storing functions scheduled by time (clpq). This implements
+a sliding window, times (priorities) are stored in future to a
+given base. Times smaller (due integer overflows) than the base will compare
+as greater than the base in the queue, appending them at the end and thus
+define the sliding window.
+
+This sliding window implementation was chosen because in most cases one only
+wants to schedule jobs within relative short times into the future. Storing a
+full time-stamp (which can be up to 80bit) within the priority queue would be
+a huge waste of memory.
+
+==== API
+
+PIPADOC:=lib_spriq_api
+
+==== configuration
+
+PIPADOC:@lib_spriq_config
+
+
+=== cbuffer
+
+Cyclic byte buffer used for I/O queues. Normally used as queue, but has
+functions to pop functions from the end and peek and poke at arbitrary
+positions.
+
+==== API
+
+PIPADOC:=lib_cbuffer_api
+
+==== configuration
+
+PIPADOC:@lib_cbuffer_config
+
+
+
+// not yet muos/lib/lpriq.h
