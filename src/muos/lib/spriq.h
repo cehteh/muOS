@@ -47,21 +47,43 @@ struct muos_spriq
   struct muos_spriq_entry spriq[];
 };
 
-typedef volatile struct muos_spriq* muos_spriq_vptr;
-
+//lib_spriq_api:
+//: .Initialize a spriq
+//: ----
+//: void muos_spriq_init (struct muos_spriq* spriq)
+//: ----
+//:
+//: ++::
+//:
 static inline void
-muos_spriq_init (muos_spriq_vptr spriq)
+muos_spriq_init (struct muos_spriq* spriq)
 {
   spriq->used = 0;
 }
 
 
+//lib_spriq_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//: base >= head
 void
-muos_spriq_push (muos_spriq_vptr spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
+muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
 
 
+//lib_spriq_api:
+//: .
+//: ----
+//:
+//: ----
+//:
+//: ++::
+//:
 void
-muos_spriq_pop (muos_spriq_vptr spriq);
+muos_spriq_pop (struct muos_spriq* spriq);
 
 
 

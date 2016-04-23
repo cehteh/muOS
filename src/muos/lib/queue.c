@@ -22,7 +22,7 @@
 #include <muos/error.h>
 
 static inline intptr_t
-muos_queue_pop (muos_queue_vptr queue, const muos_queue_size size)
+muos_queue_pop (struct muos_queue* queue, const muos_queue_size size)
 {
   intptr_t ret = queue->queue[queue->start];
   queue->start += 1;
@@ -34,7 +34,7 @@ muos_queue_pop (muos_queue_vptr queue, const muos_queue_size size)
 
 
 bool
-muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
+muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 {
   if (queue->len)
     {
@@ -60,7 +60,7 @@ muos_queue_schedule (muos_queue_vptr queue, muos_queue_size size)
 
 
 static void
-muos_queue_pushback_intern (muos_queue_vptr queue, muos_queue_size size, intptr_t value)
+muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   uint8_t index = queue->start+queue->len;
   if (index >= size)
@@ -71,13 +71,13 @@ muos_queue_pushback_intern (muos_queue_vptr queue, muos_queue_size size, intptr_
 
 
 void
-muos_queue_pushback (muos_queue_vptr queue, muos_queue_size size, muos_queue_function fn)
+muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
   muos_queue_pushback_intern (queue, size, (intptr_t) fn);
 }
 
 void
-muos_queue_pushback_arg (muos_queue_vptr queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
   muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
   muos_queue_pushback_intern (queue, size, arg);
@@ -85,7 +85,7 @@ muos_queue_pushback_arg (muos_queue_vptr queue, muos_queue_size size, muos_queue
 
 
 static void
-muos_queue_pushfront_intern (muos_queue_vptr queue, muos_queue_size size, intptr_t value)
+muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   queue->start -= 1;
   queue->len += 1;
@@ -96,13 +96,13 @@ muos_queue_pushfront_intern (muos_queue_vptr queue, muos_queue_size size, intptr
 
 
 void
-muos_queue_pushfront (muos_queue_vptr queue, muos_queue_size size, muos_queue_function fn)
+muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
   muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 void
-muos_queue_pushfront_arg (muos_queue_vptr queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
+muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
   muos_queue_pushfront_intern (queue, size, arg);
   muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
