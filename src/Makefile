@@ -295,10 +295,11 @@ MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
 
-#buffer_config:MUOS_BUFFER_INDEX
+#lib_cbuffer_config:MUOS_CBUFFER_INDEX
+#: MUOS_CBUFFER_INDEX::
 #: type used to the cyclic buffer length and indexing
-MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint8_t
-#MUOS_CONFIG += -DMUOS_BUFFER_INDEX=uint16_t
+MUOS_CONFIG += -DMUOS_CBUFFER_INDEX=uint8_t
+#MUOS_CONFIG += -DMUOS_CBUFFER_INDEX=uint16_t
 
 
 
