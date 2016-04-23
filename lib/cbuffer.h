@@ -41,10 +41,9 @@ struct                                          \
   uint8_t       cbuffer[size];                  \
 }
 
-typedef volatile struct muos_cbuffer* muos_cbuffer_vptr;
 
 static inline void
-muos_cbuffer_init (muos_cbuffer_vptr cbuffer)
+muos_cbuffer_init (struct muos_cbuffer* cbuffer)
 {
   cbuffer->start = 0;
   cbuffer->len = 0;
@@ -52,19 +51,18 @@ muos_cbuffer_init (muos_cbuffer_vptr cbuffer)
 
 
 void
-muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uint8_t value);
+muos_cbuffer_push (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, const uint8_t value);
 
 uint8_t
-muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size);
+muos_cbuffer_pop (struct muos_cbuffer* cbuffer, muos_cbuffer_index size);
 
 void
-muos_cbuffer_popn (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index n);
+muos_cbuffer_popn (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index n);
 
 uint8_t
-muos_cbuffer_peek (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index);
-
+muos_cbuffer_peek (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index);
 void
-muos_cbuffer_poke (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value);
+muos_cbuffer_poke (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value);
 
 
 #define MUOS_CBUFFER_SIZE(b)  MUOS_ARRAY_ELEMENTS((b).cbuffer)

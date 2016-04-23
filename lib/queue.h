@@ -69,9 +69,6 @@ struct muos_queue
 #endif
 
 
-typedef volatile struct muos_queue* muos_queue_vptr;
-
-
 //lib_queue_api:
 //: .Queue definition
 //: ----
@@ -94,26 +91,26 @@ struct                                          \
 
 
 static inline void
-muos_queue_init (muos_queue_vptr queue)
+muos_queue_init (struct muos_queue* queue)
 {
   queue->start = 0;
   queue->len = 0;
 }
 
 bool
-muos_queue_schedule (muos_queue_vptr queue, const muos_queue_size size);
+muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 
 void
-muos_queue_pushback (muos_queue_vptr queue, const muos_queue_size size, muos_queue_function fn);
+muos_queue_pushback (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushback_arg (muos_queue_vptr queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushback_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
 void
-muos_queue_pushfront (muos_queue_vptr queue, const muos_queue_size size, muos_queue_function fn);
+muos_queue_pushfront (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushfront_arg (muos_queue_vptr queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
 
 

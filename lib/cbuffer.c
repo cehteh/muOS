@@ -22,7 +22,7 @@
 
 
 void
-muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uint8_t value)
+muos_cbuffer_push (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, const uint8_t value)
 {
   muos_cbuffer_index index = cbuffer->start + cbuffer->len;
   ++cbuffer->len;
@@ -33,7 +33,7 @@ muos_cbuffer_push (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, const uin
 
 
 uint8_t
-muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
+muos_cbuffer_pop (struct muos_cbuffer* cbuffer, muos_cbuffer_index size)
 {
   uint8_t ret = cbuffer->cbuffer[cbuffer->start];
   ++cbuffer->start;
@@ -46,7 +46,7 @@ muos_cbuffer_pop (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size)
 
 
 void
-muos_cbuffer_popn (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index n)
+muos_cbuffer_popn (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index n)
 {
   cbuffer->start += n;
   if (cbuffer->start >= size)
@@ -57,7 +57,7 @@ muos_cbuffer_popn (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuf
 
 
 uint8_t
-muos_cbuffer_peek (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index)
+muos_cbuffer_peek (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index)
 {
   index = cbuffer->start + index;
   if (index >= size)
@@ -68,7 +68,7 @@ muos_cbuffer_peek (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuf
 
 
 void
-muos_cbuffer_poke (muos_cbuffer_vptr cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value)
+muos_cbuffer_poke (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value)
 {
   index = cbuffer->start + index;
   if (index >= size)
