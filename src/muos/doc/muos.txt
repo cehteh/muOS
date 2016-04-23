@@ -37,7 +37,7 @@ ensure exact timing.
 By default there are 3 queues served by the mainloop. Each of them can be
 configured in some details and disabled if not required.
 
-==== clpq; clock priority queue
+==== clock priority queue
 
 Uses the clock to wake the mainloop for scheduling events in 'near future'.
 'near future' is defined by the clock configuration, times longer than the

@@ -90,6 +90,18 @@ struct                                          \
 
 
 
+//lib_queue_api:
+//: .Queue Initialization
+//: ----
+//: void muos_queue_init (struct muos_queue* queue)
+//: ----
+//:
+//: +queue+::
+//:   pointer to the queue
+//:
+//: Initialization is not necessary at startup, it is only required
+//: for to reinitialize and delete an existing queue.
+//:
 static inline void
 muos_queue_init (struct muos_queue* queue)
 {
