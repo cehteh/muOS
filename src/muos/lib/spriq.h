@@ -26,6 +26,19 @@
 #include <muos/muos.h>
 
 struct muos_spriq_entry;
+
+//FIXME: as documented, pass only 'when' along
+//lib_spriq_api:
+//: .Types
+//: ----
+//: typedef void (*muos_spriq_function)(muos_spriq_priority when)
+//: ----
+//:
+//: The type for functions stored in a spriq.
+//: This function is called with the time they was to be scheduled.
+//: This makes it easier to schedule repeating jobs, where this 'when'
+//: just becomes the new 'base' for next push.
+//:
 typedef void (*muos_spriq_function)(const struct muos_spriq_entry*);
 
 
@@ -53,7 +66,11 @@ struct muos_spriq
 //: void muos_spriq_init (struct muos_spriq* spriq)
 //: ----
 //:
-//: ++::
+//: +spriq+::
+//:   pointer to the spriq
+//:
+//: Initialization is not necessary at startup, it is only required
+//: for to reinitialize and delete an existing queue.
 //:
 static inline void
 muos_spriq_init (struct muos_spriq* spriq)
@@ -63,24 +80,43 @@ muos_spriq_init (struct muos_spriq* spriq)
 
 
 //lib_spriq_api:
-//: .
+//: .Push a function
+//: ----
+//: void muos_spriq_push (
+//:        struct muos_spriq* spriq,
+//:        muos_spriq_priority base,
+//:        muos_spriq_priority when,
+//:        muos_spriq_function fn)
 //: ----
 //:
-//: ----
+//: +spriq+::
+//:   Pointer to the spriq
+//: +base+::
+//:   Base priority
+//: +when+::
+//:   Offset to base for the priority
+//: +fn+::
+//:   Function to push
 //:
-//: ++::
-//: base >= head
+//: 'base' must be smaller or equal to the smallest (first) element in the queue.
+//: For times this is usually 'muos_now()' or the time the event was scheduled.
+//: 'when' can cover the full range of the priority data type.
+//:
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
 
 
+
 //lib_spriq_api:
-//: .
+//: .Pop element
+//: ----
+//: void muos_spriq_pop (struct muos_spriq* spriq)
 //: ----
 //:
-//: ----
+//: +spriq+::
+//:   Spriq where to pop from
 //:
-//: ++::
+//: No return, no error checking!
 //:
 void
 muos_spriq_pop (struct muos_spriq* spriq);
