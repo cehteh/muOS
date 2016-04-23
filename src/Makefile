@@ -145,11 +145,11 @@ MUOS_CONFIG += -DMUOS_SCHED_SLEEP=SLEEP_MODE_IDLE
 
 #lib_queue_config:MUOS_QUEUE_INDEX
 #: MUOS_QUEUE_INDEX::
-#:   the bits used for indexing queues
-#:   comes in 3 variants
-#:   - 4 bits allow only small queues for up to 16 elements, use only for really small targets
-#:   - 8 bits allow queues for up to 256 elements, default
-#:   - 16 bits allow huge queues, use only when really required
+#:  the bits used for indexing queues
+#:  comes in 3 variants
+#:  - 4 bits allow only small queues for up to 16 elements, use only for really small targets
+#:  - 8 bits allow queues for up to 256 elements, default
+#:  - 16 bits allow huge queues, use only when really required
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=4
 MUOS_CONFIG += -DMUOS_QUEUE_INDEX=8
 #MUOS_CONFIG += -DMUOS_QUEUE_INDEX=16
@@ -229,9 +229,9 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 
 #clock_config:MUOS_CLOCK_HW
 #: MUOS_CLOCK_HW::
-#:  The Hardware timer to use. This is a hardware dependent config.
-#:  Timer hardware setup is tightly bound to the hardware capabilities check
-#:  for the respective hardware documentation about possible settings.
+#: The Hardware timer to use. This is a hardware dependent config.
+#: Timer hardware setup is tightly bound to the hardware capabilities check
+#: for the respective hardware documentation about possible settings.
 #MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
 MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
@@ -239,8 +239,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 #clock_config:MUOS_CLOCK_HW_PRESCALER
 #: MUOS_CLOCK_HW_PRESCALER::
-#:  Prescaler from some hardware defined master clock. Possible
-#:  Values depend on the hardware.
+#: Prescaler from some hardware defined master clock. Possible
+#: Values depend on the hardware.
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
 MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
@@ -252,8 +252,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 
 #clock_config:MUOS_CLOCK_TYPE
 #: MUOS_CLOCK_TYPE::
-#:  The type used for the primary clock functions. Should be some unsigned integer,
-#:  32 bit width is recommended.
+#: The type used for the primary clock functions. Should be some unsigned integer,
+#: 32 bit width is recommended.
 #MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
 MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
@@ -261,7 +261,7 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 #clock_config:MUOS_CLOCK_SHORT_TYPE
 #: MUOS_CLOCK_SHORT_TYPE::
-#: The type used for short time spans.  Should be some unsigned integer.
+#: The type used for short time spans. Should be some unsigned integer.
 #: What suits best depends on the application, often 16 bit is enough with higher Prescaler.
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
 MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
@@ -271,26 +271,26 @@ MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 
 #clock_config:MUOS_CLOCK_CALIBRATE
 #: MUOS_CLOCK_CALIBRATE::
-#:  When defined the frequency calibration API for syncing the
-#:  µC frequency clock with some external signal is enabled.
+#: When defined the frequency calibration API for syncing the
+#: µC frequency clock with some external signal is enabled.
 #MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE
 
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE_MAX_DERIVATION
 #: MUOS_CLOCK_CALIBRATE_MAX_DEVIATION::
-#:  When the time elapsed since the last sync differs more than
-#:  +/- this value, the calibration measurement is reset and starts over.
-#:  This filters out glitches from API calls.
+#: When the time elapsed since the last sync differs more than
+#: +/- this value, the calibration measurement is reset and starts over.
+#: This filters out glitches from API calls.
 MUOS_CONFIG += -D'MUOS_CLOCK_CALIBRATE_MAX_DERIVATION(x)=((x)/8)'
 
 
 
 #clock_config:MUOS_CLOCK_CALIBRATE_DEADBAND
 #: MUOS_CLOCK_CALIBRATE_DEADBAND::
-#:  Adds a deadband/range around the target clock. On µC where the clock
-#:  calibration is rather coarse an exact match can not be reached and constant
-#:  readjustments will result in high jitter.
+#: Adds a deadband/range around the target clock. On µC where the clock
+#: calibration is rather coarse an exact match can not be reached and constant
+#: readjustments will result in high jitter.
 MUOS_CONFIG += -DMUOS_CLOCK_CALIBRATE_DEADBAND=2500
 
 
@@ -481,7 +481,7 @@ MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 
 #cppm_config:MUOS_CPPM_RAW
 #: store the raw cppm timing data in
-#:  uint16_t muos_cppm_channel_raw[]
+#: uint16_t muos_cppm_channel_raw[]
 MUOS_CONFIG += -DMUOS_CPPM_RAW
 
 
