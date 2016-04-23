@@ -183,10 +183,9 @@ MUOS_CONFIG += -DMUOS_BGQ_LENGTH=32
 
 
 
-# spriq_config:MUOS_SPRIQ_TYPE
-# : Type used for the 'priorities' of the small priority queue.
-# : This priority queue uses a 'sliding window'. The rtpq uses this.
-# : Scheduler needs to be called at least half of the range provided by this type.
+#lib_spriq_config:MUOS_SPRIQ_TYPE
+#: MUOS_SPRIQ_TYPE::
+#: Type used for the 'priorities' in spriq.
 MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 #MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=uint8_t
 #MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=uint16_t
@@ -194,9 +193,10 @@ MUOS_CONFIG += -DMUOS_SPRIQ_TYPE=MUOS_CLOCK_SHORT_TYPE
 
 
 
-# spriq_config:MUOS_SPRIQ_INDEX
-# : Type to keep track of the size of the spriq.
-# : uint8_t for up to 255 entries, uint16_t for up to 65k entries.
+#lib_spriq_config:MUOS_SPRIQ_INDEX
+#: MUOS_SPRIQ_INDEX::
+#: Type to keep track of the size of the spriq.
+#: +uint8_t+ for up to 255 entries, +uint16_t+ for up to 65k entries.
 MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint8_t
 #MUOS_CONFIG += -DMUOS_SPRIQ_INDEX=uint16_t
 
