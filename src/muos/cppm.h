@@ -26,10 +26,32 @@
 #if MUOS_CPPM_CHANNELS > 0
 
 #ifdef MUOS_CPPM_RAW
+//cppm_api:
+//: .Raw values
+//: ----
+//: uint16_t muos_cppm_channel_raw[MUOS_CPPM_CHANNELS]
+//: ----
+//:
+//: Stores the time in timer ticks as measuered for each channel directly,
+//: after applying some configureable filter. This gives the most precision
+//: but also needs more memory. Must be enabled with 'MUOS_CPPM_RAW'.
+//:
 extern volatile uint16_t muos_cppm_channel_raw[MUOS_CPPM_CHANNELS];
 #endif
 
 #ifdef MUOS_CPPM_COOKED
+//cppm_api:
+//: .Raw values
+//: ----
+//: int8_t muos_cppm_channel_cooked[MUOS_CPPM_CHANNELS]
+//: ----
+//:
+//: Stores the channel data as values from -125 to 125 mapping to
+//: the range from 'MUOS_CPPM_COOKED_MIN' to 'MUOS_CPPM_COOKED_MAX'.
+//: Little overflows from -128 to 127 are tolerated.
+//: Cooked values need less memory and are more stable, but have lower precision.
+//: Must be enabled with 'MUOS_CPPM_COOKED'.
+//:
 extern volatile int8_t muos_cppm_channel_cooked[MUOS_CPPM_CHANNELS];
 #endif
 

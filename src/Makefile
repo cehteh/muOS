@@ -469,59 +469,77 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 
 #cppm_config:MUOS_CPPM
-#: enable the CPPM Parser for Radio Control Signals
+#: MUOS_CPPM::
+#: Enable the CPPM Parser for Radio Control Signals
 MUOS_CONFIG += -DMUOS_CPPM
 
 
 #cppm_config:MUOS_CPPM_CHANNELS
-#: number of CPPM channels
+#: MUOS_CPPM_CHANNELS::
+#: Number of CPPM channels
 MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=8
 #MUOS_CONFIG += -DMUOS_CPPM_CHANNELS=16
 
 
 
+#cppm_config:MUOS_CPPM_MIN
+#: MUOS_CPPM_MIN::
+#: Minimum CPPM Pulse length
+MUOS_CONFIG += -DMUOS_CPPM_MIN='MUOS_CLOCK_MICROSECONDS(750)'
+
+
+
+#cppm_config:MUOS_CPPM_MAX
+#: MUOS_CPPM_MAX::
+#: Maximum CPPM Pulse length, any longer pulse defines the frame start
+MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
+
+
+
 #cppm_config:MUOS_CPPM_RAW
-#: store the raw cppm timing data in
-#: uint16_t muos_cppm_channel_raw[]
+#: MUOS_CPPM_RAW::
+#: Store the raw cppm timing data.
 MUOS_CONFIG += -DMUOS_CPPM_RAW
 
 
 
 #cppm_config:MUOS_CPPM_RAW_FILTER
-#: filter expression for raw channel data
+#: MUOS_CPPM_RAW_FILTER::
+#: Filter expression for raw channel data
 MUOS_CONFIG += -D'MUOS_CPPM_RAW_FILTER(old,new)=(old + new)/2'
 
 
 
 #cppm_config:MUOS_CPPM_COOKED
-#: store the cppm data (glitch filtered) in
-#:  int8_t muos_cppm_channel_cooked[]
-#: with a range from -125 to 125 this simplifies access
-#: saves a few bytes but looses resolution
+#: MUOS_CPPM_COOKED::
+#: Store processed cppm data.
 MUOS_CONFIG += -DMUOS_CPPM_COOKED
 
 
 
 #cppm_config:MUOS_CPPM_COOKED_MIN
-#: defines the minimum signal length for cooked values
+#: MUOS_CPPM_COOKED_MIN::
+#: Defines the minimum signal length for cooked values.
 MUOS_CONFIG += -DMUOS_CPPM_COOKED_MIN='MUOS_CLOCK_MICROSECONDS(1000)'
 
 
 
 #cppm_config:MUOS_CPPM_COOKED_MAX
-#: defines the maximum signal length for cooked values
+#: MUOS_CPPM_COOKED_MAX::
+#: Defines the maximum signal length for cooked values
 MUOS_CONFIG += -DMUOS_CPPM_COOKED_MAX='MUOS_CLOCK_MICROSECONDS(2000)'
 
 
 
 #cppm_config:MUOS_CPPM_CAPTURE
-#: Select Input Capture driver
-#: Input capture is more precise than pinchange
+#: MUOS_CPPM_CAPTURE::
+#: Select Input-Capture driver
 #TODO: derrive from clock definition
 MUOS_CONFIG += -DMUOS_CPPM_CAPTURE='(1)'
 
 
 
+# cppm_config:MUOS_CPPM_PCINT
 # cppm_config:MUOS_CPPM_PCINT
 #PLANNED: cppm pcint
 # : Select PinChange driver
@@ -531,36 +549,25 @@ MUOS_CONFIG += -DMUOS_CPPM_CAPTURE='(1)'
 
 
 #cppm_config:MUOS_CPPM_FRAME
-#: Length of a full CPPM frame
+#: MUOS_CPPM_FRAME::
+#: Length of a full CPPM frame, required for clocksync
 MUOS_CONFIG += -DMUOS_CPPM_FRAME='MUOS_CLOCK_MILLISECONDS(27)'
 
 
 
 #cppm_config:MUOS_CPPM_FRAME_CLOCKSYNC
-#: Use the MUOS_CLOCK_CALIBRATE to synchronize the µC clock with the CPPM frames
+#: MUOS_CPPM_FRAME_CLOCKSYNC::
+#: Use the MUOS_CLOCK_CALIBRATE to synchronize the µC clock with
+#: the CPPM frames
 #MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=0
 MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=1
 
 
 
-#cppm_config:MUOS_CPPM_MIN
-#: Minimum CPPM Pulse length
-MUOS_CONFIG += -DMUOS_CPPM_MIN='MUOS_CLOCK_MICROSECONDS(750)'
-
-
-
-#cppm_config:MUOS_CPPM_MAX
-#: Maximum CPPM Pulse length, also any longer pulse defines the frame start
-MUOS_CONFIG += -DMUOS_CPPM_MAX='MUOS_CLOCK_MICROSECONDS(2250)'
-
-
-
 #cppm_config:MUOS_CPPM_CALLBACK
-#: function to be called from hpq when a frame got received
+#: MUOS_CPPM_CALLBACK::
+#: function to be pushed to the hpq when a frame got received
 MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
-
-
-
 
 
 

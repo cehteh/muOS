@@ -98,7 +98,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 #endif
 
       ++cppm_channel;
-#ifdef MUOS_CPPM_CALLBACK //TODO: callback when all channels or frame error
+#ifdef MUOS_CPPM_CALLBACK
       if (cppm_channel == MUOS_CPPM_CHANNELS)
         if (muos_hpq_pushback_unsafe (MUOS_CPPM_CALLBACK))
           muos_error_set_unsafe (muos_error_cppm_hpq_callback);

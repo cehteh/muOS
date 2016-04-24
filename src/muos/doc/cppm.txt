@@ -1,0 +1,42 @@
+=== CPPM
+
+Parses sum-signals from a RC Receiver. The results are stored in global array
+and a function can be pushed onto the 'hpq' whenever a frame got received. The
+CPPM driver uses the 'input capture' feature from the main clock. Thus one has
+to select a timer which supports this feature when using CPPM. Using input
+capture ensures the most precise timing.
+
+NOTE: There is a plan to implement an alternative CPPM driver using pin-change
+interrupts. This will allow some flexibiltiy in choosing the timer for the
+clock and free the input capture for other tasks.
+
+There are 2 configurable ways how the driver can store the results for the
+user, raw timer ticks or cooked values in the range from -125 to 125.
+
+==== Details
+
+One should configure the minimum and maximum signal lengths. If a signal is to
+short then `muos_error_cppm_frame` will be flagged, while longer signals mark
+the start of a new frame.
+
+When 'MUOS_CPPM_FRAME_CLOCKSYNC' is enabled, mµOS will adjust the µC speed to
+the cppm frames. This required 'MUOS_CPPM_FRAME' to be configured correctly.
+This is a way to get even better timing from µC which uses a poor internal
+oscillator.
+
+In case the 'hpq' is full when the driver wants to push the
+'MUOS_CPPM_CALLBACK' function, the error `muos_error_cppm_hpq_callback` gets
+flagged.
+
+The callback function will not be called when erroneous frames are received.
+The user is advised to implement some watchdog to handle this case.
+
+==== API
+
+PIPADOC:=cppm_api
+
+==== configuration
+
+PIPADOC:@cppm_config
+
+
