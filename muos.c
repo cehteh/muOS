@@ -61,8 +61,6 @@ void
 muos_start (void)
 {
 #include <muos/init.inc>
-
-  muos_clock_start ();
 }
 
 

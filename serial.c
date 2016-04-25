@@ -34,7 +34,7 @@ muos_rxbuffer_type muos_rxbuffer;
 
 #if MUOS_SERIAL_TXBUFFER > 1 || MUOS_SERIAL_RXBUFFER > 1
 void
-muos_serial_init (void)
+muos_serial_30init (void)
 {
   muos_hw_serial_init ();
 }

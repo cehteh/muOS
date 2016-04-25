@@ -35,7 +35,7 @@ void
 muos_hw_cppm_init (void);
 
 void
-muos_cppm_init (void)
+muos_cppm_50init (void)
 {
   muos_hw_cppm_init ();
 }
