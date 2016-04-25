@@ -50,10 +50,10 @@ muos_hpq_check (uint8_t need)
 //: muos_error muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
 //: muos_error muos_hpq_pushfront (muos_queue_function fn)
 //: muos_error muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushback_unsafe (muos_queue_function fn)
-//: muos_error muos_hpq_pushback_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushfront_unsafe (muos_queue_function fn)
-//: muos_error muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushback_isr (muos_queue_function fn)
+//: muos_error muos_hpq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushfront_isr (muos_queue_function fn)
+//: muos_error muos_hpq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg)
 //: ----
 //:
 //: +fn+::
@@ -61,7 +61,7 @@ muos_hpq_check (uint8_t need)
 //: +arg+::
 //:  argument to pass to the function
 //:
-//: The *_unsafe variants of these functions are intended to be called from Interrupt handlers
+//: The *_isr variants of these functions are intended to be called from Interrupt handlers
 //: or contexts where interrupts are already disabled.
 //:
 //: These functions return 'muos_success' on success and 'muos_error_hpq_overflow' on error.
@@ -81,16 +81,16 @@ muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
 
 
 muos_error
-muos_hpq_pushback_unsafe (muos_queue_function f);
+muos_hpq_pushback_isr (muos_queue_function f);
 
 muos_error
-muos_hpq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a);
 
 muos_error
-muos_hpq_pushfront_unsafe (muos_queue_function f);
+muos_hpq_pushfront_isr (muos_queue_function f);
 
 muos_error
-muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a);
 
 #else
 // stub for the schedule loop

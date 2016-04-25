@@ -60,14 +60,14 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 
   if (elapsed < MUOS_CPPM_MIN)
     {
-      muos_error_set_unsafe (muos_error_cppm_frame);
+      muos_error_set_isr (muos_error_cppm_frame);
       cppm_channel = 255;
     }
   else if (elapsed > MUOS_CPPM_MAX)
     {
       cppm_channel = 0;
 #ifdef MUOS_CPPM_FRAME_CLOCKSYNC
-      muos_hpq_pushback_unsafe (muos_cppm_calibrate);
+      muos_hpq_pushback_isr (muos_cppm_calibrate);
       /* pushback error here gets silently ignored, it won't harm to miss a calibration */
 #endif
     }
@@ -100,8 +100,8 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
       ++cppm_channel;
 #ifdef MUOS_CPPM_CALLBACK
       if (cppm_channel == MUOS_CPPM_CHANNELS)
-        if (muos_hpq_pushback_unsafe (MUOS_CPPM_CALLBACK))
-          muos_error_set_unsafe (muos_error_cppm_hpq_callback);
+        if (muos_hpq_pushback_isr (MUOS_CPPM_CALLBACK))
+          muos_error_set_isr (muos_error_cppm_hpq_callback);
 #endif
     }
 }

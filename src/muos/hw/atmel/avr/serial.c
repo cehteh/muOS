@@ -81,26 +81,26 @@ ISR(USART_RX_vect)
 
   if (UCSR0A & _BV(DOR0))
     {
-      muos_error_set_unsafe (muos_error_rx_overrun);
+      muos_error_set_isr (muos_error_rx_overrun);
       err = true;
     }
 
   if (UCSR0A & _BV(UPE0))
     {
-      muos_error_set_unsafe (muos_error_rx_parity);
+      muos_error_set_isr (muos_error_rx_parity);
       err = true;
     }
 
   if (UCSR0A & _BV(FE0))
     {
-      muos_error_set_unsafe (muos_error_rx_frame);
+      muos_error_set_isr (muos_error_rx_frame);
       err = true;
       muos_status.serial_rx_sync = false;
     }
 
   if (!MUOS_CBUFFER_FREE(muos_rxbuffer))
     {
-      muos_error_set_unsafe (muos_error_rx_buffer_overflow);
+      muos_error_set_isr (muos_error_rx_buffer_overflow);
       err = true;
     }
 
@@ -123,7 +123,7 @@ ISR(USART_RX_vect)
         {
           muos_status.serial_rxhpq_pending = true;
 #ifdef MUOS_SERIAL_RXCALLBACK
-          muos_error_set (muos_hpq_pushback_unsafe (MUOS_SERIAL_RXCALLBACK));
+          muos_error_set (muos_hpq_pushback_isr (MUOS_SERIAL_RXCALLBACK));
 #endif
         }
     }

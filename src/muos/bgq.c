@@ -26,7 +26,7 @@ muos_bgq_type muos_bgq;
 
 #if 0
 static inline muos_error
-muos_bgq_pushback_unsafe (muos_queue_function f)
+muos_bgq_pushback_isr (muos_queue_function f)
 {
   if (!muos_bgq_check (1))
     return muos_error_bgq_overflow;
@@ -36,7 +36,7 @@ muos_bgq_pushback_unsafe (muos_queue_function f)
 }
 
 static inline muos_error
-muos_bgq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
 {
   if (!muos_bgq_check (2))
     return muos_error_bgq_overflow;
@@ -46,7 +46,7 @@ muos_bgq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
 }
 
 static inline muos_error
-muos_bgq_pushfront_unsafe (muos_queue_function f)
+muos_bgq_pushfront_isr (muos_queue_function f)
 {
   if (!muos_bgq_check (1))
     return muos_error_bgq_overflow;
@@ -56,7 +56,7 @@ muos_bgq_pushfront_unsafe (muos_queue_function f)
 }
 
 static inline muos_error
-muos_bgq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
 {
   if (!muos_bgq_check (2))
     return muos_error_bgq_overflow;
@@ -70,7 +70,7 @@ muos_error
 muos_bgq_pushback (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_bgq_pushback_unsafe (f);
+  muos_error ret = muos_bgq_pushback_isr (f);
   muos_interrupt_enable ();
   return ret;
 }
@@ -79,7 +79,7 @@ muos_error
 muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_bgq_pushback_arg_unsafe (f, a);
+  muos_error ret = muos_bgq_pushback_arg_isr (f, a);
   muos_interrupt_enable ();
   return ret;
 }
@@ -88,7 +88,7 @@ muos_error
 muos_bgq_pushfront (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_bgq_pushfront_unsafe (f);
+  muos_error ret = muos_bgq_pushfront_isr (f);
   muos_interrupt_enable ();
   return ret;
 }
@@ -97,7 +97,7 @@ muos_error
 muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_bgq_pushfront_arg_unsafe (f, a);
+  muos_error ret = muos_bgq_pushfront_arg_isr (f, a);
   muos_interrupt_enable ();
   return ret;
 }

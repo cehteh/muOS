@@ -90,7 +90,7 @@ muos_serial_rxhpq_again (muos_queue_function f)
   muos_interrupt_disable ();
 
   if (MUOS_CBUFFER_USED (muos_rxbuffer))
-    muos_hpq_pushback_unsafe (f);
+    muos_hpq_pushback_isr (f);
   else
     muos_status.serial_rxhpq_pending = false;
 
