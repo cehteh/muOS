@@ -105,24 +105,39 @@ muos_clock_start (void)
 }
 
 
+
 //clock_api:
 //: .Query Time
 //: ----
 //: muos_clock muos_clock_now (void)
+//: muos_clock muos_clock_now_isr (void)
 //: ----
 //:
 //: Returns the current time as queried from the hardware.
+//:
 static inline muos_clock
 muos_clock_now (void)
 {
-  muos_clock counter;
-  muos_hwclock hw;
-  do
-    {
-      counter = muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
-      hw = MUOS_CLOCK_REGISTER;
-    }
-  while ((uint8_t)counter != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
+  volatile muos_clock counter;
+  volatile muos_hwclock hw;
+
+  muos_interrupt_disable ();
+  hw = MUOS_CLOCK_REGISTER;
+  counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
+  muos_interrupt_enable ();
+
+  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
+}
+
+
+static inline muos_clock
+muos_clock_now_isr (void)
+{
+  volatile muos_clock counter;
+  volatile muos_hwclock hw;
+
+  hw = MUOS_CLOCK_REGISTER;
+  counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
 
   return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
 }
@@ -130,6 +145,7 @@ muos_clock_now (void)
 //clock_api:
 //: ----
 //: muos_shortclock muos_clock_shortnow (void)
+//: muos_shortclock muos_clock_shortnow_isr (void)
 //: ----
 //:
 //: Returns the current time as queried from the hardware, using the 'muos_shortclock' datatype.
@@ -138,14 +154,31 @@ muos_clock_shortnow (void)
 {
   if (sizeof(MUOS_CLOCK_REGISTER) < sizeof(muos_shortclock))
     {
-      muos_shortclock counter;
-      muos_hwclock hw;
-      do
-        {
-          counter = (muos_shortclock)muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
-          hw = MUOS_CLOCK_REGISTER;
-        }
-      while ((uint8_t)counter != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
+      volatile muos_shortclock counter;
+      volatile muos_hwclock hw;
+
+      muos_interrupt_disable ();
+      hw = MUOS_CLOCK_REGISTER;
+      counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
+      muos_interrupt_enable ();
+
+      return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
+    }
+  else
+    return MUOS_CLOCK_REGISTER;
+}
+
+
+static inline muos_shortclock
+muos_clock_shortnow_isr (void)
+{
+  if (sizeof(MUOS_CLOCK_REGISTER) < sizeof(muos_shortclock))
+    {
+      volatile muos_shortclock counter;
+      volatile muos_hwclock hw;
+
+      hw = MUOS_CLOCK_REGISTER;
+      counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
 
       return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
     }
@@ -157,19 +190,30 @@ muos_clock_shortnow (void)
 //clock_api:
 //: ----
 //: muos_fullclock muos_clock_fullnow (void)
+//: muos_fullclock muos_clock_fullnow_isr (void)
 //: ----
 //:
 //: Returns the current time as queried from the hardware, using the 'muos_fullclock' datatype.
 static inline muos_fullclock
 muos_clock_fullnow (void)
 {
-  muos_fullclock clock;
-  do
-    {
-      clock.coarse = muos_clock_count_ + MUOS_CLOCK_OVERFLOW;
-      clock.fine = MUOS_CLOCK_REGISTER;
-    }
-  while ((uint8_t)clock.coarse != (uint8_t)muos_clock_count_ + MUOS_CLOCK_OVERFLOW);
+  volatile muos_fullclock clock;
+
+  muos_interrupt_disable ();
+  clock.fine = MUOS_CLOCK_REGISTER;
+  clock.coarse = muos_clock_count_ + (clock.fine<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
+  muos_interrupt_enable ();
+
+  return clock;
+}
+
+static inline muos_fullclock
+muos_clock_fullnow_isr (void)
+{
+  volatile muos_fullclock clock;
+
+  clock.fine = MUOS_CLOCK_REGISTER;
+  clock.coarse = muos_clock_count_ + (clock.fine<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
 
   return clock;
 }
