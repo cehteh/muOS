@@ -65,13 +65,13 @@ muos_priq_push (struct muos_priq* priq, muos_priq_priority base, muos_priq_prior
 
 
 void
-muos_priq_pop_unsafe (struct muos_priq* priq);
+muos_priq_pop_isr (struct muos_priq* priq);
 
 
 static inline void
 muos_priq_pop (struct muos_priq* priq)
 {
-  MUOS_ATOMIC muos_priq_pop_unsafe (priq);
+  MUOS_ATOMIC muos_priq_pop_isr (priq);
 }
 
 #endif

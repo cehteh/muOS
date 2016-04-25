@@ -25,7 +25,7 @@
 muos_hpq_type muos_hpq;
 
 muos_error
-muos_hpq_pushback_unsafe (muos_queue_function f)
+muos_hpq_pushback_isr (muos_queue_function f)
 {
   if (!muos_hpq_check (1))
     return muos_error_hpq_overflow;
@@ -35,7 +35,7 @@ muos_hpq_pushback_unsafe (muos_queue_function f)
 }
 
 muos_error
-muos_hpq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
 {
   if (!muos_hpq_check (2))
     return muos_error_hpq_overflow;
@@ -45,7 +45,7 @@ muos_hpq_pushback_arg_unsafe (muos_queue_function_arg f, intptr_t a)
 }
 
 muos_error
-muos_hpq_pushfront_unsafe (muos_queue_function f)
+muos_hpq_pushfront_isr (muos_queue_function f)
 {
   if (!muos_hpq_check (1))
     return muos_error_hpq_overflow;
@@ -55,7 +55,7 @@ muos_hpq_pushfront_unsafe (muos_queue_function f)
 }
 
 muos_error
-muos_hpq_pushfront_arg_unsafe (muos_queue_function_arg f, intptr_t a)
+muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
 {
   if (!muos_hpq_check (2))
     return muos_error_hpq_overflow;
@@ -69,7 +69,7 @@ muos_error
 muos_hpq_pushback (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushback_unsafe (f);
+  muos_error ret = muos_hpq_pushback_isr (f);
   muos_interrupt_enable ();
   return ret;
 }
@@ -78,7 +78,7 @@ muos_error
 muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushback_arg_unsafe (f, a);
+  muos_error ret = muos_hpq_pushback_arg_isr (f, a);
   muos_interrupt_enable ();
   return ret;
 }
@@ -87,7 +87,7 @@ muos_error
 muos_hpq_pushfront (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushfront_unsafe (f);
+  muos_error ret = muos_hpq_pushfront_isr (f);
   muos_interrupt_enable ();
   return ret;
 }
@@ -96,7 +96,7 @@ muos_error
 muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushfront_arg_unsafe (f, a);
+  muos_error ret = muos_hpq_pushfront_arg_isr (f, a);
   muos_interrupt_enable ();
   return ret;
 }

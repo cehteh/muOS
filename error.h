@@ -80,7 +80,7 @@ muos_error_pending (void)
 //: .Flagging asynchronous errors
 //: ----
 //: void muos_error_set (muos_error err)
-//: void muos_error_set_unsafe (muos_error err)
+//: void muos_error_set_isr (muos_error err)
 //: ----
 //:
 //: +err+::
@@ -94,12 +94,12 @@ muos_error_pending (void)
 //:
 //: When 'err' is already flagged, nothing happens.
 //:
-//: The '*_unsafe' function is for contexts where interrupts are disabled.
+//: The '*_isr' function is for contexts where interrupts are disabled.
 //:
 //PLANNED: do we need a muos_error_again in case a error was already set?
 //:
 void
-muos_error_set_unsafe (muos_error err);
+muos_error_set_isr (muos_error err);
 
 void
 muos_error_set (muos_error err);
@@ -124,7 +124,7 @@ muos_error_peek (muos_error err);
 //: .Check for errors
 //: ----
 //: bool muos_error_check (muos_error err)
-//: bool muos_error_check_unsafe (muos_error err)
+//: bool muos_error_check_isr (muos_error err)
 //: ----
 //:
 //: +err+::
@@ -132,12 +132,12 @@ muos_error_peek (muos_error err);
 //:
 //: When 'err' was flagged then return true *and* clear that flag, otherwise return 'false'.
 //:
-//: The '*_unsafe' function is for contexts where interrupts are disabled.
+//: The '*_isr' function is for contexts where interrupts are disabled.
 //:
 bool
 muos_error_check (muos_error err);
 
 bool
-muos_error_check_unsafe (muos_error err);
+muos_error_check_isr (muos_error err);
 
 #endif

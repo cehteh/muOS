@@ -39,7 +39,7 @@ muos_clpq_schedule (muos_spriq_priority when);
 
 
 void
-muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
+muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
 
 //clpq_api:
@@ -60,11 +60,15 @@ muos_clpq_at_unsafe (muos_spriq_priority base, muos_spriq_priority when, muos_sp
 //: +what+::
 //:   function to be scheduled
 //:
+//: For scheduling on time +base+ has some more contraints to handle
+//: overflows correctly. The 'clpq' handles that, refer to the source
+//: for details.
+//:
 static inline void
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
   muos_interrupt_disable ();
-  muos_clpq_at_unsafe (base, when, what);
+  muos_clpq_at_isr (base, when, what);
   muos_interrupt_enable ();
 }
 

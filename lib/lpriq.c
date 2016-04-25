@@ -36,7 +36,7 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 
 
 void
-muos_spriq_pop_unsafe (struct muos_spriq* spriq)
+muos_spriq_pop_isr (struct muos_spriq* spriq)
 {
   muos_spriq_size i = 1;
 
