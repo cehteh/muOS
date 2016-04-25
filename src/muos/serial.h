@@ -28,7 +28,7 @@
 #include <muos/error.h>
 
 void
-muos_serial_init (void);
+muos_serial_30init (void);
 
 muos_error
 muos_serial_tx_byte (uint8_t b);

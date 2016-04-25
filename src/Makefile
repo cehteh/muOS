@@ -227,6 +227,11 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 
 
 
+#PLANNED: make MUOS_CLOCK configureable, system w/o clock
+MUOS_CONFIG += -DMUOS_CLOCK
+
+
+
 #clock_config:MUOS_CLOCK_HW
 #: MUOS_CLOCK_HW::
 #: The Hardware timer to use. This is a hardware dependent config.

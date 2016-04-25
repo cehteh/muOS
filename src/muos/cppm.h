@@ -57,7 +57,7 @@ extern volatile int8_t muos_cppm_channel_cooked[MUOS_CPPM_CHANNELS];
 
 
 void
-muos_cppm_init (void);
+muos_cppm_50init (void);
 
 #endif
 #endif

@@ -98,7 +98,7 @@ muos_now (void)
 }
 
 static inline void
-muos_clock_start (void)
+muos_clock_90init (void)
 {
   MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE(MUOS_CLOCK_HW);
   MUOS_HW_CLOCK_PRESCALE_SET(MUOS_CLOCK_HW, MUOS_CLOCK_PRESCALER);
