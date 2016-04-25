@@ -127,7 +127,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                       return muos_success;
                     }
 
-                  muos_now_ = muos_clock_now ();
+                  muos_now_ = muos_clock_now_isr ();
 
                   if (muos_clock_elapsed (muos_now_, start) > timeout)
                     {
@@ -192,7 +192,7 @@ muos_yield (uint8_t count)
           do
             {
               --count;
-              muos_now_ = muos_clock_now ();
+              muos_now_ = muos_clock_now_isr ();
 
               if (muos_error_pending ())
                 {
@@ -277,7 +277,7 @@ main()
             {
               do
                 {
-                  muos_now_ = muos_clock_now ();
+                  muos_now_ = muos_clock_now_isr ();
 
                   if (muos_error_pending ())
                     {
