@@ -27,17 +27,46 @@
 #include <muos/lib/queue.h>
 #include <muos/error.h>
 
+//PLANNED: lowwater/highwater generic
+
 void
 muos_serial_30init (void);
 
+//uart_api:
+//: .Sending data
+//: ----
+//: muos_error muos_serial_tx_byte (uint8_t data)
+//: ----
+//:
+//: +data+::
+//:   The byte to send
+//:
+//: Pushes a single byte on the TX buffer.
+//: Returns 'muos_success' on success or 'muos_error_tx_buffer_overflow' on error.
 muos_error
 muos_serial_tx_byte (uint8_t b);
 
+//PLANNED: muos_cbuffer_index muos_serial_tx_avail (void);
+
+
+
+//uart_api:
+//: .Reading data
+//: ----
+//: uint8_t muos_serial_rx_byte (void)
+//: ----
+//:
+//: Pops and a byte from the receive buffer.
+//: When the buffer was empty, zero is returned and 'muos_error_rx_buffer_underflow'
+//: gets flagged.
+//:
 uint8_t
 muos_serial_rx_byte (void);
 
+//PLANNED: muos_cbuffer_index muos_serial_rx_avail (void);
+
 void
-muos_serial_rxhpq_again (muos_queue_function f);
+muos_serial_rxhpq_call (void);
 
 #if MUOS_SERIAL_TXBUFFER > 1
 typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXBUFFER) muos_txbuffer_type;

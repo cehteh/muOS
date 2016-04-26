@@ -1,0 +1,91 @@
+=== Serial
+
+Communication over serial interfaces is split into serveral parts. On the
+lowest level is a UART driver which operates directly on the hardware.
+
+Above that is a library which provides output routines for many types. MµOS
+does not implement the typical stdio like facilities or printf like
+format strings. This ensures the required flexibility and extensibility which
+wouldn't be possible in a standard approach.
+
+One of the most distinct features is the TXQUEUE. This is an additional queue
+which uses a tagged binary representation for the data to be transmitted over
+serial. This can dramatically reduce the memory footprint for the queue.
+For example numbers are represented in the smallest binary form possible,
+constant strings can be stored in flash ROM and are only referenced from the
+TXQUEUE.
+
+
+==== Hardware UART
+
+The UART runs asynchronously driven by interrupts. Data is transferred byte by
+byte with immediate cyclic buffers. Where supported the transmitter and
+receiver can be disabled independently.
+
+Access to the UART is always non-blocking, requests which can't be served
+returning or flagging an error.
+
+At startup the receiver is in desynched state and waits for *\r* to appear in
+the stream where it changes into the synchronized state and data can be read.
+This ensures that only complete lines are returned to the program. Details can
+be be configured. In future it will also synchronize when the line is idle.
+
+Pushing a byte to the TX buffer may return an overflow error, the user is
+advised to handle this. Checking for free space of this buffer will be
+supported later but there will be still a race condition between this check
+and the actual push operation. No other errors can happen on the TX side.
+
+Popping a byte from the RX buffer may flag an async error when the buffer is
+empty. 'muos_serial_rx_byte ()' will return zero in this case, only then the
+error needs to be checked. The receiver has also some more error conditions
+which get flagged asynchronously. One has to check for those regularly.
+
+There is also support for registering a function which gets pushed onto the
+hpq when there are characters ready for reading. MµOS already comes with a
+line editor which can be used in this place.
+
+===== API
+
+PIPADOC:=uart_api
+
+===== configuration
+
+PIPADOC:@uart_config
+
+==== I/O Library
+
+
+
+//: use a tagged queue for TX requests.
+//7#: A tagged queue can store data as references and in binary
+//#: format. This may reduce the memory needed for queueing
+//#: massivly and improve latency. The TX buffer above can then be smaller.
+//#:
+
+===== API
+
+PIPADOC:=io_api
+
+===== configuration
+
+PIPADOC:@io_config
+PIPADOC:@txqueue_config
+
+
+==== Lineedit
+
+#: when disabled only 7bit ascii is used
+
+#: MUOS_LINEEDIT_RECALL::
+#: most simple history, only one byte in ram and litte flash needed
+#: One can recall the previous line with cursor up, immediately after pressing return
+
+===== API
+
+PIPADOC:=lineedit_api
+
+===== configuration
+
+PIPADOC:@lineedit_config
+
+
