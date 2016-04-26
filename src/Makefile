@@ -19,7 +19,6 @@
 #
 
 # Project configuration
-
 PLATFORM = atmel/avr
 
 # muos_config:MCU
@@ -334,11 +333,12 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD=9600UL
 
 
 
-#serial_config:MUOS_SERIAL_BAUD_TXBOOST
-#: Inrcease the TX baudrate by this much permille
+#uart_config:MUOS_SERIAL_BAUD_TXBOOST
+#: MUOS_SERIAL_BAUD_TXBOOST::
+#: Inrcease the TX baudrate by this much permille.
 #: Setting the TX speed little higher makes the link a bit more
-#: reliable when the clocks are out of sync, esp when one echos back each
-#: character received. 0.3% as default should work fine
+#: reliable when the clocks are out of sync, esp. when one echos back each
+#: character received. 0.3% as default should work fine.
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=0ULL
 MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=5ULL
@@ -433,35 +433,6 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
 #PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
 
-
-
-
-#serial_config:MUOS_SERIAL_RXBUFFER
-#: length of the receive buffer
-#: 0 disables receiving data
-#: >1 creates a buffer of that size
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
-MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
-#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=128
-
-
-
-#serial_config:MUOS_SERIAL_RXSYNC
-MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
-
-
-
-
-#serial_config:MUOS_SERIAL_RXCALLBACK
-#: function to be called from hpq when a character is received
-#: either a user defined function or muos_lineedit for a default line editor
-#MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
-MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 
 

@@ -5,7 +5,7 @@ a small operating system for microcontrollers
 === Concept and Goals
 
 mµOS is supposed to be a general purpose Operating-System for small
-Microcontrollers. With small/proper configuration it scales down to be useable
+Microcontrollers. With proper configuration it scales down to be useable
 on AVR ATtiny MPUs. The main focus is on getting Projects efficently and
 robustly done in short time.
 
