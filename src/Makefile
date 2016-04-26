@@ -466,7 +466,8 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 
 #lineedit_config:MUOS_LINEEDIT_BUFFER
-#: length of the linedit buffer
+#: MUOS_LINEEDIT_BUFFER::
+#: capacity of the linedit buffer
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=32
@@ -476,9 +477,9 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 
 
 #lineedit_config:MUOS_LINEEDIT_UTF8
-#: enable UTF8 support for lineedit
-#: when disabled only 7bit ascii is used
-#MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8
+#: MUOS_LINEEDIT_UTF8::
+#: Enable UTF8 support for lineedit
+MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8
 
 
 
@@ -490,18 +491,21 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 
 
 #lineedit_config:MUOS_LINEEDIT_RECALL
-#: most simple history, only one byte in ram and litte flash needed
-#: One can recall the previous line with cursor up, immediately after pressing return
-#MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=0
-MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL=1
+#: MUOS_LINEEDIT_RECALL::
+#: Enable lineedit recall
+#TODO: #ifdef MUOS_LINEEDIT_RECALL
+MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL
 
 
 
-#:MUOS_LINEEDIT_HISTORY
-#: buffers for history
+#PLANNED: MUOS_LINEEDIT_HISTORY
+# : buffers for history
+
+
 
 #lineedit_config:MUOS_LINEEDIT_CALLBACK
-#: user defined function to call when a line from lineedit is done (return pressed)
+#: MUOS_LINEEDIT_CALLBACK::
+#: User defined function to call when a line from lineedit is done (return pressed)
 MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 
 
