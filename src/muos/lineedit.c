@@ -61,6 +61,8 @@ enum
 
 #ifdef MUOS_LINEEDIT_UTF8
 
+//PLANNED: refactor utf8 functions into lib, user needs them too
+
 static inline bool
 utf8start (const char c)
 {
@@ -345,6 +347,8 @@ muos_lineedit (void)
 
         case 0x0d:
           // return
+          //TODO: suspend lineedit until the callback is finished (w/ wraper)
+          //TODO: push callback on bgq
           MUOS_LINEEDIT_CALLBACK (buffer);
 #if MUOS_LINEEDIT_RECALL == 1
           if (*buffer)

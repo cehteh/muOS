@@ -158,6 +158,9 @@ muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, 
 //: NOTE: there are no 'pop' functions yet, only a internal 'schedule' function. Functions for poping
 //:       elements will be added on demand.
 //:
+
+//FIXME: no macros, atomic access
+
 #define MUOS_QUEUE_SIZE(q)  MUOS_ARRAY_ELEMENTS((q).queue)
 #define MUOS_QUEUE_FREE(q) MUOS_QUEUE_SIZE(q)-(q).descriptor.len
 #define MUOS_QUEUE_SCHEDULE(q) muos_queue_schedule (&(q).descriptor, MUOS_QUEUE_SIZE(q))
