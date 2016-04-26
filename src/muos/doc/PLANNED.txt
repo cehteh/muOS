@@ -1,0 +1,110 @@
+PIPADOC:PLANNED: macros for Hz kHz
+
+PIPADOC:PLANNED: different timebase, stable timing etc
+
+
+PIPADOC:PLANNED: docme MAKEFILE include  muos/muos.mk
+PIPADOC:PLANNED: docme  All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
+
+PIPADOC:PLANNED: rtpq realtime priority queue
+runs direct in timer interrupt, exact timing, wakes up a little earlier
+spins to exact time. Serve from clpq, tag functions as hard-rt and dont
+reenable interrupts then.
+
+PIPADOC:PLANNED: ltpq long time queue
+. uses longer, absolute time format (muos_clock or muos_fullclock)
+. needs more memory
+. handled from the clpq (one regular job at each cycles moves elements
+  form ltpq to clpq)
+. optional only needed for 'calendar' like events, may be short, only as
+much long time events the program uses at most
+. persistent timers stored in EEPROM when RTC is present
+
+PIPADOC:PLANNED: -mint8 compatible
+
+PIPADOC:PLANNED: Testing
+
+PIPADOC:PLANNED: Stack checks
+
+PIPADOC:PLANNED: watchdog
+timeout for rtq, bgq
+how to detect timeouts on clq?
+
+PIPADOC:PLANNED: Indirect jump tables for queues
+register all 'callable' functions in one array. The queues can then
+index this table by uint8_t or shorter.
+
+PIPADOC:PLANNED: Interrupt hooks? adding interrupt handlers dynamically
+
+
+PIPADOC:PLANNED: *lineedit* load/save commandline from api (configuration settings)
+PIPADOC:PLANNED: *lineedit* block lineedit when TX is stalled
+PIPADOC:PLANNED: *lineedit* implement txqueue ._R variants to print from lineedit buffer
+PIPADOC:PLANNED: *lineedit* history
+PIPADOC:PLANNED: *lineedit* completion
+- tab for text
+- pgup/pgdown for values
+PIPADOC:PLANNED: *uart* rxsync when line is idle for some frames
+
+
+
+PIPADOC:PLANNED: *driver* gpio
+configure (in out pullup)
+set, clear, toggle
+sequencer
+
+
+PIPADOC:PLANNED: *driver* Buttons w/ debounce
+
+PIPADOC:PLANNED: *driver* Encoder
+
+PIPADOC:PLANNED: *driver* PWM
+PIPADOC:PLANNED: *driver* EEprom
+PIPADOC:PLANNED: *driver* Flash
+PIPADOC:PLANNED: *driver* Fuses
+PIPADOC:PLANNED: *driver* Watchdog
+
+PIPADOC:PLANNED: *driver* USB
+PIPADOC:PLANNED: *driver* bangbus
+PIPADOC:PLANNED: *driver* onewire
+PIPADOC:PLANNED: *driver* DCF77
+PIPADOC:PLANNED: *driver* logfs
+PIPADOC:PLANNED: *driver* PID++
+PIPADOC:PLANNED: *driver* power interface depending on active components
+PIPADOC:PLANNED: *driver* Debug tools
+
+PIPADOC:PLANNED: Debugger
+over serial
+only few commands, most logic on host side
+
+. peek
+. debug() function
+. debug interrupt
+
+PIPADOC:PLANNED: . F_OSC for oscillator clock
+automatic prescale setting etc
+
+PIPADOC:PLANNED: random generator
+byte queue
+quality
+sources
+- poll
+- interrupt
+- push
+quality limit low/high
+
+PIPADOC:PLANNED:  Reorganization
+Split config hierarchically
+config.h
+- how to depend on used config vars only?
+
+muos/muos.h -> main header
+muos/muos.c -> main program
+
+muos/config.h -> configuration management
+
+muos/$feature.h -> header for subsystem
+muos/$feature.c -> portable subsystem interface implementaton
+muos/hw/$vendor/$architecture/$feature.h|c hardware specific
+
+Resource management at compiletime
