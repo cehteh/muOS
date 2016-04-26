@@ -72,6 +72,12 @@ typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
 //: +fine+::
 //:   the hardware part of the clock
 //:
+//: This is the type with the widest range. With sane configurations it can be ensured
+//: that 'muos_fullclock' never overflows. The drawback is that it needs the most memory
+//: for its representaton which becomes a problem when storing multiple timestamps in
+//: queues. Most often the smaller datatypes 'muos_clock' and 'muos_shortclock' are more
+//: approbiate when one handles overflows correctly.
+//:
 typedef struct {
   muos_clock coarse;
   muos_hwclock fine;

@@ -53,8 +53,7 @@ muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq
 //: ----
 //:
 //: +base+::
-//:   time used as relative base for the timing calculation, usually
-//:   muos_now() or the events start time for regular events
+//:   time used as relative base for the timing calculation
 //: +when+::
 //:   offset to base for the destination time
 //: +what+::
