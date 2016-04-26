@@ -1,0 +1,8 @@
+== Q&A Common Problems
+
+  - lto related problems
+    like lto1: fatal error: errors during merging of translation units
+    * gives poor error messages
+    * saves a *lot* space
+  - collect2: error: ld returned 1 exit status
+    * Symbol defined multiple times

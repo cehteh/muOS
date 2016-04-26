@@ -122,6 +122,8 @@ clean: depclean docclean IMAGES.v
 
 #gitclean: git stash, git clean -dfx
 
+dir_info:
+	find -name DIR_INFO -printf '%-30h: ' -exec head -1 {} \; | sort -k1,1 | cut -c 1-$${$(shell tput cols):-92}
 
 #documentation targets
 

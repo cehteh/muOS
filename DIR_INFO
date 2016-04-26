@@ -1,0 +1,14 @@
+mµOS root directory
+
+- muos.c
+     the main() loop
+
+   - ..c ..h
+     C Source and include files
+
+   - muos.mk
+     Main Makefile variable and rules setup for building mµOS, will include all other
+     Makefiles.
+
+   - prg_$(PROGRAMMER).mk
+     Default variables and rules for programmers
