@@ -39,7 +39,8 @@ PIPADOC:=library
 
 == Drivers
 
-PIPADOC:=drivers
+PIPADOC:=serial
+
 PIPADOC:=cppm
 
 

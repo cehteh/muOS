@@ -308,19 +308,22 @@ MUOS_CONFIG += -DMUOS_CBUFFER_INDEX=uint8_t
 
 
 
-#serial_config:MUOS_SERIAL
+#uart_config:MUOS_SERIAL
+#: MUOS_SERIAL::
 #: Enable Serial
 MUOS_CONFIG += -DMUOS_SERIAL
 
 
 
-#serial_config:MUOS_SERIAL_HW
-#: Which serial hardware to use
+#uart_config:MUOS_SERIAL_HW
+#: MUOS_SERIAL_HW::
+#: Serial hardware to use
 MUOS_CONFIG += -DMUOS_SERIAL_HW=0
 
 
 
-#serial_config:MUOS_SERIAL_BAUD
+#uart_config:MUOS_SERIAL_BAUD
+#: MUOS_SERIAL_BAUD::
 #: Baudrate for the serial interface
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=50UL
 #MUOS_CONFIG += -DMUOS_SERIAL_BAUD=300UL
@@ -350,19 +353,51 @@ MUOS_CONFIG += -DMUOS_SERIAL_BAUD_TXBOOST=3ULL
 
 
 
-#serial_config:MUOS_SERIAL_TXBUFFER
+#uart_config:MUOS_SERIAL_TXBUFFER
+#: MUOS_SERIAL_TXBUFFER::
 #: length of the transmission buffer
-#: 0 disables sending data
-#: >1 creates a buffer of that size
-#FIXME: handle the case when txbuffer is smaller than lineedit buffer
+#:  * 0 disables sending data
+#:  * >1 creates a buffer of that size
+#FIXME: handle the case when txbuffer is smaller than lineedit buffer (also TXQUEUE) push reference, disable lineedit until send
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=2
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=4
-#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
+MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=32
-MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
+#MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=128
+
+
+
+#uart_config:MUOS_SERIAL_RXBUFFER
+#: MUOS_SERIAL_RXBUFFER::
+#: length of the receive buffer
+#:  * 0 disables receiving data
+#:  * >1 creates a buffer of that size
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=0
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=2
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=4
+MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=16
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=32
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=64
+#MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=128
+
+
+
+#uart_config:MUOS_SERIAL_RXSYNC
+#: MUOS_SERIAL_RXSYNC::
+#: The receiver stays in desynced state unti the given character got received
+MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
+
+
+
+#uart_config:MUOS_SERIAL_RXCALLBACK
+#: MUOS_SERIAL_RXCALLBACK::
+#: function to be called from hpq when a character is received
+#MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
+MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 
 
 #TODO: also disable facilities by undefined not only 0

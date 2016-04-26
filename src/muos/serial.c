@@ -45,6 +45,8 @@ muos_serial_30init (void)
 muos_error
 muos_serial_tx_byte (uint8_t b)
 {
+  muos_error ret = muos_success;
+
   muos_hw_serial_tx_stop ();
 
   if (MUOS_CBUFFER_FREE (muos_txbuffer) > 0)
@@ -53,12 +55,18 @@ muos_serial_tx_byte (uint8_t b)
     }
   else
     {
-      return muos_error_tx_buffer_overflow;
+      ret = muos_error_tx_buffer_overflow;
     }
 
   muos_hw_serial_tx_run ();
-  return muos_success;
+  return ret;
 }
+
+//muos_cbuffer_index
+//PLANNED: muos_serial_tx_avail (void)
+//{
+//  return MUOS_CBUFFER_FREE(muos_txbuffer); 
+//}
 #endif
 
 #if MUOS_SERIAL_RXBUFFER > 1
@@ -79,22 +87,31 @@ muos_serial_rx_byte (void)
     }
 
   muos_hw_serial_rx_run ();
-
   return ret;
 }
 
+//muos_cbuffer_index
+//PLANNED: muos_serial_rx_avail (void)
+//{
+//  return muos_atomic_get(MUOS_CBUFFER_USED(muos_rxbuffer));
+//}
 
+#ifdef MUOS_SERIAL_RXCALLBACK
+extern void MUOS_SERIAL_RXCALLBACK (void);
+#endif
+
+
+//FIXME: when finished on one pass only wake for new characters, dont busy loop
 void
-muos_serial_rxhpq_again (muos_queue_function f)
+muos_serial_rxhpq_call (void)
 {
   muos_interrupt_disable ();
-
-  if (MUOS_CBUFFER_USED (muos_rxbuffer))
-    muos_hpq_pushback_isr (f);
-  else
-    muos_status.serial_rxhpq_pending = false;
-
+  muos_status.serial_rxhpq_pending = false;
   muos_interrupt_enable ();
+
+#ifdef MUOS_SERIAL_RXCALLBACK
+  MUOS_SERIAL_RXCALLBACK ();
+#endif
 }
 
 #endif
