@@ -52,9 +52,10 @@ void MUOS_CPPM_CALLBACK (void);
 ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 {
   muos_clock now = ICR1;
-  //FIXME: more generic handing
-  now += ((TIFR1 & _BV(TOV1)) && (now < 0x1000))?0x10000:0;
-  now += muos_clock_count_*0x10000;
+  //PLANNED: compile time check that hwclock and icp match
+  now += ((TIFR1 & _BV(TOV1)) && (now < (muos_hwclock)~0/2))
+    ?(1UL<<(sizeof(muos_hwclock)*8)):0;
+  now += muos_clock_count_*(1UL<<(sizeof(muos_hwclock)*8));
 
   muos_clock elapsed = muos_clock_elapsed (now, cppm_time);
   cppm_time = now;
