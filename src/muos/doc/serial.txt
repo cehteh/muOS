@@ -105,15 +105,27 @@ PIPADOC:@txqueue_config
 
 ==== Lineedit
 
-#: when disabled only 7bit ascii is used
+For building command line interfaces, mµOS comes with a highly configurable
+line editor. Over time this is planned to become a complete framework for
+controlling the program.
 
-#: MUOS_LINEEDIT_RECALL::
-#: most simple history, only one byte in ram and litte flash needed
-#: One can recall the previous line with cursor up, immediately after pressing return
+One can enable it by choosing it as callback function of the UART receiver
++MUOS_SERIAL_RXCALLBACK=muos_lineedit+. Then the line editor presents a user
+configurable callback which gets called when a line got terminated.
 
-===== API
+The Line editor can be configure to handle UTF8 encoded text. This only adds
+moderate size to the code but causes more serial traffic since editing often
+forces a complete line redraw. When UTF8 support is disabled and only 7-bit
+ASCII encoding is supported.
 
-PIPADOC:=lineedit_api
+Most common line commands are supported. The is cursor moved with cursor keys or
+vi keys, other editing keys (Home, End, Backspace, Delete, Overwrite) are
+supported.
+
+There is a very simple line recall handler which lets one restore the previous
+line when no edits happened yet (Cursor up) or clear the current line (cursor
+down). This recall feature is very lightweight and needs only one additional
+byte of RAM and little over 100 bytes program space.
 
 ===== configuration
 
