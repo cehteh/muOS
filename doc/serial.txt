@@ -10,11 +10,7 @@ wouldn't be possible in a standard approach.
 
 One of the most distinct features is the TXQUEUE. This is an additional queue
 which uses a tagged binary representation for the data to be transmitted over
-serial. This can dramatically reduce the memory footprint for the queue.
-For example numbers are represented in the smallest binary form possible,
-constant strings can be stored in flash ROM and are only referenced from the
-TXQUEUE.
-
+serial.
 
 ==== Hardware UART
 
