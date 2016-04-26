@@ -52,6 +52,7 @@ void MUOS_CPPM_CALLBACK (void);
 ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 {
   muos_clock now = ICR1;
+  //FIXME: more generic handing
   now += ((TIFR1 & _BV(TOV1)) && (now < 0x1000))?0x10000:0;
   now += muos_clock_count_*0x10000;
 

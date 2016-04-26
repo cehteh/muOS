@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//TODO: fixup, documentation
 
 #include MUOS_HW_HEADER
 

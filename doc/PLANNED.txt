@@ -22,6 +22,8 @@ much long time events the program uses at most
 
 PIPADOC:PLANNED: -mint8 compatible
 
+PIPADOC:PLANNED: library for rationals
+
 PIPADOC:PLANNED: Testing
 
 PIPADOC:PLANNED: Stack checks

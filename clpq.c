@@ -32,6 +32,7 @@ muos_clpq_type muos_clpq;
 //PLANNED: sorting before normal functions
 //PLANNED: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
 
+//FIXME: use MUOS_SPRIQ_FRONT()
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
