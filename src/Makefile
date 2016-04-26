@@ -403,18 +403,16 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 #TODO: also disable facilities by undefined not only 0
 
 
-#serial_config:MUOS_SERIAL_TXQUEUE
-#: use a tagged queue for TX requests.
-#: A tagged queue can store data as references and in binary
-#: format. This may reduce the memory needed for queueing
-#: massivly and improve latency. The TX buffer above can then be smaller.
-#:
-#: 0 disables the queue
-#: >1 creates a queue of that size
-MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
+#txqueue_config:MUOS_SERIAL_TXQUEUE
+#: MUOS_SERIAL_TXQUEUE::
+#: length of the txqueue
+#: * 0 disables the txqueue
+#: * >1 creates a txqueue of the given size
+#TODO: check that simply undef is enough for disable
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=80
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
@@ -431,10 +429,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
 #:	type support for 24 48 64 bit
 #:
 #:
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE_OPT =
+#PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE_OPT =
+#PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
+#PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
 
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
 
 
 

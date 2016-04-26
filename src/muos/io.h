@@ -49,46 +49,53 @@ extern struct fmtconfig_type fmtconfig;
 
 
 
-#define MUOS_OUTPUTFNS                          \
-  OUTPUTFN(char, char)                          \
-  OUTPUTFN(cstr, const char*)                   \
-  OUTPUTFN(cstrn, const char*, uint8_t)         \
-  OUTPUTFN(fstr, muos_flash_cstr)               \
-  OUTPUTFN(mem, const uint8_t*, uint8_t)        \
-  OUTPUTFN(nl, void)                            \
-  OUTPUTFN(csi_char, const char)                \
-  OUTPUTFN(csi_cstr, const char*)               \
-  OUTPUTFN(csi_fstr, muos_flash_cstr)           \
-  OUTPUTFN(intptr, intptr_t)                    \
-  OUTPUTFN(uintptr, uintptr_t)                  \
-  OUTPUTFN(int8, int8_t)                        \
-  OUTPUTFN(uint8, uint8_t)                      \
-  OUTPUTFN(int16, int16_t)                      \
-  OUTPUTFN(uint16, uint16_t)                    \
-  OUTPUTFN(int32, int32_t)                      \
-  OUTPUTFN(uint32, uint32_t)                    \
-  OUTPUTFN(int64, int64_t)                      \
-  OUTPUTFN(uint64, uint64_t)                    \
-  OUTPUTFN(float, float)                        \
-  OUTPUTFN(cstr_R, const char*)                 \
-  OUTPUTFN(cstrn_R, const char*, uint8_t)       \
-  OUTPUTFN(mem_R)                               \
-  OUTPUTFN(int32_R)                             \
-  OUTPUTFN(uint32_R)                            \
-  OUTPUTFN(int64_R)                             \
-  OUTPUTFN(uint64_R)                            \
-  OUTPUTFN(float_R)                             \
-  OUTPUTFN(upcase, bool)                        \
-  OUTPUTFN(base, uint8_t)                       \
-  OUTPUTFN(ifmt, uint8_t, uint8_t)              \
-  OUTPUTFN(ffmt, char)                          \
-  OUTPUTFN(pupcase, bool)                       \
-  OUTPUTFN(pbase, uint8_t)                      \
-  OUTPUTFN(pifmt, uint8_t, uint8_t)             \
-  OUTPUTFN(pffmt, char)                         \
-  OUTPUTFN(ctrl, uint8_t, uint8_t, uint8_t)
+#define MUOS_OUTPUTFNS                                                                          \
+  OUTPUTFN(char, char) /* a single character */                                                 \
+  OUTPUTFN(cstr, const char*) /* a c-string */                                                  \
+  OUTPUTFN(cstrn, const char*, uint8_t) /* c-string with given maximal length */                \
+  OUTPUTFN(fstr, muos_flash_cstr) /* c-string stored in flash ROM */                            \
+  OUTPUTFN(mem, const uint8_t*, uint8_t) /* raw memory with given address and length */         \
+  OUTPUTFN(nl, void) /* system dependent newline sequence */                                    \
+  OUTPUTFN(csi_char, const char) /* CSI followed by a single character */                       \
+  OUTPUTFN(csi_cstr, const char*) /* CSI followed by a c-string */                              \
+  OUTPUTFN(csi_fstr, muos_flash_cstr) /* CSI followed by a c-string stored in flash ROM */      \
+  OUTPUTFN(intptr, intptr_t) /* signed numeric value of a pointer */                            \
+  OUTPUTFN(uintptr, uintptr_t) /* unsigned numeric value of a pointer */                        \
+  OUTPUTFN(int8, int8_t) /* signed numeric value */                                             \
+  OUTPUTFN(uint8, uint8_t) /* unsigned numeric value */                                         \
+  OUTPUTFN(int16, int16_t) /* signed numeric value */                                           \
+  OUTPUTFN(uint16, uint16_t) /* unsigned numeric value */                                       \
+  OUTPUTFN(int32, int32_t) /* signed numeric value */                                           \
+  OUTPUTFN(uint32, uint32_t) /* unsigned numeric value */                                       \
+  OUTPUTFN(int64, int64_t) /* signed numeric value */                                           \
+  OUTPUTFN(uint64, uint64_t) /* unsigned numeric value */                                       \
+  OUTPUTFN(cstr_R, const char*) /* c-string by reference */                                     \
+  OUTPUTFN(cstrn_R, const char*, uint8_t) /* c-string by reference with given maximal length */ \
+  OUTPUTFN(mem_R) /* raw memory with given address and length by reference */                   \
+  OUTPUTFN(int32_R) /* signed numeric value by reference */                                     \
+  OUTPUTFN(uint32_R) /* unsigned numeric value by reference */                                  \
+  OUTPUTFN(int64_R) /* signed numeric value by reference */                                     \
+  OUTPUTFN(uint64_R) /* unsigned numeric value by reference */                                  \
+  OUTPUTFN(upcase, bool) /* set digit representation for the next integer conversion */         \
+  OUTPUTFN(base, uint8_t) /* set numeric base for the next integer conversion (2-36) */                \
+  OUTPUTFN(pupcase, bool) /* set default digit representation */                                \
+  OUTPUTFN(pbase, uint8_t) /* set default numeric base (2-36) */                                       \
+
+//PLANNED:  OUTPUTFN(float, float) /* */
+//PLANNED:  OUTPUTFN(float_R) /* */
+//PLANNED:  OUTPUTFN(ifmt, uint8_t, uint8_t) /* */
+//PLANNED:  OUTPUTFN(ffmt, char) /* */
+//PLANNED:  OUTPUTFN(pifmt, uint8_t, uint8_t) /* */
+//PLANNED:  OUTPUTFN(pffmt, char) /* */
+//PLANNED:  OUTPUTFN(ctrl, uint8_t, uint8_t, uint8_t) /* */
 
 
+//outputfn:cstr_P
+//: +muos_output_cstr_P ("literal")+::
+//:  puts "literal" into flash section and uses +muos_output_fstr+ for printing it
+//outputfn:csi_cstr_P
+//: +muos_output_csi_cstr_P ("literal")+::
+//:  puts "literal" into flash section and uses +muos_output_csi_fstr+ for printing it
 #define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
 #define muos_output_csi_cstr_P(s) muos_output_csi_fstr (MUOS_PSTR(s))
 

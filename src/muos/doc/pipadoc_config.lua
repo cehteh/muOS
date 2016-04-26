@@ -14,6 +14,14 @@ preprocessor_register ("^c$",
                        end
 )
 
+preprocessor_register ("^c$",
+                       function (str)
+                         return str:gsub("^ *OUTPUTFN%(([^,]*), ([^)]*)%) */%* ([^*]-) %*/.*",
+                                         '//outputfn:%1 +muos_output_%1 (%2)+::'..DOCVARS.NL..' %3'..DOCVARS.NL
+                         )
+                       end
+)
+
 
 function git_blame (file, line)
   local result = {}
