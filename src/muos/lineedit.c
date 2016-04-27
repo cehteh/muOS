@@ -56,8 +56,6 @@ enum
   };
 
 
-//TODO: for ascii, delete/backspace: handle printable characters, whats with non printable ones?
-
 
 #ifdef MUOS_LINEEDIT_UTF8
 
@@ -387,6 +385,15 @@ muos_lineedit (void)
           break;
 
         default:
+
+          //nonprintable
+          if (data < 32)
+            {
+              muos_output_char (7);
+              pending = 0;
+              return true;
+            }
+
 
 #ifdef MUOS_LINEEDIT_UTF8
 
