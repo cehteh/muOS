@@ -96,23 +96,20 @@ muos_serial_rx_byte (void)
 //  return muos_atomic_get(MUOS_CBUFFER_USED(muos_rxbuffer));
 //}
 
+
 #ifdef MUOS_SERIAL_RXCALLBACK
-extern void MUOS_SERIAL_RXCALLBACK (void);
-#endif
-
-
-//FIXME: when finished on one pass only wake for new characters, dont busy loop
 void
 muos_serial_rxhpq_call (void)
 {
-  muos_interrupt_disable ();
-  muos_status.serial_rxhpq_pending = false;
-  muos_interrupt_enable ();
+  bool again = MUOS_SERIAL_RXCALLBACK ();
 
-#ifdef MUOS_SERIAL_RXCALLBACK
-  MUOS_SERIAL_RXCALLBACK ();
-#endif
+  muos_interrupt_disable ();
+  if (again && MUOS_CBUFFER_USED (muos_rxbuffer))
+    muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
+  else
+    muos_status.serial_rxhpq_pending = false;
 }
+#endif
 
 #endif
 

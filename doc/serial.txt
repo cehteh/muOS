@@ -37,8 +37,8 @@ error needs to be checked. The receiver has also some more error conditions
 which get flagged asynchronously. One has to check for those regularly.
 
 There is also support for registering a function which gets pushed onto the
-hpq when there are characters ready for reading. MµOS already comes with a
-line editor which can be used in this place.
+hpq when characters ready for reading. MµOS comes with a line editor which can
+be used in this place.
 
 ===== API
 

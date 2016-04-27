@@ -22,10 +22,7 @@
 #include <muos/serial.h>
 #include <muos/hpq.h>
 
-#ifdef MUOS_SERIAL_RXCALLBACK
-extern void
-MUOS_SERIAL_RXCALLBACK (void);
-#endif
+
 
 #ifdef __AVR_ATmega328P__
 
