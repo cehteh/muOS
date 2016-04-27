@@ -27,17 +27,23 @@
 
 struct muos_spriq_entry;
 
-//FIXME: as documented, pass only 'when' along
 //lib_spriq_api:
 //: .Types
 //: ----
-//: typedef void (*muos_spriq_function)(muos_spriq_priority when)
+//: struct muos_spriq_entry
+//: {
+//:   muos_spriq_priority when;
+//:   muos_spriq_function fn;
+//: }
+//:
+//: typedef void (*muos_spriq_function)(const struct muos_spriq_entry* event)
 //: ----
 //:
 //: The type for functions stored in a spriq.
-//: This function is called with the time they was to be scheduled.
-//: This makes it easier to schedule repeating jobs, where this 'when'
-//: just becomes the new 'base' for next push.
+//: This function is called with the time it was to be scheduled.
+//: The scheduler passes the spriq entry to the function, this makes it simple
+//: to schedule repeating jobs, where this 'event->when' just becomes the new
+//: 'base' for next push.
 //:
 typedef void (*muos_spriq_function)(const struct muos_spriq_entry*);
 
