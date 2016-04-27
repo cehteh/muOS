@@ -252,6 +252,7 @@ main()
 
 #if MUOS_DEBUG_BUSY ==1
   //TODO: hardware dependent
+  //PLANNED: debug driver
   DDRB = _BV(PINB5) | _BV(PINB4);
   PORTB = _BV(PINB5);
 #endif

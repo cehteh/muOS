@@ -32,7 +32,6 @@ struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
 
 #if MUOS_SERIAL_TXQUEUE == 0
 //PLANNED: fixed point for integers and mille delimiters
-//TODO: DOCME non txqueue may be truncated not atomic but never fragmented
 
 muos_error
 muos_output_char (char c)
