@@ -47,7 +47,7 @@ extern struct fmtconfig_type pfmtconfig;
 extern struct fmtconfig_type fmtconfig;
 
 
-
+//TODO: I/O and interrupt safety
 
 #define MUOS_OUTPUTFNS                                                                          \
   OUTPUTFN(char, char) /* a single character */                                                 \
