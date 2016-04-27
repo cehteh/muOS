@@ -12,7 +12,7 @@ operation atomic. Like pushing two elements on a queue, which should either
 fail and leave the queue in the old state or succeed with both elements on the
 queue. This can only be implemented from the callers scope.
 
-=== Queue
+=== queue
 
 The Queue used for the work queues, storing functions and arguments. The size
 of the queue must be given at compile time. The implementation works with any

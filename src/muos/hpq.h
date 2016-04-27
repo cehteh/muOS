@@ -28,18 +28,19 @@
 #if MUOS_HPQ_LENGTH > 0
 
 typedef MUOS_QUEUEDEF(MUOS_HPQ_LENGTH) muos_hpq_type;
+
 extern muos_hpq_type muos_hpq;
 
 static inline bool
 muos_hpq_schedule (void)
 {
-  return MUOS_QUEUE_SCHEDULE (muos_hpq);
+  return muos_queue_schedule (&muos_hpq.descriptor, MUOS_HPQ_LENGTH);
 }
 
 static inline bool
 muos_hpq_check (uint8_t need)
 {
-  return MUOS_QUEUE_FREE (muos_hpq) >= need;
+  return muos_queue_free (&muos_hpq.descriptor, MUOS_HPQ_LENGTH) >= need;
 }
 
 

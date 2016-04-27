@@ -30,7 +30,7 @@ muos_hpq_pushback_isr (muos_queue_function f)
   if (!muos_hpq_check (1))
     return muos_error_hpq_overflow;
 
-  MUOS_QUEUE_PUSHBACK(muos_hpq, (f));
+  muos_queue_pushback (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
   return muos_success;
 }
 
@@ -40,7 +40,7 @@ muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
   if (!muos_hpq_check (2))
     return muos_error_hpq_overflow;
 
-  MUOS_QUEUE_PUSHBACK_ARG(muos_hpq, (f), (a));
+  muos_queue_pushback_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
   return muos_success;
 }
 
@@ -50,7 +50,7 @@ muos_hpq_pushfront_isr (muos_queue_function f)
   if (!muos_hpq_check (1))
     return muos_error_hpq_overflow;
 
-  MUOS_QUEUE_PUSHFRONT(muos_hpq, (f));
+  muos_queue_pushfront (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
   return muos_success;
 }
 
@@ -60,7 +60,7 @@ muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
   if (!muos_hpq_check (2))
     return muos_error_hpq_overflow;
 
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_hpq, (f), (a));
+  muos_queue_pushfront_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
   return muos_success;
 }
 

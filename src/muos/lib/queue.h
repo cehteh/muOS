@@ -109,9 +109,51 @@ muos_queue_init (struct muos_queue* queue)
   queue->len = 0;
 }
 
+// internal
 bool
 muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 
+//lib_queue_api:
+//: .Queue operations
+//: ----
+//: void muos_queue_pushback (struct muos_queue* queue,
+//:                           const muos_queue_size size,
+//:                           muos_queue_function func)
+//:
+//: void muos_queue_pushback_arg (struct muos_queue* queue,
+//:                               const muos_queue_size size,
+//:                               muos_queue_function func,
+//:                               intptr_t arg)
+//:
+//: void muos_queue_pushfront (struct muos_queue* queue,
+//:                            const muos_queue_size size,
+//:                            muos_queue_function func)
+//:
+//: void muos_queue_pushfront_arg (struct muos_queue* queue,
+//:                                const muos_queue_size size,
+//:                                muos_queue_function func,
+//:                                intptr_t arg)
+//: ----
+//:
+//:  +queue+::
+//:    the queue
+//:  +size+::
+//:    size of the queue
+//:  +func+::
+//:    function pointer
+//:  +arg+::
+//:    inptr_t argument
+//:
+//: --
+//: * +muos_queue_pushback ()+ pushes 'func' onto the back of the queue
+//: * +muos_queue_pushback_arg ()+ pushes 'func' with 'arg' onto the back of the queue
+//: * +muos_queue_pushfront ()+ pushes 'func' onto front of the queue
+//: * +muos_queue_pushfront_arg ()+ pushes 'func' with 'arg' onto the front of the queue
+//: --
+//:
+//: NOTE: there are no 'pop' functions yet, only a internal 'schedule' function. Functions for popping
+//:       elements will be added on demand.
+//:
 void
 muos_queue_pushback (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
@@ -125,49 +167,23 @@ void
 muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
 
 
-
-//PLANNED: stowing more than one arg
-
-//lib_queue_api:
-//: .Queue API Macros
+//: .Queue information
 //: ----
-//: MUOS_QUEUE_SIZE(queue)
-//: MUOS_QUEUE_FREE(queue)
-//: MUOS_QUEUE_PUSHBACK(queue, func)
-//: MUOS_QUEUE_PUSHBACK_ARG(queue, func, arg)
-//: MUOS_QUEUE_PUSHFRONT(queue, func)
-//: MUOS_QUEUE_PUSHFRONT_ARG(queue, func, arg)
+//: muos_queue_size muos_queue_free (struct muos_queue* queue, const muos_queue_size size)
 //: ----
 //:
 //:  +queue+::
-//:    the queue as defined with +MUOS_QUEUEDEF()+
-//:  +func+::
-//:    function pointer
-//:  +arg+::
-//:    inptr_t argument
+//:    the queue
+//:  +size+::
+//:    size of the queue
 //:
-//: --
-//: * +MUOS_QUEUE_SIZE(queue)+ returns the number of elements with what the queue was defined
-//: * +MUOS_QUEUE_FREE(queue)+ returns the number of elements which are free in the queue
-//: * +MUOS_QUEUE_PUSHBACK(queue, func)+ pushes 'func' onto the back of the queue
-//: * +MUOS_QUEUE_PUSHBACK_ARG(queue, func, arg)+ pushes 'func' and 'arg' onto the back of the queue
-//: * +MUOS_QUEUE_PUSHFRONT(queue, func)+ pushes 'func' onto front of the queue
-//: * +MUOS_QUEUE_PUSHFRONT_ARG(queue, func, arg)+ pushes 'func' and 'arg' onto the front of the queue
-//: --
+//: Returns the number of free elements in the queue.
 //:
-//: NOTE: there are no 'pop' functions yet, only a internal 'schedule' function. Functions for poping
-//:       elements will be added on demand.
-//:
-
-//FIXME: no macros, atomic access
-
-#define MUOS_QUEUE_SIZE(q)  MUOS_ARRAY_ELEMENTS((q).queue)
-#define MUOS_QUEUE_FREE(q) MUOS_QUEUE_SIZE(q)-(q).descriptor.len
-#define MUOS_QUEUE_SCHEDULE(q) muos_queue_schedule (&(q).descriptor, MUOS_QUEUE_SIZE(q))
-#define MUOS_QUEUE_PUSHBACK(q, f) muos_queue_pushback (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))
-#define MUOS_QUEUE_PUSHBACK_ARG(q, f, a) muos_queue_pushback_arg (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f), (a))
-#define MUOS_QUEUE_PUSHFRONT(q, f) muos_queue_pushfront (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f))
-#define MUOS_QUEUE_PUSHFRONT_ARG(q, f, a) muos_queue_pushfront_arg (&(q).descriptor, MUOS_QUEUE_SIZE(q), (f), (a))
+static inline muos_queue_size
+muos_queue_free (struct muos_queue* queue, const muos_queue_size size)
+{
+  return size - queue->len;
+}
 
 
 #endif
