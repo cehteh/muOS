@@ -24,47 +24,6 @@
 
 muos_bgq_type muos_bgq;
 
-#if 0
-static inline muos_error
-muos_bgq_pushback_isr (muos_queue_function f)
-{
-  if (!muos_bgq_check (1))
-    return muos_error_bgq_overflow;
-
-  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
-  return muos_success;
-}
-
-static inline muos_error
-muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
-{
-  if (!muos_bgq_check (2))
-    return muos_error_bgq_overflow;
-
-  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
-  return muos_success;
-}
-
-static inline muos_error
-muos_bgq_pushfront_isr (muos_queue_function f)
-{
-  if (!muos_bgq_check (1))
-    return muos_error_bgq_overflow;
-
-  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
-  return muos_success;
-}
-
-static inline muos_error
-muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
-{
-  if (!muos_bgq_check (2))
-    return muos_error_bgq_overflow;
-
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
-  return muos_success;
-}
-#endif
 
 muos_error
 muos_bgq_pushback (muos_queue_function f)

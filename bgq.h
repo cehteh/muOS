@@ -33,13 +33,13 @@ extern muos_bgq_type muos_bgq;
 static inline bool
 muos_bgq_schedule (void)
 {
-  return MUOS_QUEUE_SCHEDULE (muos_bgq);
+  return muos_queue_schedule (&muos_bgq.descriptor, MUOS_BGQ_LENGTH);
 }
 
 static inline bool
 muos_bgq_check (uint8_t need)
 {
-  return MUOS_QUEUE_FREE (muos_bgq) >= need;
+  return muos_queue_free (&muos_bgq.descriptor, MUOS_BGQ_LENGTH) >= need;
 }
 
 
@@ -73,7 +73,7 @@ muos_bgq_pushback_isr (muos_queue_function f)
   if (!muos_bgq_check (1))
     return muos_error_bgq_overflow;
 
-  MUOS_QUEUE_PUSHBACK(muos_bgq, (f));
+  muos_queue_pushback (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f);
   return muos_success;
 }
 
@@ -83,7 +83,7 @@ muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
   if (!muos_bgq_check (2))
     return muos_error_bgq_overflow;
 
-  MUOS_QUEUE_PUSHBACK_ARG(muos_bgq, (f), (a));
+  muos_queue_pushback_arg (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f, a);
   return muos_success;
 }
 
@@ -93,7 +93,7 @@ muos_bgq_pushfront_isr (muos_queue_function f)
   if (!muos_bgq_check (1))
     return muos_error_bgq_overflow;
 
-  MUOS_QUEUE_PUSHFRONT(muos_bgq, (f));
+  muos_queue_pushfront (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f);
   return muos_success;
 }
 
@@ -103,7 +103,7 @@ muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
   if (!muos_bgq_check (2))
     return muos_error_bgq_overflow;
 
-  MUOS_QUEUE_PUSHFRONT_ARG(muos_bgq, (f), (a));
+  muos_queue_pushfront_arg (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f, a);
   return muos_success;
 }
 
