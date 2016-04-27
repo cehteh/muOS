@@ -395,7 +395,7 @@ MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
 
 #uart_config:MUOS_SERIAL_RXCALLBACK
 #: MUOS_SERIAL_RXCALLBACK::
-#: function to be called from hpq when a character is received
+#: Function to be called from 'hpq' to handle the RX buffer data
 #MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=serial_echo
 MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 

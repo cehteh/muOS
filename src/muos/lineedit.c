@@ -134,7 +134,7 @@ utf8line_redraw (void)
 
 
 
-void
+bool
 muos_lineedit (void)
 {
   uint8_t data = muos_serial_rx_byte ();
@@ -146,7 +146,7 @@ muos_lineedit (void)
         {
           if (utf8cont (data))
             {
-              return;
+              return true;
             }
           else
             pending = 0;
@@ -155,7 +155,7 @@ muos_lineedit (void)
       if (data > 127)
         {
           muos_output_char (7);
-          return;
+          return true;
         }
 #endif
 
@@ -462,5 +462,6 @@ muos_lineedit (void)
       muos_status.lineedit_pending = false;
     }
 
+  return true;
 }
 
