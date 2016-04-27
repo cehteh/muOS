@@ -21,6 +21,7 @@
 #include <muos/serial.h>
 #include <muos/io.h>
 #include <muos/error.h>
+#include <muos/lib/utf8.h>
 
 #include <string.h>
 
@@ -56,65 +57,11 @@ enum
   };
 
 
-
 #ifdef MUOS_LINEEDIT_UTF8
-
-//PLANNED: refactor utf8 functions into lib, user needs them too
-
-static inline bool
-utf8start (const char c)
-{
-  return ((c & 192) == 192);
-}
-
-static inline bool
-utf8cont (const char c)
-{
-  return ((c & 192) == 128);
-}
-
-static inline bool
-utf8ascii (const char c)
-{
-  return !(c & 128);
-}
-
-
-#if 0 //unused
-static uint8_t
-utf8len (const char* str)
-{
-  uint8_t len = 0;
-  for (; *str; ++str)
-    if (!utf8cont (*str))
-      ++len;
-   return len;
-}
-#endif
-
-
-static uint8_t
-utf8size (const char* start)
-{
-  while (utf8cont (*start))
-    --start;
-
-  uint8_t size = 1;
-  if (utf8start (*start))
-    {
-      size = 2;
-      for (uint8_t s = *start<<2; s&128; s<<=1)
-        {
-          ++size;
-        }
-    }
-  return size;
-}
-
 static void
 utf8del (void)
 {
-  uint8_t len = utf8size (buffer+cursor);
+  uint8_t len = muos_utf8size (buffer+cursor);
   used -= len;
   memmove (buffer+cursor, buffer+cursor+len, used-cursor+len);
 }
@@ -142,7 +89,7 @@ muos_lineedit (void)
 #ifdef MUOS_LINEEDIT_UTF8
       if (pending == UTF8DROP)
         {
-          if (utf8cont (data))
+          if (muos_utf8cont (data))
             {
               return true;
             }
@@ -211,7 +158,7 @@ muos_lineedit (void)
           if (cursor<used)
             {
 #ifdef MUOS_LINEEDIT_UTF8
-              cursor += utf8size (buffer+cursor);
+              cursor += muos_utf8size (buffer+cursor);
               utf8line_redraw ();
 #else
               ++cursor;
@@ -230,7 +177,7 @@ muos_lineedit (void)
           if (cursor)
             {
 #ifdef MUOS_LINEEDIT_UTF8
-              cursor -= utf8size (buffer+cursor-1);
+              cursor -= muos_utf8size (buffer+cursor-1);
               utf8line_redraw ();
 #else
               --cursor;
@@ -363,7 +310,7 @@ muos_lineedit (void)
           if (cursor > 0)
             {
 #ifdef MUOS_LINEEDIT_UTF8
-              uint8_t len = utf8size (buffer+cursor-1);
+              uint8_t len = muos_utf8size (buffer+cursor-1);
 
               used -= len;
               cursor -= len;
@@ -397,16 +344,16 @@ muos_lineedit (void)
 
 #ifdef MUOS_LINEEDIT_UTF8
 
-          if (utf8start (data))
+          if (muos_utf8start (data))
             {
-              pending = utf8size ((const char*)&data);
+              pending = muos_utf8size ((const char*)&data);
             }
-          else if (utf8ascii (data))
+          else if (muos_utf8ascii (data))
             {
               pending = UTF8_1;
             }
 
-          uint8_t ovwr_len = cursor < used && muos_status.lineedit_ovwr?utf8size (buffer+cursor):0;
+          uint8_t ovwr_len = cursor < used && muos_status.lineedit_ovwr?muos_utf8size (buffer+cursor):0;
 
           if (used+pending - ovwr_len >= MUOS_LINEEDIT_BUFFER)
             {
@@ -419,7 +366,7 @@ muos_lineedit (void)
               break;
             }
 
-          if (ovwr_len && !utf8cont (data))
+          if (ovwr_len && !muos_utf8cont (data))
             utf8del ();
 
 #if MUOS_LINEEDIT_RECALL == 1

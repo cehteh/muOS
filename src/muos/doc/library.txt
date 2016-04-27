@@ -82,5 +82,13 @@ PIPADOC:=lib_cbuffer_api
 PIPADOC:@lib_cbuffer_config
 
 
+=== utf8
+
+Few routines for handling utf8 encoded strings.
+
+==== API
+
+PIPADOC:=lib_utf8_api
+
 
 // not yet muos/lib/lpriq.h
