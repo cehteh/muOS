@@ -250,6 +250,10 @@ main()
 
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
 
+#ifdef MUOS_DEBUG
+  muos_debug_init ();
+#endif
+
 #if MUOS_DEBUG_BUSY ==1
   //TODO: hardware dependent
   //PLANNED: debug driver

@@ -1,0 +1,14 @@
+=== Debug
+
+Subsystem for using few GPIOs as debug outputs for mµOS internals and user
+defined channels.
+
+==== API
+
+PIPADOC:=debug_api
+
+==== configuration
+
+PIPADOC:@debug_config
+
+

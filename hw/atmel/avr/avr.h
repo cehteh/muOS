@@ -26,6 +26,18 @@
 #include <avr/sleep.h>
 #include <avr/pgmspace.h>
 
+//FIXME: mpu specific
+//PLANNED: cleanup macros when to use arguments, when tuple
+
+#define MUOS_GPIO_SET(port, pin) PORT##port |= _BV(PORT##port##pin)
+#define MUOS_GPIO_SET_(hw) MUOS_GPIO_SET hw
+
+#define MUOS_GPIO_CLEAR(port, pin) PORT##port &= ~_BV(PORT##port##pin)
+#define MUOS_GPIO_CLEAR_(hw) MUOS_GPIO_CLEAR hw
+
+#define MUOS_GPIO_TOGGLE(port, pin) PIN##port |= _BV(PIN##port##pin)
+#define MUOS_GPIO_TOGGLE_(hw) MUOS_GPIO_TOGGLE hw
+
 #define MUOS_PSTR(s) PSTR(s)
 typedef const __flash char muos_flash_cstr[];
 
@@ -53,15 +65,11 @@ muos_hw_sleep_prepare (const uint8_t mode)
 static inline void
 muos_hw_sleep (void)
 {
-#if MUOS_DEBUG_BUSY ==1
-  PORTB &= ~_BV(PINB5);
-#endif
+  MUOS_DEBUG_BUSY_OFF;
   sei ();
   sleep_cpu ();
   cli ();
-#if MUOS_DEBUG_BUSY ==1
-  PORTB |= _BV(PINB5);
-#endif
+  MUOS_DEBUG_BUSY_ON;
 }
 
 static inline void

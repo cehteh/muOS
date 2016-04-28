@@ -22,14 +22,9 @@
 
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
-#if MUOS_DEBUG_INTR == 1
-  //TODO: PORTB |= _BV(PINB4);
-#endif
+  MUOS_DEBUG_INTR_ON;
   ++muos_clock_count_;
-#if MUOS_DEBUG_INTR ==1
-  //TODO: PORTB &= ~_BV(PINB4);
-#endif
-
+  MUOS_DEBUG_INTR_OFF;
 }
 
 // compmatch interrupt is only used to wake the mainloop
