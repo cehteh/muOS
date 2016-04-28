@@ -79,27 +79,6 @@ LDFLAGS += -Wl,--relax,--gc-sections
 LDFLAGS += -Xlinker --no-fatal-warnings
 
 
-
-# muos_config:MUOS_DEBUG_BUSY
-# : Uses a GPIO to indicate when the CPU is busy,
-# : otherwise, while sleeping the GPIO is turned off.
-#TODO: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_BUSY=1
-
-
-# muos_config:MUOS_DEBUG_INTR
-# : Uses a GPIO to indicate when the CPU is handling interrupts,
-# : otherwise, the GPIO is turned off.
-#TODO: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_INTR=1
-
-
-# muos_config:MUOS_DEBUG_ERROR
-# : Uses a GPIO to indicate when an error got set,
-# : otherwise, the GPIO is turned off.
-#TODO: currently hardcoded GPIO
-MUOS_CONFIG += -DMUOS_DEBUG_ERROR=1
-
 #muos_config:MUOS_INITFN
 #: MUOS_INITFN::
 #: Name of the user-defined initialization function.
@@ -581,6 +560,50 @@ MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=1
 #: MUOS_CPPM_CALLBACK::
 #: function to be pushed to the hpq when a frame got received
 MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
+
+
+
+#debug_config:MUOS_DEBUG
+#: MUOS_DEBUG::
+#: When defined, the debug driver is enabled
+MUOS_CONFIG += -DMUOS_DEBUG
+
+
+
+#debug_config:MUOS_DEBUG_BUSY
+#: MUOS_DEBUG_BUSY::
+#: Uses a GPIO to indicate when the CPU is busy.
+#: While sleeping the GPIO is turned off.
+MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(D,3)'
+
+
+
+#debug_config:MUOS_DEBUG_INTR
+#: MUOS_DEBUG_INTR::
+#: Uses a GPIO to indicate when the CPU is handling interrupts.
+MUOS_CONFIG += -DMUOS_DEBUG_INTR='(D,2)'
+
+
+
+#debug_config:MUOS_DEBUG_ERROR
+#: MUOS_DEBUG_ERROR::
+#: Uses a GPIO to indicate when an error got set,
+#: Turned off when no errors are pending.
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,5)'
+
+
+
+#debug_config:MUOS_DEBUG_Cx
+#: MUOS_DEBUG_Cx::
+#: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
+#: User defined Debugging channels.
+#MUOS_CONFIG += -DMUOS_DEBUG_C1='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C2='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C3='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C4='()'
+
+
+
 
 
 
