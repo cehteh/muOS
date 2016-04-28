@@ -49,9 +49,7 @@ muos_hw_serial_init (void)
 #if MUOS_SERIAL_TXBUFFER > 1
 ISR(USART_UDRE_vect)
 {
-#if MUOS_DEBUG_INTR == 1
-  PORTB |= _BV(PINB4);
-#endif
+  MUOS_DEBUG_INTR_ON;
 
   if (muos_txbuffer.descriptor.len)
     {
@@ -59,9 +57,8 @@ ISR(USART_UDRE_vect)
       if (!muos_txbuffer.descriptor.len)
         muos_hw_serial_tx_stop ();
     }
-#if MUOS_DEBUG_INTR ==1
-  PORTB &= ~_BV(PINB4);
-#endif
+
+  MUOS_DEBUG_INTR_OFF;
 }
 #endif
 
@@ -69,9 +66,7 @@ ISR(USART_UDRE_vect)
 #if MUOS_SERIAL_RXBUFFER > 1
 ISR(USART_RX_vect)
 {
-#if MUOS_DEBUG_INTR == 1
-  PORTB |= _BV(PINB4);
-#endif
+  MUOS_DEBUG_INTR_ON;
   //TODO: disable error checks depending on config (no parity etc)
 
   bool err = false;
@@ -124,9 +119,7 @@ ISR(USART_RX_vect)
         }
     }
 
-#if MUOS_DEBUG_INTR ==1
-  PORTB &= ~_BV(PINB4);
-#endif
+  MUOS_DEBUG_INTR_OFF;
 }
 #endif
 

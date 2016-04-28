@@ -51,6 +51,7 @@ void MUOS_CPPM_CALLBACK (void);
 
 ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
 {
+  MUOS_DEBUG_INTR_ON;
   muos_clock now = ICR1;
   //PLANNED: compile time check that hwclock and icp match
   now += ((TIFR1 & _BV(TOV1)) && (now < (muos_hwclock)~0/2))
@@ -106,6 +107,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
           muos_error_set_isr (muos_error_cppm_hpq_callback);
 #endif
     }
+  MUOS_DEBUG_INTR_OFF;
 }
 
 

@@ -43,6 +43,7 @@ PIPADOC:=serial
 
 PIPADOC:=cppm
 
+PIPADOC:=debug
 
 PIPADOC:PLANNED: example/howto
 PIPADOC:PLANNED: project structure structure

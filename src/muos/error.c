@@ -30,9 +30,7 @@ muos_error_set_isr (muos_error err)
 {
   if (err && !(muos_errors_[err/8] & 1<<(err%8)))
       {
-#if MUOS_DEBUG_ERROR == 1
-        PORTD |= _BV(PIND2);
-#endif
+        MUOS_DEBUG_ERROR_ON;
         muos_errors_[err/8] |= 1<<(err%8);
         ++muos_errors_pending_;
       }
@@ -70,9 +68,11 @@ muos_error_check_isr (muos_error err)
       if (ret)
         --muos_errors_pending_;
 
-#if MUOS_DEBUG_ERROR ==1
+#ifdef MUOS_DEBUG_ERROR
       if (!muos_errors_pending_)
-        PORTD &= ~_BV(PIND2);
+        {
+          MUOS_DEBUG_ERROR_OFF;
+        }
 #endif
     }
 
