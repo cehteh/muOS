@@ -32,12 +32,14 @@
   MUOS_ERROR(error_clpq_overflow) /*: {ERRORDEF} clock priority queue full */                   \
   MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                     \
   MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */               \
+  MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                   \
+  MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                   \
+  MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                   \
   MUOS_ERROR(error_rx_buffer_overflow) /*: {ERRORDEF} dropped received data (user code) */      \
   MUOS_ERROR(error_rx_buffer_underflow) /*: {ERRORDEF} read while no data available */          \
   MUOS_ERROR(error_rx_frame) /*: {ERRORDEF} wrong stop bit timing */                            \
   MUOS_ERROR(error_rx_overrun) /*: {ERRORDEF} dropped received data (uart driver) */            \
   MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                           \
-  MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                   \
   MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */           \
   MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                     \
   MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */

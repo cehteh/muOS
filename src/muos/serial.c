@@ -43,22 +43,68 @@ muos_serial_30init (void)
 
 #if MUOS_SERIAL_TXBUFFER > 1
 muos_error
-muos_serial_tx_byte (uint8_t b)
+muos_serial_tx_nonblocking_byte (uint8_t b)
 {
   muos_error ret = muos_success;
 
-  muos_hw_serial_tx_stop ();
-
-  if (MUOS_CBUFFER_FREE (muos_txbuffer) > 0)
+  if (!muos_status.serial_tx_blocked)
     {
-      MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+      muos_hw_serial_tx_stop ();
+
+      if (MUOS_CBUFFER_FREE (muos_txbuffer) > 0)
+        {
+          MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+        }
+      else
+        {
+          ret = muos_error_tx_buffer_overflow;
+        }
+
+      muos_hw_serial_tx_run ();
     }
   else
     {
-      ret = muos_error_tx_buffer_overflow;
+      ret = muos_error_tx_blocked;
     }
 
+  return ret;
+}
+
+static bool
+txtest (intptr_t n)
+{
+  bool ret;
+  muos_hw_serial_tx_stop ();
+  ret = MUOS_CBUFFER_FREE (muos_txbuffer) >= (muos_cbuffer_index) n;
   muos_hw_serial_tx_run ();
+  return ret;
+}
+
+
+muos_error
+muos_serial_tx_blocking_byte (uint8_t b)
+{
+  muos_error ret = muos_success;
+
+  if (!muos_status.serial_tx_blocked)
+    {
+      muos_status.serial_tx_blocked = true;
+      //TODO: calculate timeout baudrate for txbuffer characters
+      ret = muos_wait (txtest, 1, MUOS_CLOCK_MILLISECONDS(10));
+      muos_status.serial_tx_blocked = false;
+
+      if (!ret)
+        {
+          muos_hw_serial_tx_stop ();
+          MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+          muos_hw_serial_tx_run ();
+        }
+    }
+  else
+    {
+      ret = muos_error_tx_blocked;
+    }
+
   return ret;
 }
 
@@ -71,22 +117,66 @@ muos_serial_tx_byte (uint8_t b)
 
 #if MUOS_SERIAL_RXBUFFER > 1
 uint8_t
-muos_serial_rx_byte (void)
+muos_serial_rx_nonblocking_byte (void)
 {
   uint8_t ret = 0;
 
-  muos_hw_serial_rx_stop ();
-
-  if (MUOS_CBUFFER_USED (muos_rxbuffer))
+  if (!muos_status.serial_rx_blocked)
     {
-      ret = MUOS_CBUFFER_POP (muos_rxbuffer);
+      muos_hw_serial_rx_stop ();
+
+      if (MUOS_CBUFFER_USED (muos_rxbuffer))
+        {
+          ret = MUOS_CBUFFER_POP (muos_rxbuffer);
+        }
+      else
+        {
+          muos_error_set (muos_error_rx_buffer_underflow);
+        }
+
+      muos_hw_serial_rx_run ();
     }
   else
     {
-      muos_error_set (muos_error_rx_buffer_underflow);
+      muos_error_set (muos_error_rx_blocked);
     }
 
+  return ret;
+}
+
+static bool
+rxtest (intptr_t n)
+{
+  bool ret;
+  muos_hw_serial_rx_stop ();
+  ret = MUOS_CBUFFER_USED (muos_rxbuffer) >= (muos_cbuffer_index) n;
   muos_hw_serial_rx_run ();
+  return ret;
+}
+
+uint8_t
+muos_serial_rx_blocking_byte (muos_shortclock timeout)
+{
+  uint8_t ret = 0;
+
+  if (!muos_status.serial_rx_blocked)
+    {
+      muos_status.serial_rx_blocked = true;
+      muos_error err = muos_error_set (muos_wait (rxtest, 1, timeout));
+      muos_status.serial_rx_blocked = false;
+
+      if (!err)
+        {
+          muos_hw_serial_rx_stop ();
+          ret = MUOS_CBUFFER_POP (muos_rxbuffer);
+          muos_hw_serial_rx_run ();
+        }
+    }
+  else
+    {
+      muos_error_set (muos_error_rx_blocked);
+    }
+
   return ret;
 }
 
@@ -103,7 +193,7 @@ muos_serial_rxhpq_call (void)
 {
   bool again = MUOS_SERIAL_RXCALLBACK ();
 
-  muos_interrupt_disable ();
+  muos_interrupt_disable (); // no need for enable, mainloop will disable on return
   if (again && MUOS_CBUFFER_USED (muos_rxbuffer))
     muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
   else

@@ -26,18 +26,25 @@ the stream where it changes into the synchronized state and data can be read.
 This ensures that only complete lines are returned to the program. Details can
 be be configured. In future it will also synchronize when the line is idle.
 
-Pushing a byte to the TX buffer may return an overflow error, the user is
-advised to handle this. Checking for free space of this buffer will be
-supported later but there will be still a race condition between this check
-and the actual push operation. No other errors can happen on the TX side.
+I/O comes in blocking and non-blocking variants each can be called
+independently for TX and RX. Blocking I/O means that the job making the I/O is
+put on hold and the scheduler is called recursively with 'muos_wait()'. There
+can be only one non-blocking (per direction) I/O pending at any time. Further
+attempts to do I/O will result in a 'muos_tx_blocked' or 'muos_rx_blocked'
+error.
 
-Popping a byte from the RX buffer may flag an async error when the buffer is
-empty. 'muos_serial_rx_byte ()' will return zero in this case, only then the
-error needs to be checked. The receiver has also some more error conditions
-which get flagged asynchronously. One has to check for those regularly.
+Blocking I/O is in some cases more convenient but needs more space on
+the stack and few more errors can happen. It still works very well with small
+buffers which may outweigh the stack costs. Over/under-runs of the buffers can
+never happen.
+
+Non-Blocking I/O is easier to use when it is used exclusively, then only
+errors for buffer over/under-runs need to be handled, but the program logic
+can become more complicated when a lot data needs to be transferred as some
+requests might be larger than the buffers.
 
 There is also support for registering a function which gets pushed onto the
-hpq when characters ready for reading. MµOS comes with a line editor which can
+'hpq' when characters ready for reading. MµOS comes with a line editor which can
 be used in this place.
 
 ===== API
