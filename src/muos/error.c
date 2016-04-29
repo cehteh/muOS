@@ -25,7 +25,7 @@
 volatile uint8_t muos_errors_pending_;
 volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 
-void
+muos_error
 muos_error_set_isr (muos_error err)
 {
   if (err && !(muos_errors_[err/8] & 1<<(err%8)))
@@ -34,9 +34,11 @@ muos_error_set_isr (muos_error err)
         muos_errors_[err/8] |= 1<<(err%8);
         ++muos_errors_pending_;
       }
+  return err;
 }
 
-void
+
+muos_error
 muos_error_set (muos_error err)
 {
   if (err)
@@ -45,6 +47,7 @@ muos_error_set (muos_error err)
       muos_error_set_isr (err);
       muos_interrupt_enable ();
     }
+  return err;
 }
 
 bool
