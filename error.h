@@ -96,12 +96,14 @@ muos_error_pending (void)
 //:
 //: The '*_isr' function is for contexts where interrupts are disabled.
 //:
+//: Returns 'err'.
+//:
 //PLANNED: do we need a muos_error_again in case a error was already set?
 //:
-void
+muos_error
 muos_error_set_isr (muos_error err);
 
-void
+muos_error
 muos_error_set (muos_error err);
 
 
