@@ -36,6 +36,8 @@ muos_serial_30init (void);
 //uart_api:
 //: .Sending data
 //: ----
+//: muos_error muos_serial_tx_nonblocking_byte (uint8_t b);
+//: muos_error muos_serial_tx_blocking_byte (uint8_t b);
 //: muos_error muos_serial_tx_byte (uint8_t data)
 //: ----
 //:
@@ -43,9 +45,57 @@ muos_serial_30init (void);
 //:   The byte to send
 //:
 //: Pushes a single byte on the TX buffer.
-//: Returns 'muos_success' on success or 'muos_error_tx_buffer_overflow' on error.
+//:
+//: muos_serial_tx_nonblocking_byte::
+//:   Will not block. In case of error one of the following errors gets returned:
+//:
+//:   muos_error_tx_buffer_overflow:::
+//:     Transmission buffer is full
+//:
+//:   muos_error_tx_blocked:::
+//:     There is already a blocking write pending
+//:
+//: muos_serial_tx_blocking_byte::
+//:   Waits until data can be send, entering the scheduler recursively.
+//:   May return one of the following errors:
+//:
+//:   muos_warn_sched_depth:::
+//:     Scheduler depth  exceeded.
+//:
+//:   muos_error_tx_blocked:::
+//:     There is already a blocking write pending
+//:
+//:   muos_warn_wait_timeout:::
+//:     TX got stuck. The timeout is calculated internally depending on baudrate so
+//:     that some chars should been send. When this error happens something got
+//:     seriously wrong and the TX doesn't send any data.
+//:
+//: muos_serial_tx_byte::
+//:   Picks one of the functions above, depending on configuration.
+//:
+//: All calls return 'muos_success' on success or errors as noted above.
+//:
 muos_error
-muos_serial_tx_byte (uint8_t b);
+muos_serial_tx_nonblocking_byte (uint8_t b);
+
+muos_error
+muos_serial_tx_blocking_byte (uint8_t b);
+
+static inline muos_error
+muos_serial_tx_byte (uint8_t b)
+{
+#ifdef MUOS_SERIAL_TX_BLOCKING
+  return muos_serial_tx_blocking_byte (b);
+#else
+  return muos_serial_tx_nonblocking_byte (b);
+#endif
+}
+
+
+
+//  muos_error
+//muos_serial_tx_blocking_byte (uint8_t b)
+
 
 //PLANNED: muos_cbuffer_index muos_serial_tx_avail (void);
 
@@ -53,15 +103,66 @@ muos_serial_tx_byte (uint8_t b);
 //uart_api:
 //: .Reading data
 //: ----
+//: uint8_t muos_serial_rx_nonblocking_byte (void)
+//: uint8_t muos_serial_rx_blocking_byte (muos_shortclock timeout)
 //: uint8_t muos_serial_rx_byte (void)
 //: ----
 //:
+//: +timeout+::
+//:   Time to wait for blocking reads
+//:
 //: Pops and a byte from the receive buffer.
-//: When the buffer was empty, zero is returned and 'muos_error_rx_buffer_underflow'
-//: gets flagged.
+//:
+//: muos_serial_rx_nonblocking_byte::
+//:  Will not block. In case of error one of the following errors gets flagged:
+//:
+//:   muos_error_rx_buffer_underflow:::
+//:     No data available for reading
+//:
+//:   muos_error_rx_blocked:::
+//:     There is already a blocking read pending
+//:
+//: muos_serial_rx_blocking_byte::
+//:   Waits until data becomes available, entering the scheduler recursively.
+//:   May flag one of the following errors:
+//:
+//:   muos_warn_sched_depth:::
+//:     Scheduler depth  exceeded.
+//:
+//:   muos_error_rx_blocked:::
+//:     There is already a blocking read pending
+//:
+//:   muos_warn_wait_timeout:::
+//:     No data received within 'timeout'.
+//:
+//: muos_serial_rx_byte::
+//:   Picks one of the functions above, depending on configuration.
+//:   In the blocking cause it waits forever.
+//:
+//: All calls return 'muos_success' on success or errors as noted above.
 //:
 uint8_t
-muos_serial_rx_byte (void);
+muos_serial_rx_nonblocking_byte (void);
+
+uint8_t
+muos_serial_rx_blocking_byte (muos_shortclock timeout);
+
+static inline uint8_t
+muos_serial_rx_byte (void)
+{
+#ifdef MUOS_SERIAL_RX_BLOCKING
+  uint8_t ret;
+
+  do {
+    ret = muos_serial_rx_blocking_byte (~0);
+  } while (!ret && muos_error_check (muos_warn_wait_timeout));
+  return ret;
+#else
+  return muos_serial_rx_nonblocking_byte ();
+#endif
+}
+
+
 
 //PLANNED: muos_cbuffer_index muos_serial_rx_avail (void);
 
