@@ -30,7 +30,7 @@ struct fmtconfig_type pfmtconfig = {10, 0, 0, 15, 15};
 struct fmtconfig_type fmtconfig = {10, 0, 0, 15, 15};
 
 
-#if MUOS_SERIAL_TXQUEUE == 0
+#ifndef MUOS_SERIAL_TXQUEUE
 //PLANNED: fixed point for integers and mille delimiters
 
 muos_error
