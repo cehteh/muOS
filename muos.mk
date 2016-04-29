@@ -76,7 +76,7 @@ include muos/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
-all: $(IMAGES) doc show_issues
+all: $(IMAGES) show_issues
 	$(PRINTFMT) '$(IMAGES)' IMAGES
 
 # dependencies on variables
@@ -220,7 +220,7 @@ endif
 planned_gitbranch: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PLANNED
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) | grep -A 5 -i '^[^ ]*$(GITBRANCH).*::' 1>&2
+	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) | { grep -A 5 -i '^[^ ]*$(GITBRANCH).*::'; true; } 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
