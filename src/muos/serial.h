@@ -166,6 +166,9 @@ muos_serial_rx_byte (void)
 
 //PLANNED: muos_cbuffer_index muos_serial_rx_avail (void);
 
+void
+muos_serial_rx_flush (void);
+
 
 //uart_api:
 //: .RX Callback type

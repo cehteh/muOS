@@ -180,6 +180,16 @@ muos_serial_rx_blocking_byte (muos_shortclock timeout)
   return ret;
 }
 
+
+
+void
+muos_serial_rx_flush (void)
+{
+  muos_hw_serial_rx_stop ();
+  muos_cbuffer_init (&muos_rxbuffer.descriptor);
+  muos_hw_serial_rx_run ();
+}
+
 //muos_cbuffer_index
 //PLANNED: muos_serial_rx_avail (void)
 //{
