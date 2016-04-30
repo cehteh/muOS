@@ -35,7 +35,8 @@ static char buffer[MUOS_LINEEDIT_BUFFER];
 static char recall;
 #endif
 
-
+//PLANNED: strategy on input errors, desync?
+//FIXME: full line overflow, because lineedit buffer > txqueue
 
 static uint8_t pending;
 

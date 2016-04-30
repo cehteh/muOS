@@ -78,11 +78,17 @@ extern struct fmtconfig_type fmtconfig;
   OUTPUTFN(int64_R) /* signed numeric value by reference */                                     \
   OUTPUTFN(uint64_R) /* unsigned numeric value by reference */                                  \
   OUTPUTFN(upcase, bool) /* set digit representation for the next integer conversion */         \
-  OUTPUTFN(base, uint8_t) /* set numeric base for the next integer conversion (2-36) */                \
+  OUTPUTFN(base, uint8_t) /* set numeric base for the next integer conversion (2-36) */         \
   OUTPUTFN(pupcase, bool) /* set default digit representation */                                \
-  OUTPUTFN(pbase, uint8_t) /* set default numeric base (2-36) */                                       \
+  OUTPUTFN(pbase, uint8_t) /* set default numeric base (2-36) */
 
-//PLANNED:  OUTPUTFN(float, float) /* */
+
+// for transaction support
+//PLANNED:  OUTPUTFN(commit) /* */
+//PLANNED:  OUTPUTFN(abort) /* */
+//PLANNED:  OUTPUTFN(commitnl) /* */
+
+
 //PLANNED:  OUTPUTFN(float_R) /* */
 //PLANNED:  OUTPUTFN(ifmt, uint8_t, uint8_t) /* */
 //PLANNED:  OUTPUTFN(ffmt, char) /* */

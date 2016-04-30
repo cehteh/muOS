@@ -23,7 +23,7 @@
 
 #include <muos/hw/atmel/avr/avr.h>
 
-
+//PLANNED: generic macros -> muos.h INPUT, OUTPUT, PULLUP, PULLDOWN, NOP
 #define CONFIGURE_OUTPUT_(port, pin) DDR##port |= _BV(DD##port##pin)
 #define CONFIGURE_OUTPUT(hw) CONFIGURE_OUTPUT_ hw
 

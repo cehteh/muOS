@@ -28,7 +28,7 @@
 
 #include <muos/io.h>
 
-#if MUOS_SERIAL_TXQUEUE > 1
+#ifdef MUOS_SERIAL_TXQUEUE
 
 static struct fmtconfig_type txq_pfmtconfig = {10, 0, 0, 15, 15};
 static struct fmtconfig_type txq_fmtconfig = {10, 0, 0, 15, 15};
@@ -36,7 +36,7 @@ static struct fmtconfig_type txq_fmtconfig = {10, 0, 0, 15, 15};
 
 muos_txqueue_type muos_txqueue;
 
-//PLANNED: transaction support with begin/end
+//PLANNED: transaction support with commit/abort
 
 // Format:
 //  The queue is a stream of uint8_t values.

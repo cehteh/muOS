@@ -26,8 +26,16 @@
 #include <avr/sleep.h>
 #include <avr/pgmspace.h>
 
-//FIXME: mpu specific
+#include <muos/debug.h>
+
 //PLANNED: cleanup macros when to use arguments, when tuple
+
+//FIXME: mpu specific
+
+//PLANNED: generic macros -> muos.h INPUT, OUTPUT, PULLUP, PULLDOWN, NOP
+//#define CONFIGURE_GPIO_(port, pin) DDR##port |= _BV(DD##port##pin)
+//#define CONFIGURE_GPIO(hw) CONFIGURE_OUTPUT_ hw
+//PLANNED: also GPIO_SET for input states (config + set)
 
 #define MUOS_GPIO_SET(port, pin) PORT##port |= _BV(PORT##port##pin)
 #define MUOS_GPIO_SET_(hw) MUOS_GPIO_SET hw
