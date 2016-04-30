@@ -379,6 +379,12 @@ MUOS_CONFIG += -DMUOS_SERIAL_RX_BLOCKING
 
 
 
+#PLANNED: flag for disabling blocking io
+#PLANNED: avr-libc stdio
+#PLANNED: investigate if its better to return int16_t with negative error code than async errors on rx_byte
+
+
+
 #uart_config:MUOS_SERIAL_RXSYNC
 #: MUOS_SERIAL_RXSYNC::
 #: The receiver stays in desynced state unti the given character got received
