@@ -28,7 +28,6 @@
 
 //TODO: fixup, documentation
 
-#include MUOS_HW_HEADER
 
 
 

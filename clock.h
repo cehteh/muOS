@@ -23,7 +23,7 @@
 
 #include <stdbool.h>
 
-#include <muos/muos.h>
+#include MUOS_HW_HEADER
 
 //PLANNED: dont inline clock functions
 
