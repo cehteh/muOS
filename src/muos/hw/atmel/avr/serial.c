@@ -100,22 +100,23 @@ ISR(USART_RX_vect)
 
   //PLANNED: sync when line is idle
 
-  if (!err && !muos_status.serial_rx_sync)
+  if (!err)
     {
-      if (data == MUOS_SERIAL_RXSYNC)
-        muos_status.serial_rx_sync = true;
-    }
-
-  if (muos_status.serial_rx_sync)
-    {
-      MUOS_CBUFFER_PUSH (muos_rxbuffer, data);
-
-      if (!muos_status.serial_rxhpq_pending)
+      if (muos_status.serial_rx_sync)
         {
-          muos_status.serial_rxhpq_pending = true;
+          MUOS_CBUFFER_PUSH (muos_rxbuffer, data);
+
+          if (!muos_status.serial_rxhpq_pending)
+            {
+              muos_status.serial_rxhpq_pending = true;
 #ifdef MUOS_SERIAL_RXCALLBACK
-          muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
+              muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
 #endif
+            }
+        }
+      else if (data == MUOS_SERIAL_RXSYNC)
+        {
+          muos_status.serial_rx_sync = true;
         }
     }
 
