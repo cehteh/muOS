@@ -108,6 +108,17 @@ muos_serial_tx_blocking_byte (uint8_t b)
   return ret;
 }
 
+
+
+void
+muos_serial_tx_flush (void)
+{
+  muos_hw_serial_tx_stop ();
+  muos_cbuffer_init (&muos_txbuffer.descriptor);
+  muos_hw_serial_tx_run ();
+}
+
+
 //muos_cbuffer_index
 //PLANNED: muos_serial_tx_avail (void)
 //{
@@ -116,10 +127,10 @@ muos_serial_tx_blocking_byte (uint8_t b)
 #endif
 
 #if MUOS_SERIAL_RXBUFFER > 1
-uint8_t
+int16_t
 muos_serial_rx_nonblocking_byte (void)
 {
-  uint8_t ret = 0;
+  int16_t ret;
 
   if (!muos_status.serial_rx_blocked)
     {
@@ -131,14 +142,14 @@ muos_serial_rx_nonblocking_byte (void)
         }
       else
         {
-          muos_error_set (muos_error_rx_buffer_underflow);
+          ret = -muos_error_rx_buffer_underflow;
         }
 
       muos_hw_serial_rx_run ();
     }
   else
     {
-      muos_error_set (muos_error_rx_blocked);
+      ret = -muos_error_rx_blocked;
     }
 
   return ret;
@@ -154,27 +165,31 @@ rxtest (intptr_t n)
   return ret;
 }
 
-uint8_t
+int16_t
 muos_serial_rx_blocking_byte (muos_shortclock timeout)
 {
-  uint8_t ret = 0;
+  int16_t ret;
 
   if (!muos_status.serial_rx_blocked)
     {
-      muos_status.serial_rx_blocked = true;
-      muos_error err = muos_error_set (muos_wait (rxtest, 1, timeout));
-      muos_status.serial_rx_blocked = false;
-
-      if (!err)
+      do
         {
-          muos_hw_serial_rx_stop ();
-          ret = MUOS_CBUFFER_POP (muos_rxbuffer);
-          muos_hw_serial_rx_run ();
+          muos_status.serial_rx_blocked = true;
+          ret = -muos_wait (rxtest, 1, timeout?timeout:~0U);
+          muos_status.serial_rx_blocked = false;
+
+          if (!ret)
+            {
+              muos_hw_serial_rx_stop ();
+              ret = MUOS_CBUFFER_POP (muos_rxbuffer);
+              muos_hw_serial_rx_run ();
+            }
         }
+      while (timeout == 0 && ret == -muos_warn_wait_timeout);
     }
   else
     {
-      muos_error_set (muos_error_rx_blocked);
+      ret = -muos_error_rx_blocked;
     }
 
   return ret;
@@ -183,10 +198,11 @@ muos_serial_rx_blocking_byte (muos_shortclock timeout)
 
 
 void
-muos_serial_rx_flush (void)
+muos_serial_rx_flush (bool desync)
 {
   muos_hw_serial_rx_stop ();
   muos_cbuffer_init (&muos_rxbuffer.descriptor);
+  muos_status.serial_rx_sync = !desync;
   muos_hw_serial_rx_run ();
 }
 

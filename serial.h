@@ -92,9 +92,8 @@ muos_serial_tx_byte (uint8_t b)
 }
 
 
-
-//  muos_error
-//muos_serial_tx_blocking_byte (uint8_t b)
+void
+muos_serial_tx_flush (void);
 
 
 //PLANNED: muos_cbuffer_index muos_serial_tx_avail (void);
@@ -103,18 +102,20 @@ muos_serial_tx_byte (uint8_t b)
 //uart_api:
 //: .Reading data
 //: ----
-//: uint8_t muos_serial_rx_nonblocking_byte (void)
-//: uint8_t muos_serial_rx_blocking_byte (muos_shortclock timeout)
-//: uint8_t muos_serial_rx_byte (void)
+//: uint16_t muos_serial_rx_nonblocking_byte (void)
+//: uint16_t muos_serial_rx_blocking_byte (muos_shortclock timeout)
+//: uint16_t muos_serial_rx_byte (void)
 //: ----
 //:
 //: +timeout+::
 //:   Time to wait for blocking reads
 //:
-//: Pops and a byte from the receive buffer.
+//: Pops and a byte from the receive buffer. Zero or positive return value is
+//: a successful read from the buffer. Negative return indicates an error by the
+//: negated error number. Note that the UART driver may flag asynchronous errors too.
 //:
 //: muos_serial_rx_nonblocking_byte::
-//:  Will not block. In case of error one of the following errors gets flagged:
+//:  Will not block. Following errors can happen:
 //:
 //:   muos_error_rx_buffer_underflow:::
 //:     No data available for reading
@@ -124,7 +125,9 @@ muos_serial_tx_byte (uint8_t b)
 //:
 //: muos_serial_rx_blocking_byte::
 //:   Waits until data becomes available, entering the scheduler recursively.
-//:   May flag one of the following errors:
+//:   A timeout of 0 means infinite waits.
+//:
+//:   Following errors can happen:
 //:
 //:   muos_warn_sched_depth:::
 //:     Scheduler depth  exceeded.
@@ -137,26 +140,21 @@ muos_serial_tx_byte (uint8_t b)
 //:
 //: muos_serial_rx_byte::
 //:   Picks one of the functions above, depending on configuration.
-//:   In the blocking cause it waits forever.
+//:   The timeout for the blocking case defaults to infinite waits.
 //:
-//: All calls return 'muos_success' on success or errors as noted above.
+//: Return a character value or a negated error as noted above.
 //:
-uint8_t
+int16_t
 muos_serial_rx_nonblocking_byte (void);
 
-uint8_t
+int16_t
 muos_serial_rx_blocking_byte (muos_shortclock timeout);
 
-static inline uint8_t
+static inline int16_t
 muos_serial_rx_byte (void)
 {
 #ifdef MUOS_SERIAL_RX_BLOCKING
-  uint8_t ret;
-
-  do {
-    ret = muos_serial_rx_blocking_byte (~0);
-  } while (!ret && muos_error_check (muos_warn_wait_timeout));
-  return ret;
+  return muos_serial_rx_blocking_byte (0);
 #else
   return muos_serial_rx_nonblocking_byte ();
 #endif
@@ -167,7 +165,7 @@ muos_serial_rx_byte (void)
 //PLANNED: muos_cbuffer_index muos_serial_rx_avail (void);
 
 void
-muos_serial_rx_flush (void);
+muos_serial_rx_flush (bool desync);
 
 
 //uart_api:
