@@ -483,7 +483,7 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
 #cppm_config:MUOS_CPPM
 #: MUOS_CPPM::
 #: Enable the CPPM Parser for Radio Control Signals
-MUOS_CONFIG += -DMUOS_CPPM
+#MUOS_CONFIG += -DMUOS_CPPM
 
 
 #cppm_config:MUOS_CPPM_CHANNELS
