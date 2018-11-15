@@ -1,0 +1,3 @@
+[submodule "src/muos"]
+	path = src/muos
+	url = git://git.pipapo.org/muos
