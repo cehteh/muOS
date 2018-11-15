@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if MUOS_CPPM_CHANNELS > 0
+#if defined(MUOS_CPPM) && MUOS_CPPM_CHANNELS > 0
 
 #include <muos/clock.h>
 #include <muos/cppm.h>
