@@ -4,7 +4,9 @@ PIPADOC:PLANNED: different timebase, stable timing etc
 
 
 PIPADOC:PLANNED: docme MAKEFILE include  muos/muos.mk
+PIPADOC:PLANNED: build in build dird/vpath
 PIPADOC:PLANNED: docme  All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
+PIPADOC:PLANNED: load average/cpu utilization
 
 PIPADOC:PLANNED: rtpq realtime priority queue
 runs direct in timer interrupt, exact timing, wakes up a little earlier
@@ -110,3 +112,13 @@ muos/$feature.c -> portable subsystem interface implementaton
 muos/hw/$vendor/$architecture/$feature.h|c hardware specific
 
 Resource management at compiletime
+
+PIPADOC:PLANNED: -driver- mutex, bitmask possibly in GPIOR
+
+PIPADOC:PLANNED: -driver- avr libc time functions, system_tick each second
+
+PIPADOC:PLANNED: -driver- RTC lib
+store integral/offset for rtc/muos timer diff
+
+PIPADOC:PLANNED: -lib- filter
+rolling average, median

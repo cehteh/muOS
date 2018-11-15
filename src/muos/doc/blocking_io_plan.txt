@@ -1,0 +1,28 @@
+
+
+noutf8/notxqueue/nonblocking
+
+PIPADOC:FIXME: rxsync is not correctly recognized, needs 2 enter at start
+PIPADOC:FIXME: if lineedit buffer is biggier than txbuffer, output gets truncated
+
+
+noutf8/notxqueue/blocking
+
+noutf8/txqueue/nonblocking
+
+noutf8/txqueue/blocking
+
+utf8/notxqueue/nonblocking
+
+utf8/notxqueue/blocking
+
+utf8/txqueue/nonblocking
+
+utf8/txqueue/blocking
+
+
+
+
+
+
+blocking rx

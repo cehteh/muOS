@@ -88,7 +88,7 @@ extern volatile struct muos_status_flags
 //: Calls a recursive mainloop and with testing for a given condition for some time.
 //: Returns 'true' when the condition succeeded and 'false' on timeout or recursion limit.
 //:
-//: Care must be taken that I/O (and other things) are not anymore in order when the
+//: Care must be taken that I/O (and other things) can become out of sequence when the
 //: mainloop is called recursively. Often it is better to avoid waiting and divide the
 //: work into smaller tasks which are put in order on the work queues.
 //:
