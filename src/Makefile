@@ -110,7 +110,8 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 #: MUOS_SCHED_DEPTH::
 #: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield()).
 #: When this depth is exceeded, these calls return immediately, flagging 'muos_warn_sched_depth'.
-MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
+#: When not defined then the wait and yield functions become unavailable
+#MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
 
@@ -205,9 +206,50 @@ MUOS_CONFIG += -DMUOS_CLPQ_LENGTH=16
 
 
 
+#debug_config:MUOS_DEBUG
+#: MUOS_DEBUG::
+#: When defined, the debug driver is enabled
+MUOS_CONFIG += -DMUOS_DEBUG
+
+
+
+#debug_config:MUOS_DEBUG_BUSY
+#: MUOS_DEBUG_BUSY::
+#: Uses a GPIO to indicate when the CPU is busy.
+#: While sleeping the GPIO is turned off.
+MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(D,3)'
+
+
+
+#debug_config:MUOS_DEBUG_INTR
+#: MUOS_DEBUG_INTR::
+#: Uses a GPIO to indicate when the CPU is handling interrupts.
+MUOS_CONFIG += -DMUOS_DEBUG_INTR='(D,2)'
+
+
+
+#debug_config:MUOS_DEBUG_ERROR
+#: MUOS_DEBUG_ERROR::
+#: Uses a GPIO to indicate when an error got set,
+#: Turned off when no errors are pending.
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,5)'
+
+
+
+#debug_config:MUOS_DEBUG_Cx
+#: MUOS_DEBUG_Cx::
+#: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
+#: User defined Debugging channels.
+#MUOS_CONFIG += -DMUOS_DEBUG_C1='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C2='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C3='()'
+#MUOS_CONFIG += -DMUOS_DEBUG_C4='()'
+
+
+
+
 #PLANNED: make MUOS_CLOCK configureable, system w/o clock
 MUOS_CONFIG += -DMUOS_CLOCK
-
 
 
 #clock_config:MUOS_CLOCK_HW
@@ -352,7 +394,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXBUFFER=8
 #uart_config:MUOS_SERIAL_TX_BLOCKING
 #: MUOS_SERIAL_TX_BLOCKING::
 #: Make the TX blocking by default.
-MUOS_CONFIG += -DMUOS_SERIAL_TX_BLOCKING
+#MUOS_CONFIG += -DMUOS_SERIAL_TX_BLOCKING
 
 
 
@@ -375,7 +417,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXBUFFER=8
 #uart_config:MUOS_SERIAL_RX_BLOCKING
 #: MUOS_SERIAL_RX_BLOCKING::
 #: Make the RX blocking by default.
-MUOS_CONFIG += -DMUOS_SERIAL_RX_BLOCKING
+#MUOS_CONFIG += -DMUOS_SERIAL_RX_BLOCKING
 
 
 
@@ -580,47 +622,6 @@ MUOS_CONFIG += -DMUOS_CPPM_FRAME_CALIBRATE=1
 #: MUOS_CPPM_CALLBACK::
 #: function to be pushed to the hpq when a frame got received
 MUOS_CONFIG += -DMUOS_CPPM_CALLBACK=cppm_output
-
-
-
-#debug_config:MUOS_DEBUG
-#: MUOS_DEBUG::
-#: When defined, the debug driver is enabled
-MUOS_CONFIG += -DMUOS_DEBUG
-
-
-
-#debug_config:MUOS_DEBUG_BUSY
-#: MUOS_DEBUG_BUSY::
-#: Uses a GPIO to indicate when the CPU is busy.
-#: While sleeping the GPIO is turned off.
-MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(D,3)'
-
-
-
-#debug_config:MUOS_DEBUG_INTR
-#: MUOS_DEBUG_INTR::
-#: Uses a GPIO to indicate when the CPU is handling interrupts.
-MUOS_CONFIG += -DMUOS_DEBUG_INTR='(D,2)'
-
-
-
-#debug_config:MUOS_DEBUG_ERROR
-#: MUOS_DEBUG_ERROR::
-#: Uses a GPIO to indicate when an error got set,
-#: Turned off when no errors are pending.
-MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,5)'
-
-
-
-#debug_config:MUOS_DEBUG_Cx
-#: MUOS_DEBUG_Cx::
-#: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
-#: User defined Debugging channels.
-#MUOS_CONFIG += -DMUOS_DEBUG_C1='()'
-#MUOS_CONFIG += -DMUOS_DEBUG_C2='()'
-#MUOS_CONFIG += -DMUOS_DEBUG_C3='()'
-#MUOS_CONFIG += -DMUOS_DEBUG_C4='()'
 
 
 

@@ -22,6 +22,7 @@
 void
 toggle_led_timed (const struct muos_spriq_entry* event)
 {
+  muos_interrupt_enable ();
   PINB = _BV(PINB5);
   muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
 }
