@@ -251,6 +251,7 @@ VERSION: FORCE
 	{ echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" > $@; $(PRINTFMT) $@ VERSION;}
 
 # maintainer targets
+#FIXME: submodule support
 gitpush: FORCE
 	$(PRINTFMT) $@ GIT_PUSH
 	git push -q --all --prune --force public

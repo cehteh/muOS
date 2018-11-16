@@ -22,6 +22,7 @@ PIPADOC:=development
 
 PIPADOC:=infrastructure
 
+PIPADOC:TODO: document git repository/submodules
 PIPADOC:TODO: cooperation, mob repository, coding style, docs
 PIPADOC:TODO: development workflow
 PIPADOC:TODO: usage workflow

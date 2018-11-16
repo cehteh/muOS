@@ -26,11 +26,6 @@
 
 #include <muos/debug.h>
 
-//TODO: fixup, documentation
-
-
-
-
 #include <muos/error.h>
 #include <muos/clock.h>
 
@@ -70,7 +65,6 @@ extern volatile struct muos_status_flags
 } muos_status;
 
 
-
 #ifdef MUOS_SCHED_DEPTH
 //muos_api:
 //: .Wait for some condition come true
@@ -95,7 +89,9 @@ extern volatile struct muos_status_flags
 //:
 //: Because of stack limits entering the mainloop recursively is limited. One should always
 //: expect that a wait can return instantly with 'false' and the error 'muos_warn_sched_depth'
-//: being flaged.
+//: being flagged.
+//:
+//: 'muos_wait()' is only available when MUOS_SCHED_DEPTH is defined.
 //:
 //: .Returns
 //:   'muos_success':: the wait condition got met
@@ -103,7 +99,6 @@ extern volatile struct muos_status_flags
 //:   'muos_warn_wait_timeout':: timed out
 muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout);
-
 
 
 //muos_api:
@@ -121,6 +116,8 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout);
 //:
 //: Yielding id applicable when one has code which loops for some extended time but shall
 //: not stall the work to be done *and* this code will never be called recursively.
+//:
+//: 'muos_yield()' is only available when MUOS_SCHED_DEPTH is defined.
 //:
 //: .Returns
 //:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
