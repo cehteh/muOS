@@ -43,6 +43,7 @@ error (void)
 void
 lineecho (const char* line)
 {
+  muos_interrupt_enable ();
   muos_output_cstr ("\r\n<");
   muos_output_cstr (line);
   muos_output_cstr (">\r\n");
@@ -52,6 +53,7 @@ lineecho (const char* line)
 void
 hello_world (void)
 {
+  muos_interrupt_enable ();
   muos_output_cstr ("Hello World");
   muos_output_nl ();
 }
