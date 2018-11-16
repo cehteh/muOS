@@ -174,15 +174,10 @@ main()
 
 #ifdef MUOS_DEBUG
   muos_hw_debug_init ();
+  MUOS_DEBUG_BUSY_ON;
 #endif
 
-#if MUOS_DEBUG_BUSY ==1
-  //TODO: hardware dependent
-  //PLANNED: debug driver
-  DDRB = _BV(PINB5) | _BV(PINB4);
-  PORTB = _BV(PINB5);
-#endif
-
+  //TODO: check that calling INITFN before muos_init is documented
 #if MUOS_HPQ_LENGTH >= 2
   muos_hpq_pushback (MUOS_INITFN);
   muos_hpq_pushback (muos_init);
