@@ -61,6 +61,12 @@ muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
   return ret;
 }
 
+intptr_t
+muos_bgq_pop_isr (void)
+{
+  return muos_queue_pop (&muos_bgq.descriptor, MUOS_BGQ_LENGTH);
+}
+
 #endif
 
 

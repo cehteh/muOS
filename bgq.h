@@ -66,6 +66,13 @@ muos_bgq_check (uint8_t need)
 //:
 //: These functions return 'muos_success' on success and 'muos_error_bgq_overflow' on error.
 //:
+//: ----
+//: intptr_t muos_bgq_pop_isr (void)
+//: ----
+//:
+//: removes and returns the first element (argument) from the bgq. Must be called
+//: while interrupts are still disabled at the start of scheduled functions.
+//: (Note: no safety net when the caller didn't push an argument)
 
 static inline muos_error
 muos_bgq_pushback_isr (muos_queue_function f)
@@ -120,6 +127,8 @@ muos_bgq_pushfront (muos_queue_function f);
 muos_error
 muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
 
+intptr_t
+muos_bgq_pop_isr (void);
 
 #else
 // stub for the schedule loop

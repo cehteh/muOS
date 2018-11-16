@@ -21,7 +21,7 @@
 #include <muos/lib/queue.h>
 #include <muos/error.h>
 
-static inline intptr_t
+intptr_t
 muos_queue_pop (struct muos_queue* queue, const muos_queue_size size)
 {
   intptr_t ret = queue->queue[queue->start];
@@ -40,17 +40,7 @@ muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
     {
       intptr_t fn = muos_queue_pop (queue, size);
 
-      if (fn>0)
-        {
-          muos_interrupt_enable ();
-          ((muos_queue_function)(fn))();
-        }
-      else
-        {
-          intptr_t arg = muos_queue_pop (queue, size);
-          muos_interrupt_enable ();
-          ((muos_queue_function_arg)(-fn))(arg);
-        }
+      ((muos_queue_function)(fn))();
       muos_interrupt_disable ();
       return true;
     }
@@ -79,7 +69,7 @@ muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_
 void
 muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
-  muos_queue_pushback_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
   muos_queue_pushback_intern (queue, size, arg);
 }
 
@@ -105,7 +95,7 @@ void
 muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function_arg fn, intptr_t arg)
 {
   muos_queue_pushfront_intern (queue, size, arg);
-  muos_queue_pushfront_intern (queue, size, -(intptr_t) fn);
+  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
 }
 
 

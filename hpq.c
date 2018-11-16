@@ -101,6 +101,13 @@ muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a)
   return ret;
 }
 
+
+intptr_t
+muos_hpq_pop_isr (void)
+{
+  return muos_queue_pop (&muos_hpq.descriptor, MUOS_HPQ_LENGTH);
+}
+
 #endif
 
 

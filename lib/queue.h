@@ -133,6 +133,9 @@ muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 //:                                const muos_queue_size size,
 //:                                muos_queue_function func,
 //:                                intptr_t arg)
+//:
+//: intptr_t muos_queue_pop (struct muos_queue* queue,
+//:                          const muos_queue_size size)
 //: ----
 //:
 //:  +queue+::
@@ -149,10 +152,8 @@ muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 //: * +muos_queue_pushback_arg ()+ pushes 'func' with 'arg' onto the back of the queue
 //: * +muos_queue_pushfront ()+ pushes 'func' onto front of the queue
 //: * +muos_queue_pushfront_arg ()+ pushes 'func' with 'arg' onto the front of the queue
+//: * +muos_queue_pop ()+ removes the first argument from the queue
 //: --
-//:
-//: NOTE: there are no 'pop' functions yet, only a internal 'schedule' function. Functions for popping
-//:       elements will be added on demand.
 //:
 void
 muos_queue_pushback (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
@@ -165,6 +166,9 @@ muos_queue_pushfront (struct muos_queue* queue, const muos_queue_size size, muos
 
 void
 muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+
+intptr_t
+muos_queue_pop (struct muos_queue* queue, const muos_queue_size size);
 
 
 //: .Queue information
