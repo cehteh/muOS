@@ -21,6 +21,8 @@
 #ifndef MUOS_DEBUG_H
 #define MUOS_DEBUG_H
 
+
+
 //debug_api:
 //: .Debug GPIO Macros
 //: ----
@@ -108,7 +110,7 @@
 #endif
 
 void
-muos_debug_init (void);
+muos_hw_debug_init (void);
 
 
 
