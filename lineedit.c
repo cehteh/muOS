@@ -31,7 +31,7 @@ static uint8_t cursor;
 static uint8_t used;
 static char buffer[MUOS_LINEEDIT_BUFFER];
 
-#if MUOS_LINEEDIT_RECALL == 1
+#ifdef MUOS_LINEEDIT_RECALL
 static char recall;
 #endif
 
@@ -119,7 +119,7 @@ muos_lineedit (void)
         case CSI<<8 | 0x41:
         case 0x0b:
           // up
-#if MUOS_LINEEDIT_RECALL == 1
+#ifdef MUOS_LINEEDIT_RECALL
           if (recall)
             {
               *buffer = recall;
@@ -137,7 +137,7 @@ muos_lineedit (void)
         case CSI<<8 | 0x42:
         case 0x0a:
           // down
-#if MUOS_LINEEDIT_RECALL == 1
+#ifdef MUOS_LINEEDIT_RECALL
           if (!recall)
             {
               recall = *buffer;
@@ -296,7 +296,7 @@ muos_lineedit (void)
           //TODO: suspend lineedit until the callback is finished (w/ wraper)
           //TODO: push callback on bgq
           MUOS_LINEEDIT_CALLBACK (buffer);
-#if MUOS_LINEEDIT_RECALL == 1
+#ifdef MUOS_LINEEDIT_RECALL
           if (*buffer)
             recall = *buffer;
 #endif
@@ -370,7 +370,7 @@ muos_lineedit (void)
           if (ovwr_len && !muos_utf8cont (data))
             utf8del ();
 
-#if MUOS_LINEEDIT_RECALL == 1
+#ifdef MUOS_LINEEDIT_RECALL
           recall = 0;
 #endif
           memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
