@@ -50,9 +50,9 @@ MUOS_ERRORFN (void);
 
 #define MUOS_NOINIT __attribute__ ((section (".noinit")))
 
-
 typedef bool (*muos_wait_fn)(intptr_t);
 
+void muos_die (void);
 
 
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT

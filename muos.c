@@ -54,6 +54,7 @@ muos_sleep (void)
 //PLANNED: document and implement
 void muos_die (void)
 {
+  muos_interrupt_disable ();
   muos_hw_shutdown ();
 }
 
