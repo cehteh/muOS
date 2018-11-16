@@ -28,24 +28,21 @@ muos_clpq_type muos_clpq;
 
 
 //PLANNED: realtime in interrupt function calls
-//PLANNED: high bit tag
 //PLANNED: sorting before normal functions
 //PLANNED: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
 
 
-//PLANNNED: wrapper for regular jobs
+//PLANNNED: wrapper for recurring jobs
 
-//FIXME: use MUOS_SPRIQ_FRONT()
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
   if (muos_clpq.descriptor.used &&
       (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2))
     {
-      if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* static evaluated */
+      if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
         {
           // no need for time barrier
-          muos_interrupt_enable ();
           muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
           muos_interrupt_disable ();
           muos_spriq_pop (&muos_clpq.descriptor);
@@ -55,7 +52,6 @@ muos_clpq_schedule (muos_spriq_priority when)
           // with time barrier for the sliding window
           if (muos_clpq.descriptor.spriq[0].fn)
             {
-              muos_interrupt_enable ();
               muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
               muos_interrupt_disable ();
             }
