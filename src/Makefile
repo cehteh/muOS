@@ -257,8 +257,8 @@ MUOS_CONFIG += -DMUOS_CLOCK
 #: The Hardware timer to use. This is a hardware dependent config.
 #: Timer hardware setup is tightly bound to the hardware capabilities check
 #: for the respective hardware documentation about possible settings.
-#MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
-MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
+MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
+#MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 
 
 
@@ -267,11 +267,11 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(1,A)'
 #: Prescaler from some hardware defined master clock. Possible
 #: Values depend on the hardware.
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
-MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
+#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=256
-#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
+MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1024
 
 
 
@@ -279,8 +279,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #: MUOS_CLOCK_TYPE::
 #: The type used for the primary clock functions. Should be some unsigned integer,
 #: 32 bit width is recommended.
-#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
-MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
+MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint32_t
+#MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 
 
 
@@ -288,8 +288,8 @@ MUOS_CONFIG += -DMUOS_CLOCK_TYPE=uint64_t
 #: MUOS_CLOCK_SHORT_TYPE::
 #: The type used for short time spans. Should be some unsigned integer.
 #: What suits best depends on the application, often 16 bit is enough with higher Prescaler.
-#MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
-MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
+MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint16_t
+#MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint32_t
 #MUOS_CONFIG += -DMUOS_CLOCK_SHORT_TYPE=uint64_t
 
 
@@ -422,6 +422,7 @@ MUOS_CONFIG += "-DMUOS_SERIAL_RXSYNC='\r'"
 
 
 
+#PLANNED: configure if hpq or bgq shall be used
 #uart_config:MUOS_SERIAL_RXCALLBACK
 #: MUOS_SERIAL_RXCALLBACK::
 #: Function to be called from 'hpq' to handle the RX buffer data
@@ -479,7 +480,7 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
 #lineedit_config:MUOS_LINEEDIT_UTF8
 #: MUOS_LINEEDIT_UTF8::
 #: Enable UTF8 support for lineedit
-MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8
+#MUOS_CONFIG += -DMUOS_LINEEDIT_UTF8
 
 
 
