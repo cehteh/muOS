@@ -217,14 +217,14 @@ MUOS_CONFIG += -DMUOS_DEBUG
 #: MUOS_DEBUG_BUSY::
 #: Uses a GPIO to indicate when the CPU is busy.
 #: While sleeping the GPIO is turned off.
-MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(D,3)'
+MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(B,5)'
 
 
 
 #debug_config:MUOS_DEBUG_INTR
 #: MUOS_DEBUG_INTR::
 #: Uses a GPIO to indicate when the CPU is handling interrupts.
-MUOS_CONFIG += -DMUOS_DEBUG_INTR='(D,2)'
+MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,4)'
 
 
 
@@ -232,7 +232,7 @@ MUOS_CONFIG += -DMUOS_DEBUG_INTR='(D,2)'
 #: MUOS_DEBUG_ERROR::
 #: Uses a GPIO to indicate when an error got set,
 #: Turned off when no errors are pending.
-MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,5)'
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,2)'
 
 
 
@@ -240,7 +240,7 @@ MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,5)'
 #: MUOS_DEBUG_Cx::
 #: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
 #: User defined Debugging channels.
-#MUOS_CONFIG += -DMUOS_DEBUG_C1='()'
+MUOS_CONFIG += -DMUOS_DEBUG_C1='(B,3)'
 #MUOS_CONFIG += -DMUOS_DEBUG_C2='()'
 #MUOS_CONFIG += -DMUOS_DEBUG_C3='()'
 #MUOS_CONFIG += -DMUOS_DEBUG_C4='()'

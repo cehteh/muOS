@@ -23,8 +23,9 @@ void
 toggle_led_timed (const struct muos_spriq_entry* event)
 {
   muos_interrupt_enable ();
-  PINB = _BV(PINB5);
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (250));
+  MUOS_DEBUG_C1_TOGGLE;
+
+  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (10));
 }
 
 
@@ -35,7 +36,7 @@ error (void)
 #define MUOS_ERROR(name)                                         \
   muos_error_check (muos_##name);
 
-  MUOS_ERRORS;
+  //  MUOS_ERRORS;
 #undef MUOS_ERROR
 }
 
@@ -62,8 +63,7 @@ hello_world (void)
 void
 init (void)
 {
-  DDRB = _BV(PINB5);
-
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (250), toggle_led_timed);
+  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (10), toggle_led_timed);
   muos_bgq_pushback (hello_world);
 }
+
