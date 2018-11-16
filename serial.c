@@ -70,6 +70,9 @@ muos_serial_tx_nonblocking_byte (uint8_t b)
   return ret;
 }
 
+
+
+#ifdef MUOS_SCHED_DEPTH
 static bool
 txtest (intptr_t n)
 {
@@ -79,7 +82,6 @@ txtest (intptr_t n)
   muos_hw_serial_tx_run ();
   return ret;
 }
-
 
 muos_error
 muos_serial_tx_blocking_byte (uint8_t b)
@@ -107,7 +109,7 @@ muos_serial_tx_blocking_byte (uint8_t b)
 
   return ret;
 }
-
+#endif
 
 
 void
@@ -155,6 +157,8 @@ muos_serial_rx_nonblocking_byte (void)
   return ret;
 }
 
+
+#ifdef MUOS_SCHED_DEPTH
 static bool
 rxtest (intptr_t n)
 {
@@ -194,7 +198,7 @@ muos_serial_rx_blocking_byte (muos_shortclock timeout)
 
   return ret;
 }
-
+#endif
 
 
 void

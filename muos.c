@@ -63,10 +63,9 @@ muos_start (void)
 #include <muos/init.inc>
 }
 
-
+#ifdef MUOS_SCHED_DEPTH
+//FIXME: Planned enter userfunctions with interrupts off, user must enable them
 static uint8_t sched_depth_;
-
-
 muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 {
@@ -122,6 +121,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 }
 
 
+//FIXME: Planned enter userfunctions with interrupts off, user must enable them
 muos_error
 muos_yield (uint8_t count)
 {
@@ -160,6 +160,7 @@ muos_yield (uint8_t count)
 
   return muos_success;
 }
+#endif // MUOS_SCHED_DEPTH
 
 
 

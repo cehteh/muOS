@@ -71,6 +71,7 @@ extern volatile struct muos_status_flags
 
 
 
+#ifdef MUOS_SCHED_DEPTH
 //muos_api:
 //: .Wait for some condition come true
 //: ----
@@ -127,7 +128,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout);
 //PLANNED: add priority, which queues to schedule
 muos_error
 muos_yield (uint8_t count);
-
+#endif // MUOS_SCHED_DEPTH
 
 
 #endif

@@ -78,14 +78,20 @@ muos_serial_30init (void);
 muos_error
 muos_serial_tx_nonblocking_byte (uint8_t b);
 
+#ifdef MUOS_SCHED_DEPTH
 muos_error
 muos_serial_tx_blocking_byte (uint8_t b);
+#endif
 
 static inline muos_error
 muos_serial_tx_byte (uint8_t b)
 {
 #ifdef MUOS_SERIAL_TX_BLOCKING
+#ifdef MUOS_SCHED_DEPTH
   return muos_serial_tx_blocking_byte (b);
+#else
+# error MUOS_SERIAL_TX_BLOCKING needs MUOS_SCHED_DEPTH
+#endif
 #else
   return muos_serial_tx_nonblocking_byte (b);
 #endif
@@ -147,14 +153,20 @@ muos_serial_tx_flush (void);
 int16_t
 muos_serial_rx_nonblocking_byte (void);
 
+#ifdef MUOS_SCHED_DEPTH
 int16_t
 muos_serial_rx_blocking_byte (muos_shortclock timeout);
+#endif
 
 static inline int16_t
 muos_serial_rx_byte (void)
 {
 #ifdef MUOS_SERIAL_RX_BLOCKING
+#ifdef MUOS_SCHED_DEPTH
   return muos_serial_rx_blocking_byte (0);
+#else
+# error MUOS_SERIAL_RX_BLOCKING needs MUOS_SCHED_DEPTH
+#endif
 #else
   return muos_serial_rx_nonblocking_byte ();
 #endif
