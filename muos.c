@@ -58,7 +58,7 @@ void muos_die (void)
 }
 
 void
-muos_start (void)
+muos_init (void)
 {
 #include <muos/init.inc>
 }
@@ -167,38 +167,7 @@ muos_yield (uint8_t count)
 int __attribute__((OS_main))
 main()
 {
-  CLKPR = _BV(CLKPCE);
-  CLKPR = 0;
-
-  #if 0
-#if F_CPU != 16000000UL
-  CLKPR = _BV(CLKPCE);
-#if F_CPU == 62500UL
-  CLKPR = _BV(CLKPS3);
-#endif
-#if F_CPU == 125000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS1)| _BV(CLKPS0);
-#endif
-#if F_CPU == 250000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS1);
-#endif
-#if F_CPU == 500000UL
-  CLKPR = _BV(CLKPS2) | _BV(CLKPS0);
-#endif
-#if F_CPU == 1000000UL
-  CLKPR = _BV(CLKPS2);
-#endif
-#if F_CPU == 2000000UL
-  CLKPR = _BV(CLKPS1) | _BV(CLKPS0);
-#endif
-#if F_CPU == 4000000UL
-  CLKPR = _BV(CLKPS1);
-#endif
-#if F_CPU == 8000000UL
-  CLKPR = _BV(CLKPS0);
-#endif
-#endif
-#endif
+  MUOS_HW_INIT;
 
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
 
@@ -215,13 +184,13 @@ main()
 
 #if MUOS_HPQ_LENGTH >= 2
   muos_hpq_pushback (MUOS_INITFN);
-  muos_hpq_pushback (muos_start);
+  muos_hpq_pushback (muos_init);
 #elif MUOS_BGQ_LENGTH >= 2
   muos_bgq_pushback (MUOS_INITFN);
-  muos_bgq_pushback (muos_start);
+  muos_bgq_pushback (muos_init);
 #else
   MUOS_INITFN ();
-  muos_start ();
+  muos_init ();
 #endif
 
   while (1)

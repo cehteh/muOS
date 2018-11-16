@@ -37,6 +37,8 @@
 //#define CONFIGURE_GPIO(hw) CONFIGURE_OUTPUT_ hw
 //PLANNED: also GPIO_SET for input states (config + set)
 
+#define MUOS_HW_INIT  CLKPR = _BV(CLKPCE); CLKPR = 0
+
 #define MUOS_GPIO_SET(port, pin) PORT##port |= _BV(PORT##port##pin)
 #define MUOS_GPIO_SET_(hw) MUOS_GPIO_SET hw
 
