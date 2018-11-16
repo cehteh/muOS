@@ -246,7 +246,9 @@ else
 endif
 
 VERSION: FORCE
-	echo ":version:  $$(git describe --tags --dirty)" | cmp - $@ 2>/dev/null >/dev/null || { echo ":version:  $$(git describe --tags --dirty)" > $@; $(PRINTFMT) $@ VERSION;}
+	echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" |\
+	cmp - $@ 2>/dev/null >/dev/null ||\
+	{ echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" > $@; $(PRINTFMT) $@ VERSION;}
 
 # maintainer targets
 gitpush: FORCE
