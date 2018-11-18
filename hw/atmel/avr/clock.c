@@ -24,7 +24,6 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
   MUOS_DEBUG_INTR_ON;
   ++muos_clock_count_;
-  MUOS_DEBUG_INTR_OFF;
 }
 
 // compmatch interrupt is only used to wake the mainloop

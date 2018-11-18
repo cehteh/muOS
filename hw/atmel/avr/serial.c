@@ -59,7 +59,7 @@ ISR(USART_UDRE_vect)
         muos_hw_serial_tx_stop ();
     }
 
-  MUOS_DEBUG_INTR_OFF;
+  //  MUOS_DEBUG_INTR_OFF;
 }
 #endif
 
@@ -120,7 +120,7 @@ ISR(USART_RX_vect)
         }
     }
 
-  MUOS_DEBUG_INTR_OFF;
+  //  MUOS_DEBUG_INTR_OFF;
 }
 #endif
 
