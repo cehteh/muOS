@@ -26,9 +26,12 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
   ++muos_clock_count_;
 }
 
-// compmatch interrupt is only used to wake the mainloop
-EMPTY_INTERRUPT(ISRNAME_COMPMATCH(MUOS_CLOCK_HW));
-
+ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
+{
+  // compmatch is one-shot
+  MUOS_DEBUG_INTR_ON;
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+}
 
 #ifdef MUOS_CLOCK_CALIBRATE
 static muos_clock calibrate_last;

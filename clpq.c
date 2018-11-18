@@ -88,21 +88,45 @@ muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq
 }
 
 // This is the time between setting compmatch for wakeup and going to sleep
-#define MUOS_CLOCK_LATENCY ((224U+MUOS_CLOCK_PRESCALER/2)/MUOS_CLOCK_PRESCALER)
+#define MUOS_CLOCK_LATENCY (32U/MUOS_CLOCK_PRESCALER)
 
-// The time a busy loop takes
-#define MUOS_CLOCK_BUSYLATENCY (16U/MUOS_CLOCK_PRESCALER)
+
+// The time a schedule loop takes
+#define MUOS_CLOCK_BUSYLATENCY (64U/MUOS_CLOCK_PRESCALER)
+
+
+//TODO: return when already compmatch or disable compmatch when time is too short
+/*
+//TODO: new implementation
+
+    - must be in current hw_count range
+    - not too soon (time to set compmatch)
+    - wakeup earlier
+    - compmatch can wrap!
+
+    also
+    when - now
+        < hw range
+           else no compmatch
+        > compset time
+     -> compmatch
+   */
 
 bool
 muos_clpq_set_compmatch (void)
 {
+  if (!muos_clpq.descriptor.used)
+    return true;
+
   muos_spriq_priority at = muos_clpq.descriptor.spriq[0].when -
     (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
 
+  muos_spriq_priority now = MUOS_CLOCK_REGISTER;
+
   if (at < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_BUSYLATENCY)
     {
-      if (at > MUOS_CLOCK_LATENCY + MUOS_CLOCK_REGISTER
-          && MUOS_CLOCK_REGISTER < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY)
+      if (at > MUOS_CLOCK_LATENCY + now
+          && now < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY)
         {
           MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, at);
         }
@@ -111,6 +135,7 @@ muos_clpq_set_compmatch (void)
     }
   else
     MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+
 
   return true;
 }
