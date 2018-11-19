@@ -68,6 +68,7 @@
 #else
 #define MUOS_DEBUG_ERROR_ON
 #define MUOS_DEBUG_ERROR_OFF
+#define MUOS_DEBUG_ERROR_TOGGLE
 #endif
 
 #if defined(MUOS_DEBUG) && defined(MUOS_DEBUG_C1)
