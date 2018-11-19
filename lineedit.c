@@ -36,7 +36,10 @@ static char recall;
 #endif
 
 //PLANNED: strategy on input errors, desync?
-//FIXME: full line overflow, because lineedit buffer > txqueue
+//PLANNED: full line overflow, because lineedit buffer > txqueue, needs some strategy (blocking_io/atomic_io)
+#if MUOS_LINEEDIT_BUFFER >= MUOS_SERIAL_TXQUEUE
+#error MUOS_SERIAL_TXQUEUE must be bigger than MUOS_LINEEDIT_BUFFER
+#endif
 
 static uint8_t pending;
 
