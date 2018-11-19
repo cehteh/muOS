@@ -8,8 +8,8 @@ PIPADOC:=features
 
 == Documentation
 
-You can read the online documentation http:muos_manual.html[here]
-or download a PDF book http:muos_manual.pdf[here].
+You can read the online documentation link:muos_manual.html[here]
+or download a PDF book link:muos_manual.pdf[here].
 
 == Download
 
