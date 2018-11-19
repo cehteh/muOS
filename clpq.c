@@ -103,6 +103,7 @@ muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq
     - not too soon (time to set compmatch)
     - wakeup earlier
     - compmatch can wrap!
+    - dont forget to reschedule when a new event was added before the first one
 
     also
     when - now

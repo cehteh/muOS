@@ -30,7 +30,7 @@
 
 //PLANNED: cleanup macros when to use arguments, when tuple
 
-//FIXME: mpu specific
+//PLANNED: HW() for all hardware specific stuff (s. Makefile)
 
 //PLANNED: generic macros -> muos.h INPUT, OUTPUT, PULLUP, PULLDOWN, NOP
 //#define CONFIGURE_GPIO_(port, pin) DDR##port |= _BV(DD##port##pin)
