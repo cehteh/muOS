@@ -18,6 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#PLANNED: use HW(...) for hardware descriptions
+#PLANNED: branch a 'tests' from example with permanent test code/suite
+
+
 # Project configuration
 PLATFORM = atmel/avr
 
@@ -266,7 +270,6 @@ MUOS_CONFIG += -DMUOS_CLOCK_HW='(0,A)'
 #: MUOS_CLOCK_HW_PRESCALER::
 #: Prescaler from some hardware defined master clock. Possible
 #: Values depend on the hardware.
-#MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=0
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=1
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=8
 #MUOS_CONFIG += -DMUOS_CLOCK_PRESCALER=64
@@ -440,6 +443,7 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 #: * >1 creates a txqueue of the given size
 #TODO: check that simply undef is enough for disable
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=0
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=8
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
 MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
@@ -447,18 +451,19 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
 
-#:MUOS_SERIAL_TXQUEUE_OPT
-#: Optimization level
-#:
-#: optimize for:
-#: 	ram
-#: 	flash
-#: 	cpu
-#:	latency
-#:
-#:	type support for 24 48 64 bit
-#:
-#:
+
+#PLANNED: MUOS_SERIAL_TXQUEUE_OPT
+# : Optimization level
+# :
+# : optimize for:
+# :	ram
+# :	flash
+# :	cpu
+# :	latency
+# :
+# :	type support for 24 48 64 bit
+# :
+# :
 #PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE_OPT =
 #PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQFMT= format specifiers
 #PLANNED: MUOS_CONFIG += -DMUOS_SERIAL_TXQCTRL= ansi control sequences
@@ -470,10 +475,10 @@ MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #: MUOS_LINEEDIT_BUFFER::
 #: capacity of the linedit buffer
 #MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=0
-#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=16
-#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=32
-MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=64
-#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=128
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=14
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=30
+MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=62
+#MUOS_CONFIG += -DMUOS_LINEEDIT_BUFFER=126
 
 
 

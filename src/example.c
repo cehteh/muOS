@@ -17,7 +17,7 @@
 #include <muos/error.h>
 
 // define events, no main here
-
+#define BLINK MUOS_CLOCK_MILLISECONDS (50)
 
 void
 toggle_led_timed (const struct muos_spriq_entry* event)
@@ -25,7 +25,7 @@ toggle_led_timed (const struct muos_spriq_entry* event)
   muos_interrupt_enable ();
   MUOS_DEBUG_C1_TOGGLE;
 
-  muos_clpq_repeat (event, MUOS_CLOCK_MILLISECONDS (10));
+  muos_clpq_repeat (event, BLINK);
 }
 
 
@@ -33,11 +33,7 @@ toggle_led_timed (const struct muos_spriq_entry* event)
 void
 error (void)
 {
-#define MUOS_ERROR(name)                                         \
-  muos_error_check (muos_##name);
-
-  //  MUOS_ERRORS;
-#undef MUOS_ERROR
+  // don't handle errors, should be done in real code here
 }
 
 
@@ -63,7 +59,7 @@ hello_world (void)
 void
 init (void)
 {
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (10), toggle_led_timed);
+  muos_clpq_at (0, BLINK, toggle_led_timed);
   muos_bgq_pushback (hello_world);
 }
 
