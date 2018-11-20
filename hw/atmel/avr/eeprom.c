@@ -18,9 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef MUOS_HW_EEPROM
 
-#ifdef DMUOS_EEPROM_DEBUG_WDELAY
+#include <avr/eeprom.h>
+
+#include <muos/eeprom.h>
+#include <muos/hpq.h>
+#include <muos/bgq.h>
+
+#ifdef MUOS_EEPROM_DEBUG_WDELAY
 #include <util/delay_basic.h>
 #endif
 
@@ -75,6 +80,7 @@ ISR(ISRNAME_EEPROM_READY)
 
     case MUOS_EEPROM_ERASE:
       ++EEAR;
+    default:;
     }
 
   // start ISR writing
@@ -102,6 +108,7 @@ readbatch (void)
               muos_error_set (muos_error_eeprom_verify);
               goto done;
             }
+        default:;
         }
       ++EEAR;
       ++memory;
@@ -132,7 +139,7 @@ muos_hw_eeprom_state (void)
 muos_error
 muos_hw_eeprom_access (enum muos_eeprom_mode mode,
                        void* mem,
-                       void* eeprom,
+                       uintptr_t eeprom,
                        size_t size,
                        muos_eeprom_callback complete)
 {
@@ -175,8 +182,8 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
 #endif
     }
 
-#ifdef DMUOS_EEPROM_DEBUG_WDELAY
-  for (int i=DMUOS_EEPROM_DEBUG_WDELAY; i; --i)
+#ifdef MUOS_EEPROM_DEBUG_WDELAY
+  for (volatile int i = MUOS_EEPROM_DEBUG_WDELAY; i; --i)
     _delay_loop_2 (F_CPU/1000);
 #endif
 
@@ -192,5 +199,4 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
   return muos_success;
 }
 
-#endif
 

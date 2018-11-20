@@ -61,7 +61,7 @@ typedef void (*muos_eeprom_callback)(void);
 extern enum muos_eeprom_mode muos_hw_eeprom_state (void);
 extern muos_error muos_hw_eeprom_access (enum muos_eeprom_mode mode,
                                          void* mem,
-                                         void* eeprom,
+                                         uintptr_t eeprom,
                                          size_t size,
                                          muos_eeprom_callback complete);
 
@@ -69,7 +69,7 @@ extern muos_error muos_hw_eeprom_access (enum muos_eeprom_mode mode,
 //eeprom_api:
 //: .Query State
 //: ----
-//: enum muos_eeprom_mode muos_eeprom_state ()
+//: enum muos_eeprom_mode muos_eeprom_state (void)
 //: ----
 //:
 //: Polls the state of the driver.
@@ -113,7 +113,7 @@ muos_eeprom_state (void)
 //: .Reading
 //: ----
 //: muos_error muos_eeprom_read (void* address,
-//:                              void* eeprom,
+//:                              uintptr_t eeprom,
 //:                              size_t size,
 //:                              muos_eeprom_callback complete)
 //: ----
@@ -122,7 +122,7 @@ muos_eeprom_state (void)
 //:
 static inline muos_error
 muos_eeprom_read (void* mem,
-                  void* eeprom,
+                  uintptr_t eeprom,
                   size_t size,
                   muos_eeprom_callback complete)
 {
@@ -134,7 +134,7 @@ muos_eeprom_read (void* mem,
 //: .Verifying
 //: ----
 //: muos_error muos_eeprom_verify (void* address,
-//:                                void* eeprom,
+//:                                uintptr_t eeprom,
 //:                                size_t size,
 //:                                muos_eeprom_callback complete)
 //: ----
@@ -143,7 +143,7 @@ muos_eeprom_read (void* mem,
 //:
 static inline muos_error
 muos_eeprom_verify (void* mem,
-                    void* eeprom,
+                    uintptr_t eeprom,
                     size_t size,
                     muos_eeprom_callback complete)
 {
@@ -155,35 +155,35 @@ muos_eeprom_verify (void* mem,
 //: .Writing
 //: ----
 //: muos_error muos_eeprom_write (void* address,
-//:                              void* eeprom,
+//:                              uintptr_t eeprom,
 //:                              size_t size,
 //:                              muos_eeprom_callback complete)
 //:
 //: muos_error muos_eeprom_writeverify (void* address,
-//:                                     void* eeprom,
+//:                                     uintptr_t eeprom,
 //:                                     size_t size,
 //:                                     muos_eeprom_callback complete)
 //:
 //: muos_error muos_eeprom_writeonly (void* address,
-//:                                   void* eeprom,
+//:                                   uintptr_t eeprom,
 //:                                   size_t size,
 //:                                   muos_eeprom_callback complete)
 //: ----
 //:
 //: Transfers data from memory to eeprom.
 //:
-//: write::
+//: muos_eeprom_write::
 //:   Erases data before writing. Faster than erasing the block first.
 //:
-//: writeverify:
+//: muos_eeprom_writeverify::
 //:   Erases data before writing. Verifies after write.
 //:
-//: writeonly:
+//: muos_eeprom_writeonly::
 //:   Only writes (clears bits) without erasing.
 //:
 static inline muos_error
 muos_eeprom_write (void* mem,
-                   void* eeprom,
+                   uintptr_t eeprom,
                    size_t size,
                    muos_eeprom_callback complete)
 {
@@ -193,7 +193,7 @@ muos_eeprom_write (void* mem,
 
 static inline muos_error
 muos_eeprom_writeverify (void* mem,
-                         void* eeprom,
+                         uintptr_t eeprom,
                          size_t size,
                          muos_eeprom_callback complete)
 {
@@ -203,7 +203,7 @@ muos_eeprom_writeverify (void* mem,
 
 static inline muos_error
 muos_eeprom_writeonly (void* mem,
-                       void* eeprom,
+                       uintptr_t eeprom,
                        size_t size,
                        muos_eeprom_callback complete)
 {
@@ -214,7 +214,7 @@ muos_eeprom_writeonly (void* mem,
 //eeprom_api:
 //: .Erasing
 //: ----
-//: muos_error muos_eeprom_erase (void* eeprom,
+//: muos_error muos_eeprom_erase (uintptr_t eeprom,
 //:                               size_t size,
 //:                               muos_eeprom_callback complete)
 //: ----
@@ -222,7 +222,7 @@ muos_eeprom_writeonly (void* mem,
 //: Erases the given range.
 //:
 static inline muos_error
-muos_eeprom_erase (void* eeprom,
+muos_eeprom_erase (uintptr_t eeprom,
                    size_t size,
                    muos_eeprom_callback complete)
 {
