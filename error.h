@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include MUOS_HW_HEADER
+
 //defined_errors:
 #define MUOS_ERRORS                                                                             \
   MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                   \
@@ -105,8 +107,18 @@ muos_error_pending (void)
 muos_error
 muos_error_set_isr (muos_error err);
 
-muos_error
-muos_error_set (muos_error err);
+static inline muos_error
+muos_error_set (muos_error err)
+{
+  if (err)
+    {
+      muos_interrupt_disable ();
+      muos_error_set_isr (err);
+      muos_interrupt_enable ();
+    }
+  return err;
+}
+
 
 
 //error_api:
@@ -120,9 +132,16 @@ muos_error_set (muos_error err);
 //:
 //: Returns 'true' when the error is flagged, 'false' otherwise.
 //:
-bool
-muos_error_peek (muos_error err);
+static inline bool
+muos_error_peek (muos_error err)
+{
+  return muos_errors_[err/8] & 1<<(err%8);
+}
 
+
+
+bool
+muos_error_check_isr (muos_error err);
 
 //error_api:
 //: .Check for errors
@@ -138,10 +157,18 @@ muos_error_peek (muos_error err);
 //:
 //: The '*_isr' function is for contexts where interrupts are disabled.
 //:
-bool
-muos_error_check (muos_error err);
+static inline bool
+muos_error_check (muos_error err)
+{
+  bool ret = false;
 
-bool
-muos_error_check_isr (muos_error err);
+  muos_interrupt_disable ();
+  ret = muos_error_check_isr (err);
+  muos_interrupt_enable ();
+
+  return ret;
+}
+
+
 
 #endif
