@@ -42,6 +42,8 @@ PIPADOC:=library
 
 PIPADOC:=serial
 
+PIPADOC:=eeprom
+
 PIPADOC:=cppm
 
 PIPADOC:=debug

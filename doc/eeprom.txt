@@ -1,0 +1,45 @@
+=== Non volatile Storage
+
+There are two drivers available for storing data within the
+microcontrollers EEPROM. The lowlevel 'EEPROM' driver allows
+asynchronous basic access to the eeprom data. Including reading,
+writing, verifying and erasing data.
+
+The higher level 'configstore' driver implements a more robust, fault
+tolerant and wear leveling algorithm on top of the 'EEPROM'
+facilities.
+
+Both drivers operate asynchronous for reading and writing. Upon
+completion or failure a registered callback function is scheduled. By
+its nature EEPROM is considered slow and less timing critical, thus it
+prefers to schedule callbacks on the BGQ when available.
+
+==== EEPROM
+
+PIPADOC:PLANNED: DOCME
+
+// only block read
+
+===== API
+
+PIPADOC:=eeprom_api
+
+===== configuration
+
+PIPADOC:@eeprom_config
+
+==== Configstore
+
+PIPADOC:PLANNED: DOCME
+
+===== API
+
+PIPADOC:=configstore_api
+
+===== configuration
+
+PIPADOC:@configstore_config
+
+
+
+
