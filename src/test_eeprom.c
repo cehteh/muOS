@@ -44,7 +44,7 @@ char mem2[16] = "dest";
 void
 eeprom_erased (void)
 {
-  MUOS_DEBUG_C1_TOGGLE;
+  muos_interrupt_enable ();
 
   muos_output_cstr_P ("erased ");
   muos_output_uint8 (muos_error_pending ());
@@ -66,7 +66,7 @@ eeprom_erased (void)
 void
 eeprom_read (void)
 {
-  MUOS_DEBUG_C1_TOGGLE;
+  muos_interrupt_enable ();
 
   muos_output_cstr_P ("read ");
   muos_output_uint8 (muos_error_pending ());
@@ -96,7 +96,7 @@ eeprom_read (void)
 void
 eeprom_verifail (void)
 {
-  MUOS_DEBUG_C1_TOGGLE;
+  muos_interrupt_enable ();
 
   muos_output_cstr_P ("verfail ");
   muos_output_uint8 (muos_error_pending ());
@@ -122,7 +122,7 @@ eeprom_verifail (void)
 void
 eeprom_verified (void)
 {
-  MUOS_DEBUG_C1_TOGGLE;
+  muos_interrupt_enable ();
 
   muos_output_cstr_P ("verfied ");
   muos_output_uint8 (muos_error_pending ());
@@ -143,13 +143,12 @@ eeprom_verified (void)
                       32,
                       16,
                       eeprom_verifail);
-
 }
 
 void
 eeprom_written (void)
 {
-  MUOS_DEBUG_C1_TOGGLE;
+  muos_interrupt_enable ();
 
   muos_output_cstr_P ("written ");
   muos_output_uint8 (muos_error_pending ());
@@ -165,26 +164,26 @@ eeprom_written (void)
 void
 eeprom_test (const struct muos_spriq_entry* event)
 {
+  muos_interrupt_enable ();
   (void) event;
-  MUOS_DEBUG_C1_TOGGLE;
 
   muos_output_cstr_P ("Start ");
   muos_output_uint8 (muos_error_pending ());
   muos_output_nl ();
 
-
   muos_eeprom_write (mem1,
                      32,
                      16,
                      eeprom_written);
-
 }
+
+
 
 
 void
 init (void)
 {
-  MUOS_DEBUG_C1_ON;
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (10), eeprom_test);
+  muos_interrupt_enable ();
+  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (1), eeprom_test);
 }
 

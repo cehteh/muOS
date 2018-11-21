@@ -241,6 +241,14 @@ MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,2)'
 
 
 
+#debug_config:MUOS_DEBUG_SWITCH
+#: MUOS_DEBUG_SWITCH::
+#: Uses a GPIO to indicate when the scheduler switches to another function,
+#: Pin gets toggled!
+MUOS_CONFIG += -DMUOS_DEBUG_SWITCH='(B,1)'
+
+
+
 #debug_config:MUOS_DEBUG_Cx
 #: MUOS_DEBUG_Cx::
 #: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
