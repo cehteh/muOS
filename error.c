@@ -50,10 +50,12 @@ muos_error_check_isr (muos_error err)
     {
       ret = muos_error_peek (err);
 
-      muos_errors_[err/8] &= ~(1<<(err%8));
 
       if (ret)
-        --muos_errors_pending_;
+        {
+          muos_errors_[err/8] &= ~(1<<(err%8));
+          --muos_errors_pending_;
+        }
 
 #ifdef MUOS_DEBUG_ERROR
       if (!muos_errors_pending_)
