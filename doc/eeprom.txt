@@ -1,4 +1,4 @@
-=== Non volatile Storage
+=== EEPROM
 
 There are two drivers available for storing data within the
 microcontrollers EEPROM. The lowlevel 'EEPROM' driver allows
@@ -14,7 +14,7 @@ completion or failure a registered callback function is scheduled. By
 its nature EEPROM is considered slow and less timing critical, thus it
 prefers to schedule callbacks on the BGQ when available.
 
-==== EEPROM
+==== Low level EEPROM access
 
 PIPADOC:PLANNED: DOCME
 

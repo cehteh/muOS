@@ -41,8 +41,11 @@ enum muos_eeprom_mode
    //PLANNED: MUOS_EEPROM_WRITESMART,     // eeprom -> memory, smart write, erase/write only when necessary
    //PLANNED: MUOS_EEPROM_REFRESH,          // eeprom <- eeprom, read, erase, write to refresh content
    MUOS_EEPROM_ERASE,          // erase eeprom <- 0xff
+   //PLANNED: MUOS_EEPROM_IS_ERASED,       // check that the given range is erased
    //PLANNED: MUOS_EEPROM_ERASESECURE,       // eeprom <- ^eeprom, eeprom <- 0x00, erase, secure erase (equivalent wear)
-  };
+   //PLANNED: MUOS_EEPROM_XOR,       //
+   //PLANNED: MUOS_EEPROM_CRC,       //
+   };
 
 /*
   WRITESMART algorithm:

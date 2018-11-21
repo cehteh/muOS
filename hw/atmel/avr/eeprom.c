@@ -47,7 +47,7 @@ ISR(ISRNAME_EEPROM_READY)
 
   if (!--bytes)
     {
-      EECR &= ~(1<<EERIE);
+      EECR = 0;
 
       operation = MUOS_EEPROM_IDLE;
       if (callback)
@@ -97,6 +97,7 @@ readbatch (void)
   do
     {
       EECR |= (1<<EERE);
+
       switch (operation)
         {
         case MUOS_EEPROM_READ:
@@ -117,6 +118,7 @@ readbatch (void)
 
  done:
   operation = MUOS_EEPROM_IDLE;
+  EECR = 0;
   if (callback)
     {
 #if MUOS_BGQ_LENGTH >= 1
@@ -159,6 +161,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
     {
     case MUOS_EEPROM_WRITE:
     case MUOS_EEPROM_WRITEVERIFY:
+      EECR = 0;
       break;
 
     case MUOS_EEPROM_WRITEONLY:
@@ -170,7 +173,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
       break;
 
     default:
-      // reading modes
+      // reading/verifying/scanning modes
 #ifndef DMUOS_EEPROM_RBATCH
       // batching disabled call it directly
       readbatch ();
@@ -187,13 +190,13 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
     _delay_loop_2 (F_CPU/1000);
 #endif
 
-  // start ISR writing
-  EECR |= 1<<EERIE;
+  // start ISR & writing
   EEDR = *memory;
 
   cli ();
   EECR |= (1<<EEMPE);
   EECR |= (1<<EEPE);
+  EECR |= 1<<EERIE;
   sei ();
 
   return muos_success;
