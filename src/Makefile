@@ -49,7 +49,8 @@ AVRDUDE_PROGRAMMER = arduino
 
 # build_config:
 # additional C Source file
-SOURCES += $(wildcard *.c)
+#SOURCES += $(wildcard *.c)
+SOURCES += test_eeprom.c
 
 # build_config:CCFLAGS
 #: Common CC Flags
@@ -446,9 +447,9 @@ MUOS_CONFIG += -DMUOS_SERIAL_RXCALLBACK=muos_lineedit
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=8
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=16
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=32
-MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
+#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=64
 #MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=80
-#MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
+MUOS_CONFIG += -DMUOS_SERIAL_TXQUEUE=128
 
 
 
@@ -512,6 +513,109 @@ MUOS_CONFIG += -DMUOS_LINEEDIT_RECALL
 #: MUOS_LINEEDIT_CALLBACK::
 #: User defined function to call when a line from lineedit is done (return pressed)
 MUOS_CONFIG += -DMUOS_LINEEDIT_CALLBACK=lineecho
+
+
+
+#eeprom_config:MUOS_EEPROM
+#: MUOS_EEPROM::
+#: Enable the low level asynchronous EEPROM driver
+MUOS_CONFIG += -DMUOS_EEPROM
+
+
+#PLANNED: eeprom_config:MUOS_EEPROM_RBATCH
+# : MUOS_EEPROM_RBATCH::
+# : Reading eeprom is fast, nevertheless for big blocks
+# : this defines how much bytes are processed at once.
+# : When not defined, EEPROM reading will not batch
+#MUOS_CONFIG += -DMUOS_EEPROM_RBATCH=32
+
+
+#PLANNED: eeprom_config:MUOS_EEPROM_RETRY
+# : MUOS_EEPROM_RETRY::
+# : When write verification failed, then retry the write this many times
+# : before returning an error.
+#MUOS_CONFIG += -DMUOS_EEPROM_RETRY=3
+
+
+#PLANNED: MUOS_EEPROM_XOR,
+#PLANNED: MUOS_EEPROM_CRC,
+
+
+#eeprom_config:MUOS_EEPROM_DEBUG_WDELAY
+#: MUOS_EEPROM_DEBUG_WDELAY::
+#: Delay program execution by roughly this much milliseconds before each
+#: write. This ensures programming errors won't wear out the eeprom in no time.
+#:
+#: WARNING: Development option only, uses busy loop delay and will
+#:          halt processing.
+MUOS_CONFIG += -DMUOS_EEPROM_DEBUG_WDELAY=100
+
+
+
+
+
+#configstore_config:MUOS_CONFIGSTORE
+#: MUOS_CONFIGSTORE::
+#: Enable the configuration store (EEPROM) driver
+MUOS_CONFIG += -DMUOS_CONFIGSTORE
+
+
+
+#configstore_config:MUOS_CONFIGSTORE_OFFSET
+#: MUOS_CONFIGSTORE_OFFSET::
+#: Use EEPROM addresses from OFFSET upward,
+#: user is responsible that this is page aligned
+MUOS_CONFIG += -DMUOS_CONFIGSTORE_OFFSET=24
+
+
+
+#configstore_config:MUOS_CONFIGSTORE_SIZE
+#: MUOS_CONFIGSTORE_SIZE::
+#: Use this much bytes at most
+#TODO: only needed for journaled configstore
+MUOS_CONFIG += -DMUOS_CONFIGSTORE_SIZE=1000
+
+
+#PLANNED: configstore_config:MUOS_CONFIGSTORE_JOURNALED
+# : MUOS_CONFIGSTORE_JOURNALED::
+# : Enable journaled configuration store
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE
+
+
+#PLANNED: configstore_config:MUOS_CONFIGSTORE_REDUNDANT
+# : MUOS_CONFIGSTORE_REDUNDANT::
+# : duplicate data in EEPROM in case one replica gets damaged
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_REDUNDANT
+
+
+#PLANNED: configstore_config:MUOS_CONFIGSTORE_LOADATOMIC
+# : MUOS_CONFIGSTORE_LOADATOMIC::
+# : Load usues a temporary storage on stack (warning: space must be available)
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_LOADATOMIC
+
+
+
+#PLANNED: multiple slots
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_SLOTS
+
+
+
+#stepper_config:MUOS_STEPPER
+#: MUOS_STEPPER::
+#: Enable the Stepper motor driver
+MUOS_CONFIG += -DMUOS_STEPPER
+
+
+#stepper_config:MUOS_STEPPER_HW
+#: MUOS_STEPPER_HW::
+#: Define which hardware (timers) are bound to steppers
+#TODO: docme better
+MUOS_CONFIG += -DMUOS_STEPPER_HW='HW(1,A,ICR)'
+
+
+
+
+
 
 
 
