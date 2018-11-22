@@ -100,6 +100,9 @@ readbatch (void)
 
       switch (operation)
         {
+        case MUOS_EEPROM_XOR:
+          *memory ^= EEDR;
+          break; // don't increment memory
         case MUOS_EEPROM_IS_ERASED:
           if (0xff != EEDR)
             {
@@ -183,6 +186,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
         reading/verifying/scanning modes
       */
     case MUOS_EEPROM_IS_ERASED:
+    case MUOS_EEPROM_XOR:
     default:
 #ifndef DMUOS_EEPROM_RBATCH
       // batching disabled call it directly

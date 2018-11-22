@@ -156,6 +156,28 @@ muos_eeprom_verify (void* mem,
 
 
 //eeprom_api:
+//: .Xoring
+//: ----
+//: muos_error muos_eeprom_xor (uint8_t* address,
+//:                             uintptr_t eeprom,
+//:                             size_t size,
+//:                             muos_eeprom_callback complete)
+//: ----
+//:
+//: XOR'es the given range with address pointing to a single uint8_t.
+//:
+static inline muos_error
+muos_eeprom_xor (uint8_t* address,
+                 uintptr_t eeprom,
+                 size_t size,
+                 muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_XOR, address, eeprom, size, complete);
+}
+
+
+
+//eeprom_api:
 //: .Writing
 //: ----
 //: muos_error muos_eeprom_write (void* address,
