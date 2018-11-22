@@ -66,7 +66,7 @@ typedef void (*muos_eeprom_callback)(void);
 
 extern enum muos_eeprom_mode muos_hw_eeprom_state (void);
 extern muos_error muos_hw_eeprom_access (enum muos_eeprom_mode mode,
-                                         void* mem,
+                                         void* address,
                                          uintptr_t eeprom,
                                          size_t size,
                                          muos_eeprom_callback complete);
@@ -127,12 +127,12 @@ muos_eeprom_state (void)
 //: Reads the EEPROM.
 //:
 static inline muos_error
-muos_eeprom_read (void* mem,
+muos_eeprom_read (void* address,
                   uintptr_t eeprom,
                   size_t size,
                   muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_READ, mem, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_READ, address, eeprom, size, complete);
 }
 
 
@@ -148,12 +148,12 @@ muos_eeprom_read (void* mem,
 //: Compares a block of memory with eeprom contents. Aborts on first error, calling 'complete'.
 //:
 static inline muos_error
-muos_eeprom_verify (void* mem,
+muos_eeprom_verify (void* address,
                     uintptr_t eeprom,
                     size_t size,
                     muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_VERIFY, mem, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_VERIFY, address, eeprom, size, complete);
 }
 
 
@@ -236,32 +236,32 @@ muos_eeprom_crc16 (uint16_t* address,
 //:   Only writes (clears bits) without erasing.
 //:
 static inline muos_error
-muos_eeprom_write (void* mem,
+muos_eeprom_write (void* address,
                    uintptr_t eeprom,
                    size_t size,
                    muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITE, mem, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITE, address, eeprom, size, complete);
 }
 
 
 static inline muos_error
-muos_eeprom_writeverify (void* mem,
+muos_eeprom_writeverify (void* address,
                          uintptr_t eeprom,
                          size_t size,
                          muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEVERIFY, mem, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEVERIFY, address, eeprom, size, complete);
 }
 
 
 static inline muos_error
-muos_eeprom_writeonly (void* mem,
+muos_eeprom_writeonly (void* address,
                        uintptr_t eeprom,
                        size_t size,
                        muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEONLY, mem, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEONLY, address, eeprom, size, complete);
 }
 
 
