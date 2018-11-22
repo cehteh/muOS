@@ -79,6 +79,17 @@ configstore_saved (void)
   muos_configstore_load (configstore_loaded);
 }
 
+void
+configstore_load (void)
+{
+  muos_interrupt_enable ();
+
+  muos_output_cstr_P ("Loading config ");
+  muos_output_uint8 (muos_error_pending ());
+  muos_output_nl ();
+
+  muos_configstore_load (configstore_loaded);
+}
 
 void
 configstore_save (void)
@@ -97,7 +108,7 @@ void
 init (void)
 {
   muos_interrupt_enable ();
-  muos_bgq_pushback (configstore_save);
+  muos_bgq_pushback (configstore_load);
   
   muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (1000), configstore_test);
 }
