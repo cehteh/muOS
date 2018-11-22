@@ -100,19 +100,25 @@ readbatch (void)
 
       switch (operation)
         {
-        case MUOS_EEPROM_READ:
-          *memory = EEDR;
-          break;
+        case MUOS_EEPROM_IS_ERASED:
+          if (0xff != EEDR)
+            {
+              muos_error_set (muos_error_eeprom_verify);
+              goto done;
+            }
+          break; // don't increment memory
         case MUOS_EEPROM_VERIFY:
           if (*memory != EEDR)
             {
               muos_error_set (muos_error_eeprom_verify);
               goto done;
             }
-        default:;
+        case MUOS_EEPROM_READ:
+          *memory = EEDR;
+        default:
+          ++memory;
         }
       ++EEAR;
-      ++memory;
     }
   while (--bytes);
 
@@ -159,6 +165,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
   // set modes
   switch (operation)
     {
+      // write modes need to initialize EECR
     case MUOS_EEPROM_WRITE:
     case MUOS_EEPROM_WRITEVERIFY:
       EECR = 0;
@@ -172,8 +179,11 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
       EECR = 1<<EEPM0;
       break;
 
+      /*
+        reading/verifying/scanning modes
+      */
+    case MUOS_EEPROM_IS_ERASED:
     default:
-      // reading/verifying/scanning modes
 #ifndef DMUOS_EEPROM_RBATCH
       // batching disabled call it directly
       readbatch ();
@@ -185,6 +195,10 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
 #endif
     }
 
+  /*
+    writing modes below
+   */
+  
 #ifdef MUOS_EEPROM_DEBUG_WDELAY
   for (volatile int i = MUOS_EEPROM_DEBUG_WDELAY; i; --i)
     _delay_loop_2 (F_CPU/1000);

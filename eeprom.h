@@ -41,8 +41,9 @@ enum muos_eeprom_mode
    //PLANNED: MUOS_EEPROM_WRITESMART,     // eeprom -> memory, smart write, erase/write only when necessary
    //PLANNED: MUOS_EEPROM_REFRESH,          // eeprom <- eeprom, read, erase, write to refresh content
    MUOS_EEPROM_ERASE,          // erase eeprom <- 0xff
-   //PLANNED: MUOS_EEPROM_IS_ERASED,       // check that the given range is erased
+   MUOS_EEPROM_IS_ERASED,      // check that the given range is erased
    //PLANNED: MUOS_EEPROM_ERASESECURE,       // eeprom <- ^eeprom, eeprom <- 0x00, erase, secure erase (equivalent wear)
+
    //PLANNED: MUOS_EEPROM_XOR,       //
    //PLANNED: MUOS_EEPROM_CRC,       //
    };
@@ -230,6 +231,25 @@ muos_eeprom_erase (uintptr_t eeprom,
                    muos_eeprom_callback complete)
 {
   return muos_hw_eeprom_access (MUOS_EEPROM_ERASE, NULL, eeprom, size, complete);
+}
+
+
+//eeprom_api:
+//: .Check for erased
+//: ----
+//: muos_error muos_eeprom_is_erased (uintptr_t eeprom,
+//:                                   size_t size,
+//:                                   muos_eeprom_callback complete)
+//: ----
+//:
+//: Checks if the given range is erased.
+//:
+static inline muos_error
+muos_eeprom_is_erased (uintptr_t eeprom,
+                       size_t size,
+                       muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_IS_ERASED, NULL, eeprom, size, complete);
 }
 
 
