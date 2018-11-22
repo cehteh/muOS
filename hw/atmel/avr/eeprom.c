@@ -46,29 +46,14 @@ static size_t bytes;
 static muos_eeprom_callback callback;  //pushed to bgq/hpq
 
 
+
 ISR(ISRNAME_EEPROM_READY)
 {
   MUOS_DEBUG_INTR_ON;
 
-  if (!--bytes)
-    {
-      EECR = 0;
-
-      operation = MUOS_EEPROM_IDLE;
-      if (callback)
-        {
-#if MUOS_BGQ_LENGTH >= 1
-          muos_error_set_isr (muos_bgq_pushback_isr (callback));
-#elif MUOS_HPQ_LENGTH >= 1
-          muos_error_set_isr (muos_hpq_pushback_isr (callback));
-#endif
-        }
-      return;
-    }
-
   switch (operation)
     {
-    case MUOS_EEPROM_WRITEVERIFY:
+    case MUOS_EEPROM_WRITEVERIFY_CONT:
       EECR |= (1<<EERE);
       if (EEDR != *memory)
         {
@@ -79,12 +64,38 @@ ISR(ISRNAME_EEPROM_READY)
           //PLANNED: retry
         }
 
-    case MUOS_EEPROM_WRITE:
-    case MUOS_EEPROM_WRITEONLY:
+    case MUOS_EEPROM_WRITEERASE_CONT:
+    case MUOS_EEPROM_WRITEONLY_CONT:
       EEDR = *++memory;
 
+    case MUOS_EEPROM_ERASE_CONT:
+          ++EEAR;
+
+    default:;
+      if (!bytes--)
+        {
+          EECR = 0;
+
+          operation = MUOS_EEPROM_IDLE;
+          if (callback)
+            {
+#if MUOS_BGQ_LENGTH >= 1
+              muos_error_set_isr (muos_bgq_pushback_isr (callback));
+#elif MUOS_HPQ_LENGTH >= 1
+              muos_error_set_isr (muos_hpq_pushback_isr (callback));
+#endif
+            }
+          return;
+        }
+    }
+
+  switch (operation)
+    {
+    case MUOS_EEPROM_WRITEVERIFY:
+    case MUOS_EEPROM_WRITEERASE:
+    case MUOS_EEPROM_WRITEONLY:
     case MUOS_EEPROM_ERASE:
-      ++EEAR;
+      ++operation; // sets the the *_CONT operation
     default:;
     }
 
@@ -92,6 +103,7 @@ ISR(ISRNAME_EEPROM_READY)
   EECR |= (1<<EEMPE);
   EECR |= (1<<EEPE);
 }
+
 
 
 static void
@@ -179,7 +191,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
   switch (operation)
     {
       // write modes need to initialize EECR
-    case MUOS_EEPROM_WRITE:
+    case MUOS_EEPROM_WRITEERASE:
     case MUOS_EEPROM_WRITEVERIFY:
       EECR = 0;
       break;
@@ -216,14 +228,9 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
     _delay_loop_2 (F_CPU/1000);
 #endif
 
-  // start ISR & writing
   EEDR = *memory;
-
-  cli ();
-  EECR |= (1<<EEMPE);
-  EECR |= (1<<EEPE);
+  // start ISR
   EECR |= 1<<EERIE;
-  sei ();
 
   return muos_success;
 }

@@ -35,19 +35,23 @@ enum muos_eeprom_mode
    MUOS_EEPROM_IDLE,           // no operation in progress
    MUOS_EEPROM_READ,           // eeprom -> memory
    MUOS_EEPROM_VERIFY,         // eeprom == memory, will set error_eeprom_verify on fail
-   MUOS_EEPROM_WRITE,          // eeprom <- memory, erase first
+   MUOS_EEPROM_WRITEERASE,     // eeprom <- memory, erase first
+   MUOS_EEPROM_WRITEERASE_CONT,
    MUOS_EEPROM_WRITEVERIFY,    // eeprom <- memory, eeprom == memory, erase first
+   MUOS_EEPROM_WRITEVERIFY_CONT,
    MUOS_EEPROM_WRITEONLY,      // eeprom <- memory, no erase
-   //PLANNED: MUOS_EEPROM_WRITESMART,     // eeprom -> memory, smart write, erase/write only when necessary
+   MUOS_EEPROM_WRITEONLY_CONT,
+   //PLANNED: MUOS_EEPROM_WRITE, //SMART,     // eeprom -> memory, smart write, erase/write only when necessary
    //PLANNED: MUOS_EEPROM_REFRESH,          // eeprom <- eeprom, read, erase, write to refresh content
    MUOS_EEPROM_ERASE,          // erase eeprom <- 0xff
+   MUOS_EEPROM_ERASE_CONT,
    MUOS_EEPROM_IS_ERASED,      // check that the given range is erased
    //PLANNED: MUOS_EEPROM_ERASESECURE,       // eeprom <- ^eeprom, eeprom <- 0x00, erase, secure erase (equivalent wear)
    MUOS_EEPROM_XOR,            // xor the given range
 #ifdef MUOS_EEPROM_CRC16_FN
    MUOS_EEPROM_CRC16,          // crc16 over the given range
 #endif
-   //PLANNED: MUOS_EEPROM_CRC8,       //
+   //PLANNED: MUOS_EEPROM_CRC8,       // crc8 over the given range
   };
 
 /*
@@ -208,10 +212,10 @@ muos_eeprom_crc16 (uint16_t* address,
 //eeprom_api:
 //: .Writing
 //: ----
-//: muos_error muos_eeprom_write (void* address,
-//:                              uintptr_t eeprom,
-//:                              size_t size,
-//:                              muos_eeprom_callback complete)
+//: muos_error muos_eeprom_writeerase (void* address,
+//:                                    uintptr_t eeprom,
+//:                                    size_t size,
+//:                                    muos_eeprom_callback complete)
 //:
 //: muos_error muos_eeprom_writeverify (void* address,
 //:                                     uintptr_t eeprom,
@@ -226,7 +230,7 @@ muos_eeprom_crc16 (uint16_t* address,
 //:
 //: Transfers data from memory to eeprom.
 //:
-//: muos_eeprom_write::
+//: muos_eeprom_writeerase::
 //:   Erases data before writing. Faster than erasing the block first.
 //:
 //: muos_eeprom_writeverify::
@@ -236,12 +240,12 @@ muos_eeprom_crc16 (uint16_t* address,
 //:   Only writes (clears bits) without erasing.
 //:
 static inline muos_error
-muos_eeprom_write (void* address,
-                   uintptr_t eeprom,
-                   size_t size,
-                   muos_eeprom_callback complete)
+muos_eeprom_writeerase (void* address,
+                        uintptr_t eeprom,
+                        size_t size,
+                        muos_eeprom_callback complete)
 {
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITE, address, eeprom, size, complete);
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEERASE, address, eeprom, size, complete);
 }
 
 
