@@ -45,6 +45,9 @@ static uint8_t* memory;
 static size_t bytes;
 static muos_eeprom_callback callback;  //pushed to bgq/hpq
 
+#ifdef  MUOS_EEPROM_RETRY
+static uint8_t retry;
+#endif
 
 ISR(ISRNAME_EEPROM_READY)
 {
@@ -57,9 +60,11 @@ ISR(ISRNAME_EEPROM_READY)
       EECR |= (1<<EERE);
       if (EEDR != *memory)
         {
+          if (--retry)
+            goto retry;
+
           muos_error_set_isr (muos_error_eeprom_verify);
           goto done;
-          //PLANNED: retry
         }
 
     case MUOS_EEPROM_WRITEERASE_CONT:
@@ -100,6 +105,11 @@ ISR(ISRNAME_EEPROM_READY)
     }
 
   // start ISR writing
+#ifdef  MUOS_EEPROM_RETRY
+  retry = MUOS_EEPROM_RETRY;
+#endif
+
+ retry:
   EEDR = *memory;
   EECR |= (1<<EEMPE);
   EECR |= (1<<EEPE);
