@@ -42,6 +42,57 @@ char mem2[16] = "dest";
 
 
 void
+eeprom_writeverified (void)
+{
+  muos_interrupt_enable ();
+
+  muos_output_cstr_P ("writeverified ");
+  muos_output_uint8 (muos_error_pending ());
+  muos_output_nl ();
+
+  if (!muos_error_check (muos_error_eeprom_verify))
+    {
+      muos_output_cstr_P ("OK");
+      muos_output_nl ();
+    }
+  else
+    {
+      muos_output_cstr_P ("FAIL");
+      muos_output_nl ();
+    }
+}
+
+
+
+void
+eeprom_iserased (void)
+{
+  muos_interrupt_enable ();
+
+  muos_output_cstr_P ("iserased ");
+  muos_output_uint8 (muos_error_pending ());
+  muos_output_nl ();
+
+  if (!muos_error_check (muos_error_eeprom_verify))
+    {
+      muos_output_cstr_P ("OK");
+      muos_output_nl ();
+    }
+  else
+    {
+      muos_output_cstr_P ("FAIL");
+      muos_output_nl ();
+    }
+
+  muos_eeprom_writeverify (mem1,
+                           64,
+                           16,
+                           eeprom_writeverified);
+
+}
+
+
+void
 eeprom_erased (void)
 {
   muos_interrupt_enable ();
@@ -60,7 +111,42 @@ eeprom_erased (void)
       muos_output_cstr_P ("FAIL");
       muos_output_nl ();
     }
+
+  muos_eeprom_is_erased (32,
+                         16,
+                         eeprom_iserased);
+
+
 }
+
+
+void
+eeprom_noterased (void)
+{
+  muos_interrupt_enable ();
+
+  muos_output_cstr_P ("noterased ");
+  muos_output_uint8 (muos_error_pending ());
+  muos_output_nl ();
+
+  if (muos_error_check (muos_error_eeprom_verify))
+    {
+      muos_output_cstr_P ("OK");
+      muos_output_nl ();
+    }
+  else
+    {
+      muos_output_cstr_P ("FAIL");
+      muos_output_nl ();
+    }
+
+  muos_eeprom_erase (32,
+                     16,
+                     eeprom_erased);
+
+}
+
+
 
 
 void
@@ -83,9 +169,9 @@ eeprom_read (void)
       muos_output_nl ();
     }
 
-  muos_eeprom_erase (32,
-                     16,
-                     eeprom_erased);
+  muos_eeprom_is_erased (32,
+                         16,
+                         eeprom_noterased);
 
 }
 
@@ -146,11 +232,11 @@ eeprom_verified (void)
 }
 
 void
-eeprom_written (void)
+eeprom_rewritten (void)
 {
   muos_interrupt_enable ();
 
-  muos_output_cstr_P ("written ");
+  muos_output_cstr_P ("rewritten ");
   muos_output_uint8 (muos_error_pending ());
   muos_output_nl ();
 
@@ -158,6 +244,21 @@ eeprom_written (void)
                       32,
                       16,
                       eeprom_verified);
+}
+
+void
+eeprom_ewritten (void)
+{
+  muos_interrupt_enable ();
+
+  muos_output_cstr_P ("ewritten ");
+  muos_output_uint8 (muos_error_pending ());
+  muos_output_nl ();
+
+  muos_eeprom_write (mem1,
+                     32,
+                     16,
+                     eeprom_rewritten);
 }
 
 
@@ -171,10 +272,10 @@ eeprom_test (const struct muos_spriq_entry* event)
   muos_output_uint8 (muos_error_pending ());
   muos_output_nl ();
 
-  muos_eeprom_write (mem1,
-                     32,
-                     16,
-                     eeprom_written);
+  muos_eeprom_writeerase (mem1,
+                          32,
+                          16,
+                          eeprom_ewritten);
 }
 
 
@@ -184,6 +285,6 @@ void
 init (void)
 {
   muos_interrupt_enable ();
-  muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (1), eeprom_test);
+   muos_clpq_at (0, MUOS_CLOCK_MILLISECONDS (1), eeprom_test);
 }
 
