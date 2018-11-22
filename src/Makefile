@@ -538,11 +538,12 @@ MUOS_CONFIG += -DMUOS_EEPROM
 #MUOS_CONFIG += -DMUOS_EEPROM_RBATCH=32
 
 
-#PLANNED: eeprom_config:MUOS_EEPROM_RETRY
+
+#eeprom_config:MUOS_EEPROM_RETRY
 # : MUOS_EEPROM_RETRY::
-# : When write verification failed, then retry the write this many times
+# : When write verification failed, then retry the write this (uint8_t) many times
 # : before returning an error.
-#MUOS_CONFIG += -DMUOS_EEPROM_RETRY=3
+MUOS_CONFIG += -DMUOS_EEPROM_RETRY=3
 
 
 
