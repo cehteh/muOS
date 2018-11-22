@@ -35,13 +35,14 @@ enum muos_eeprom_mode
    MUOS_EEPROM_IDLE,           // no operation in progress
    MUOS_EEPROM_READ,           // eeprom -> memory
    MUOS_EEPROM_VERIFY,         // eeprom == memory, will set error_eeprom_verify on fail
+   MUOS_EEPROM_WRITE,          // eeprom -> memory, smart write, erase/write only when necessary
+   MUOS_EEPROM_WRITE_CONT,
    MUOS_EEPROM_WRITEERASE,     // eeprom <- memory, erase first
    MUOS_EEPROM_WRITEERASE_CONT,
    MUOS_EEPROM_WRITEVERIFY,    // eeprom <- memory, eeprom == memory, erase first
    MUOS_EEPROM_WRITEVERIFY_CONT,
    MUOS_EEPROM_WRITEONLY,      // eeprom <- memory, no erase
    MUOS_EEPROM_WRITEONLY_CONT,
-   //PLANNED: MUOS_EEPROM_WRITE, //SMART,     // eeprom -> memory, smart write, erase/write only when necessary
    //PLANNED: MUOS_EEPROM_REFRESH,          // eeprom <- eeprom, read, erase, write to refresh content
    MUOS_EEPROM_ERASE,          // erase eeprom <- 0xff
    MUOS_EEPROM_ERASE_CONT,
@@ -54,16 +55,6 @@ enum muos_eeprom_mode
    //PLANNED: MUOS_EEPROM_CRC8,       // crc8 over the given range
   };
 
-/*
-  WRITESMART algorithm:
-
-  read first,
-  compare if:
-    no change -> return
-    only bits need to be cleared -> mask, write
-    else -> erase, write
-  verify
-*/
 
 
 typedef void (*muos_eeprom_callback)(void);
@@ -114,7 +105,7 @@ muos_eeprom_state (void)
 //:   size in bytes of for the operation
 //:
 //: +complete+::
-//:   callback function called upon completion (also on failure)
+//:   callback function called upon completion (also on failure). May be NULL.
 //:
 //: The access function only return an error when they can not start an asynchronous job.
 //: All other errors are set asynchronously and should be handled in the complete callback.
@@ -137,6 +128,105 @@ muos_eeprom_read (void* address,
                   muos_eeprom_callback complete)
 {
   return muos_hw_eeprom_access (MUOS_EEPROM_READ, address, eeprom, size, complete);
+}
+
+
+//eeprom_api:
+//: .Writing
+//: ----
+//: muos_error muos_eeprom_write (void* address,
+//:                               uintptr_t eeprom,
+//:                               size_t size,
+//:                               muos_eeprom_callback complete)
+//:
+//: muos_error muos_eeprom_writeerase (void* address,
+//:                                    uintptr_t eeprom,
+//:                                    size_t size,
+//:                                    muos_eeprom_callback complete)
+//:
+//: muos_error muos_eeprom_writeverify (void* address,
+//:                                     uintptr_t eeprom,
+//:                                     size_t size,
+//:                                     muos_eeprom_callback complete)
+//:
+//: muos_error muos_eeprom_writeonly (void* address,
+//:                                   uintptr_t eeprom,
+//:                                   size_t size,
+//:                                   muos_eeprom_callback complete)
+//: ----
+//:
+//: Transfers data from memory to eeprom.
+//:
+//: muos_eeprom_write::
+//:   Smart write, erase/write only when necessary.
+//:   Fastest when existing content with only few changes is overwritten.
+//:   Reduces EEPROM wear.
+//:
+//: muos_eeprom_writeerase::
+//:   Erases data before writing. Faster than erasing the block first.
+//:
+//: muos_eeprom_writeverify::
+//:   Erases data before writing. Verifies after write.
+//:
+//: muos_eeprom_writeonly::
+//:   Only writes (clears bits) without erasing.
+//:
+static inline muos_error
+muos_eeprom_write (void* address,
+                   uintptr_t eeprom,
+                   size_t size,
+                   muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITE, address, eeprom, size, complete);
+}
+
+
+static inline muos_error
+muos_eeprom_writeerase (void* address,
+                        uintptr_t eeprom,
+                        size_t size,
+                        muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEERASE, address, eeprom, size, complete);
+}
+
+
+static inline muos_error
+muos_eeprom_writeverify (void* address,
+                         uintptr_t eeprom,
+                         size_t size,
+                         muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEVERIFY, address, eeprom, size, complete);
+}
+
+
+static inline muos_error
+muos_eeprom_writeonly (void* address,
+                       uintptr_t eeprom,
+                       size_t size,
+                       muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEONLY, address, eeprom, size, complete);
+}
+
+
+//eeprom_api:
+//: .Erasing
+//: ----
+//: muos_error muos_eeprom_erase (uintptr_t eeprom,
+//:                               size_t size,
+//:                               muos_eeprom_callback complete)
+//: ----
+//:
+//: Erases the given range.
+//:
+static inline muos_error
+muos_eeprom_erase (uintptr_t eeprom,
+                   size_t size,
+                   muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_ERASE, NULL, eeprom, size, complete);
 }
 
 
@@ -208,84 +298,6 @@ muos_eeprom_crc16 (uint16_t* address,
 }
 #endif
 
-
-//eeprom_api:
-//: .Writing
-//: ----
-//: muos_error muos_eeprom_writeerase (void* address,
-//:                                    uintptr_t eeprom,
-//:                                    size_t size,
-//:                                    muos_eeprom_callback complete)
-//:
-//: muos_error muos_eeprom_writeverify (void* address,
-//:                                     uintptr_t eeprom,
-//:                                     size_t size,
-//:                                     muos_eeprom_callback complete)
-//:
-//: muos_error muos_eeprom_writeonly (void* address,
-//:                                   uintptr_t eeprom,
-//:                                   size_t size,
-//:                                   muos_eeprom_callback complete)
-//: ----
-//:
-//: Transfers data from memory to eeprom.
-//:
-//: muos_eeprom_writeerase::
-//:   Erases data before writing. Faster than erasing the block first.
-//:
-//: muos_eeprom_writeverify::
-//:   Erases data before writing. Verifies after write.
-//:
-//: muos_eeprom_writeonly::
-//:   Only writes (clears bits) without erasing.
-//:
-static inline muos_error
-muos_eeprom_writeerase (void* address,
-                        uintptr_t eeprom,
-                        size_t size,
-                        muos_eeprom_callback complete)
-{
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEERASE, address, eeprom, size, complete);
-}
-
-
-static inline muos_error
-muos_eeprom_writeverify (void* address,
-                         uintptr_t eeprom,
-                         size_t size,
-                         muos_eeprom_callback complete)
-{
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEVERIFY, address, eeprom, size, complete);
-}
-
-
-static inline muos_error
-muos_eeprom_writeonly (void* address,
-                       uintptr_t eeprom,
-                       size_t size,
-                       muos_eeprom_callback complete)
-{
-  return muos_hw_eeprom_access (MUOS_EEPROM_WRITEONLY, address, eeprom, size, complete);
-}
-
-
-//eeprom_api:
-//: .Erasing
-//: ----
-//: muos_error muos_eeprom_erase (uintptr_t eeprom,
-//:                               size_t size,
-//:                               muos_eeprom_callback complete)
-//: ----
-//:
-//: Erases the given range.
-//:
-static inline muos_error
-muos_eeprom_erase (uintptr_t eeprom,
-                   size_t size,
-                   muos_eeprom_callback complete)
-{
-  return muos_hw_eeprom_access (MUOS_EEPROM_ERASE, NULL, eeprom, size, complete);
-}
 
 
 //eeprom_api:
