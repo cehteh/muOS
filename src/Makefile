@@ -50,7 +50,7 @@ AVRDUDE_PROGRAMMER = arduino
 # build_config:
 # additional C Source file
 #SOURCES += $(wildcard *.c)
-SOURCES += test_eeprom.c
+SOURCES += test_configstore.c
 
 # build_config:CCFLAGS
 #: Common CC Flags
@@ -556,6 +556,13 @@ MUOS_CONFIG += -DMUOS_EEPROM_CRC16_FN=_crc16_update
 
 
 
+#eeprom_config:MUOS_EEPROM_CRC16_INIT
+#: MUOS_EEPROM_CRC16_INIT::
+#: the initial value used for the crc16 caclulation.
+MUOS_CONFIG += -DMUOS_EEPROM_CRC16_INIT=0xffff
+
+
+
 #eeprom_config:MUOS_EEPROM_CRC16_INCLUDE
 #: MUOS_EEPROM_CRC16_INCLUDE::
 #: Define an extra include for the CRC16 function definition.
@@ -583,6 +590,14 @@ MUOS_CONFIG += -DMUOS_CONFIGSTORE
 
 
 
+#configstore_config:MUOS_CONFIGSTORE_INCLUDE
+#: MUOS_CONFIGSTORE_INCLUDE::
+#: The file which defines the configuration variiables
+MUOS_CONFIG += -DMUOS_CONFIGSTORE_INCLUDE='<configstore.vars>'
+
+
+
+
 #configstore_config:MUOS_CONFIGSTORE_OFFSET
 #: MUOS_CONFIGSTORE_OFFSET::
 #: Use EEPROM addresses from OFFSET upward,
@@ -598,16 +613,39 @@ MUOS_CONFIG += -DMUOS_CONFIGSTORE_OFFSET=24
 MUOS_CONFIG += -DMUOS_CONFIGSTORE_SIZE=1000
 
 
+
+#PLANNED: configstore_config:MUOS_CONFIGSTORE_VIRTUAL
+# : MUOS_CONFIGSTORE_VIRTUAL::
+# : The configuration will not be stored in RAM, the configstore only keeps
+# : metadata where objects are found in EEPROM.
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_VIRTUAL
+
+
+
 #PLANNED: configstore_config:MUOS_CONFIGSTORE_JOURNALED
 # : MUOS_CONFIGSTORE_JOURNALED::
 # : Enable journaled configuration store
-#MUOS_CONFIG += -DMUOS_CONFIGSTORE
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_JOURNALED
+
 
 
 #PLANNED: configstore_config:MUOS_CONFIGSTORE_REDUNDANT
 # : MUOS_CONFIGSTORE_REDUNDANT::
-# : duplicate data in EEPROM in case one replica gets damaged
+# : duplicates data in EEPROM to make it more reliable.
 #MUOS_CONFIG += -DMUOS_CONFIGSTORE_REDUNDANT
+
+
+#PLANNED: voting with more than 3 redundancy copies
+
+#PLANNED: configstore_config:MUOS_CONFIGSTORE_INTERLEAVE
+# : MUOS_CONFIGSTORE_INTERLEAVE::
+# : Saving the config will overwrite the past bytes of the previous config.
+# : Thus invalidating older configs. Needs MUOS_CONFIGSTORE_JOURNALED.
+# : Only reliable/atomic with MUOS_CONFIGSTORE_REDUNDANT, otherwise a failure
+# : to write the config will leave no valid config at all.
+# : possibly conflicts VIRTUAL
+#MUOS_CONFIG += -DMUOS_CONFIGSTORE_INTERLEAVE=1
+
 
 
 #PLANNED: configstore_config:MUOS_CONFIGSTORE_LOADATOMIC
