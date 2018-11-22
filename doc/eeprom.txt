@@ -47,7 +47,21 @@ PIPADOC:@eeprom_config
 
 ==== Configstore
 
-PIPADOC:PLANNED: DOCME
+The configstore comes with different facilities.
+
+1. A flat representation of configuration values which can be queried
+from the application.
+
+2. A mapping from strings to the value to be used for CLI and other
+protocol implementations which are text based.
+
+3. A backend for loading and saving this configuration in a very
+(configureable) reliable/atomic way. By using some journaled write
+strategy the wear of the EEPROM will be leveled/mitigated.
+
+With all bells and whistles enabled it is failure tolerant to power
+glitches and damaged eeprom cells.
+
 
 ===== API
 
