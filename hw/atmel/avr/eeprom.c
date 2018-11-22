@@ -177,13 +177,7 @@ readbatch (void)
   operation = MUOS_EEPROM_IDLE;
   EECR = 0;
   if (callback)
-    {
-#if MUOS_BGQ_LENGTH >= 1
-      muos_error_set (muos_bgq_pushback (callback));
-#elif MUOS_HPQ_LENGTH >= 1
-      muos_error_set (muos_hpq_pushback (callback));
-#endif
-    }
+    callback ();
 }
 
 

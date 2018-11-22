@@ -9,11 +9,6 @@ The higher level 'configstore' driver implements a more robust, fault
 tolerant and wear leveling algorithm on top of the 'EEPROM'
 facilities.
 
-Both drivers operate asynchronous for reading and writing. Upon
-completion or failure a registered callback function is scheduled. By
-its nature EEPROM is considered slow and less timing critical, thus it
-prefers to schedule callbacks on the BGQ when available.
-
 ==== Low level EEPROM access
 
 Implements basic EEPROM operations with reasonable fine grained control
@@ -39,6 +34,8 @@ avoided. One safety measure against programming bugs writing data in a
 tight loop is to add a hard delay before the write. This can be
 configured but should only be enabled in debug builds.
 
+By its nature EEPROM is considered slow and less timing critical, thus it
+prefers to schedule callbacks on the BGQ when available.
 
 ===== API
 
