@@ -44,7 +44,6 @@
     MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                         \
     MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */         \
     MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                 \
-    MUOS_ERROR(error_eeprom_queue) /*: {ERRORDEF} eeprom read could not be requeued */          \
     MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                   \
     MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */

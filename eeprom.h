@@ -68,31 +68,6 @@ extern muos_error muos_hw_eeprom_access (enum muos_eeprom_mode mode,
 
 
 //eeprom_api:
-//: .Query State
-//: ----
-//: enum muos_eeprom_mode muos_eeprom_state (void)
-//: ----
-//:
-//: Polls the state of the driver.
-//:
-//: Returns 0 (MUOS_EEPROM_IDLE) when no operation is in progress.
-//:
-inline enum muos_eeprom_mode
-muos_eeprom_state (void)
-{
-  return muos_hw_eeprom_state ();
-}
-
-//PLANNED: query current position (ram? eeprom?)
-//inline void*
-//muos_eeprom_pos (void)
-//{
-//  return muos_hw_eeprom_pos ();
-//}
-
-
-//eeprom_api:
-//: .Parameters and returns
 //: The parameters used for accessing the eeprom are orthogonal though all access functions
 //:
 //: +address+::
@@ -107,7 +82,7 @@ muos_eeprom_state (void)
 //: +complete+::
 //:   callback function called upon completion (also on failure). May be NULL.
 //:
-//: The access function only return an error when they can not start an asynchronous job.
+//: The access function returns 'error_eeprom_busy' when they can not start an asynchronous job.
 //: All other errors are set asynchronously and should be handled in the complete callback.
 //:
 //eeprom_api:
@@ -318,5 +293,27 @@ muos_eeprom_is_erased (uintptr_t eeprom,
   return muos_hw_eeprom_access (MUOS_EEPROM_IS_ERASED, NULL, eeprom, size, complete);
 }
 
+//eeprom_api:
+//: .Query State
+//: ----
+//: enum muos_eeprom_mode muos_eeprom_state (void)
+//: ----
+//:
+//: Polls the state of the driver.
+//:
+//: Returns 0 (MUOS_EEPROM_IDLE) when no operation is in progress.
+//:
+inline enum muos_eeprom_mode
+muos_eeprom_state (void)
+{
+  return muos_hw_eeprom_state ();
+}
+
+//PLANNED: query current position (ram? eeprom?)
+//inline void*
+//muos_eeprom_pos (void)
+//{
+//  return muos_hw_eeprom_pos ();
+//}
 
 #endif

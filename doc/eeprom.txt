@@ -16,9 +16,29 @@ prefers to schedule callbacks on the BGQ when available.
 
 ==== Low level EEPROM access
 
-PIPADOC:PLANNED: DOCME
+Implements basic EEPROM operations with reasonable fine grained control
+of actual semantics. Writes are asynchronous, reading can be configured
+to do batched access. Upon completion of a request a user supplied callback
+can be called. This callback should also check if any error happend.
 
-// only block read
+.Asynchronous errors can be:
+
+error_hpq_overflow, error_bgq_overflow:: Could not
+schedule the completion callback.
+
+error_eeprom_verify:: A verification failed
+('write', 'writeverify', 'is_erased').
+
+The standard write method does a 'smart' write, as it only erases and
+writes when necessary. There is also a configureable option for
+retrying a few times writes when write verification failed before
+returning an error.
+
+Since EEPROM wears out over time overly frequent writing should be
+avoided. One safety measure against programming bugs writing data in a
+tight loop is to add a hard delay before the write. This can be
+configured but should only be enabled in debug builds.
+
 
 ===== API
 
