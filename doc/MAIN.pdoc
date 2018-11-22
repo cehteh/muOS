@@ -33,11 +33,6 @@ PIPADOC:PLANNED: note about this documentation, define what terms are used
 
 PIPADOC:=muos
 
-== Library
-
-PIPADOC:=library
-
-
 == Drivers
 
 PIPADOC:=serial
@@ -50,6 +45,11 @@ PIPADOC:=debug
 
 PIPADOC:PLANNED: example/howto
 PIPADOC:PLANNED: project structure structure
+
+== Library
+
+PIPADOC:=library
+
 
 
 [appendix]
