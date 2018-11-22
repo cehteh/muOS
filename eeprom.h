@@ -43,10 +43,12 @@ enum muos_eeprom_mode
    MUOS_EEPROM_ERASE,          // erase eeprom <- 0xff
    MUOS_EEPROM_IS_ERASED,      // check that the given range is erased
    //PLANNED: MUOS_EEPROM_ERASESECURE,       // eeprom <- ^eeprom, eeprom <- 0x00, erase, secure erase (equivalent wear)
-
-   //PLANNED: MUOS_EEPROM_XOR,       //
-   //PLANNED: MUOS_EEPROM_CRC,       //
-   };
+   MUOS_EEPROM_XOR,            // xor the given range
+#ifdef MUOS_EEPROM_CRC16_FN
+   MUOS_EEPROM_CRC16,          // crc16 over the given range
+#endif
+   //PLANNED: MUOS_EEPROM_CRC8,       //
+  };
 
 /*
   WRITESMART algorithm:
@@ -175,6 +177,32 @@ muos_eeprom_xor (uint8_t* address,
   return muos_hw_eeprom_access (MUOS_EEPROM_XOR, address, eeprom, size, complete);
 }
 
+
+
+//eeprom_api:
+//: .Cyclic Redundancy Check
+//: ----
+//: muos_error muos_eeprom_crc16 (uint16_t* address,
+//:                               uintptr_t eeprom,
+//:                               size_t size,
+//:                               muos_eeprom_callback complete)
+//: ----
+//:
+//: Caclculates the CRC16 (configured by MUOS_EEPROM_CRC16_FN) of the given range and stores it at address.
+//: NOTE: the initial value of '*address' must be set by the user.
+//:
+//: Only available when MUOS_EEPROM_CRC16_FN is configured.
+//:
+#ifdef MUOS_EEPROM_CRC16_FN
+static inline muos_error
+muos_eeprom_crc16 (uint16_t* address,
+                   uintptr_t eeprom,
+                   size_t size,
+                   muos_eeprom_callback complete)
+{
+  return muos_hw_eeprom_access (MUOS_EEPROM_CRC16, address, eeprom, size, complete);
+}
+#endif
 
 
 //eeprom_api:

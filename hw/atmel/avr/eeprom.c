@@ -25,6 +25,11 @@
 #include <muos/hpq.h>
 #include <muos/bgq.h>
 
+
+#ifdef MUOS_EEPROM_CRC16_INCLUDE
+#include MUOS_EEPROM_CRC16_INCLUDE
+#endif
+
 #ifdef MUOS_EEPROM_DEBUG_WDELAY
 #include <util/delay_basic.h>
 #endif
@@ -100,6 +105,11 @@ readbatch (void)
 
       switch (operation)
         {
+#ifdef MUOS_EEPROM_CRC16_FN
+        case MUOS_EEPROM_CRC16:
+          *(uint16_t*)memory = MUOS_EEPROM_CRC16_FN (*(uint16_t*)memory, EEDR);
+          break; // don't increment memory
+#endif
         case MUOS_EEPROM_XOR:
           *memory ^= EEDR;
           break; // don't increment memory
@@ -185,8 +195,6 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
       /*
         reading/verifying/scanning modes
       */
-    case MUOS_EEPROM_IS_ERASED:
-    case MUOS_EEPROM_XOR:
     default:
 #ifndef DMUOS_EEPROM_RBATCH
       // batching disabled call it directly
