@@ -59,16 +59,31 @@
 
 
 
-/*
-  DSL
-
-
- #define CONFIGSTORE_DATA \
-  CONFIGSTORE_ENTRY(type, ary, name)
-
-
-*/
-
+//configstore_api:
+//: .Configuration Description
+//: ----
+//: #define CONFIGSTORE_DATA             {__BACKSLASH__}
+//:   CONFIGSTORE_ENTRY(type, ary, name) {__BACKSLASH__}
+//:   ...
+//: ----
+//:
+//: +type+::
+//:   C type of the data.
+//:
+//: +ary+::
+//:   Size for arrays. 0 for single variables. Otherwise one of
+//:   2, 3, 4, 5, 6, 7,8, 16, 32, 64, 128, or ARRAY(n) to define the size
+//:   of an array.
+//:
+//: +name+::
+//:   C identifier for the variable.
+//:
+//: Configuration variables are defined by a C-Preprocessor defined DSL in a single included file.
+//: The 'MUOS_CONFIGSTORE_INCLUDE' configuration from the 'Makefile' must point to this file.
+//:
+//: The user defines 'CONFIGSTORE_DATA' to a sequence of 'CONFIGSTORE_ENTRY(type, ary, name)'
+//: definitions. MµOS uses this to expand the provided data into various datastructures.
+//:
 
 typedef void (*muos_configstore_callback)(void);
 
@@ -85,7 +100,6 @@ typedef enum
 
 extern muos_configstore_status status;
 
-//TODO: docme
 #define CONFIGSTORE_ARY_ARRAY(len) [len]
 #define CONFIGSTORE_ARY_0
 #define CONFIGSTORE_ARY_2 [2]
@@ -125,6 +139,21 @@ enum muos_configstore_id
 
 // loading/saving
 
+//configstore_api:
+//: .Loading and Saving
+//: ----
+//: muos_error
+//: muos_configstore_load (muos_configstore_callback callback)
+//:
+//: muos_error
+//: muos_configstore_save (muos_configstore_callback callback)
+//: ----
+//:
+//: +callback+::
+//:   function called on completion.
+//:
+//: Both functions return 'muos_error_configstore_locked' in case
+//: of an error. Other errors should be handled in 'callback'.
 muos_error
 muos_configstore_load (muos_configstore_callback callback);
 
