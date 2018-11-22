@@ -545,8 +545,21 @@ MUOS_CONFIG += -DMUOS_EEPROM
 #MUOS_CONFIG += -DMUOS_EEPROM_RETRY=3
 
 
-#PLANNED: MUOS_EEPROM_XOR,
-#PLANNED: MUOS_EEPROM_CRC,
+
+#eeprom_config:MUOS_EEPROM_CRC16_FN
+#: MUOS_EEPROM_CRC16_FN::
+#: Enables the crc16 api, must name a function to call with
+#: `uint16_t crc16_update (uint16_t crc, uint8_t data)` as prototype
+#: the avr-libc '<util/crc16.h>' can be used
+MUOS_CONFIG += -DMUOS_EEPROM_CRC16_FN=_crc16_update
+
+
+
+#eeprom_config:MUOS_EEPROM_CRC16_INCLUDE
+#: MUOS_EEPROM_CRC16_INCLUDE::
+#: Define an extra include for the CRC16 function definition.
+MUOS_CONFIG += -DMUOS_EEPROM_CRC16_INCLUDE='<util/crc16.h>'
+
 
 
 #eeprom_config:MUOS_EEPROM_DEBUG_WDELAY
