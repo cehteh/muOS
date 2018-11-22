@@ -57,10 +57,8 @@ ISR(ISRNAME_EEPROM_READY)
       EECR |= (1<<EERE);
       if (EEDR != *memory)
         {
-          EECR &= ~(1<<EERIE);
           muos_error_set_isr (muos_error_eeprom_verify);
-          operation = MUOS_EEPROM_IDLE;
-          return;
+          goto done;
           //PLANNED: retry
         }
 
@@ -109,8 +107,8 @@ ISR(ISRNAME_EEPROM_READY)
 
  done:
   EECR = 0;
-
   operation = MUOS_EEPROM_IDLE;
+
   if (callback)
     {
 #if MUOS_BGQ_LENGTH >= 1
