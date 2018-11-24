@@ -28,6 +28,8 @@
 #include <muos/cppm.h>
 
 //PLANNED: stash muos_now_ away on recursive mainloops
+//PLANNED: make ERRORFN optional
+//PLANNED: ignoremask for ERRORFN for errors handled elsewhere
 
 volatile struct muos_status_flags muos_status;
 
