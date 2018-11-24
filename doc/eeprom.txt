@@ -1,0 +1,76 @@
+=== EEPROM
+
+There are two drivers available for storing data within the
+microcontrollers EEPROM. The lowlevel 'EEPROM' driver allows
+asynchronous basic access to the eeprom data. Including reading,
+writing, verifying and erasing data.
+
+The higher level 'configstore' driver implements a more robust, fault
+tolerant and wear leveling algorithm on top of the 'EEPROM'
+facilities.
+
+==== Low level EEPROM access
+
+Implements basic EEPROM operations with reasonable fine grained control
+of actual semantics. Writes are asynchronous, reading can be configured
+to do batched access. Upon completion of a request a user supplied callback
+can be called. This callback should also check if any error happend.
+
+.Asynchronous errors can be:
+
+error_hpq_overflow, error_bgq_overflow:: Could not
+schedule the completion callback.
+
+error_eeprom_verify:: A verification failed
+('write', 'writeverify', 'is_erased').
+
+The standard write method does a 'smart' write, as it only erases and
+writes when necessary. There is also a configureable option for
+retrying a few times writes when write verification failed before
+returning an error.
+
+Since EEPROM wears out over time overly frequent writing should be
+avoided. One safety measure against programming bugs writing data in a
+tight loop is to add a hard delay before the write. This can be
+configured but should only be enabled in debug builds.
+
+By its nature EEPROM is considered slow and less timing critical, thus it
+prefers to schedule callbacks on the BGQ when available.
+
+===== API
+
+PIPADOC:=eeprom_api
+
+===== configuration
+
+PIPADOC:@eeprom_config
+
+==== Configstore
+
+The configstore comes with different facilities.
+
+1. A flat representation of configuration values which can be queried
+from the application.
+
+2. A mapping from strings to the value to be used for CLI and other
+protocol implementations which are text based.
+
+3. A backend for loading and saving this configuration in a very
+(configureable) reliable/atomic way. By using some journaled write
+strategy the wear of the EEPROM will be leveled/mitigated.
+
+With all bells and whistles enabled it is failure tolerant to power
+glitches and damaged eeprom cells.
+
+
+===== API
+
+PIPADOC:=configstore_api
+
+===== configuration
+
+PIPADOC:@configstore_config
+
+
+
+

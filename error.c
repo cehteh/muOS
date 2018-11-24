@@ -23,7 +23,9 @@
 #include <muos/error.h>
 
 volatile uint8_t muos_errors_pending_;
+//TODO: no need to store muos_error_success, array one bit smaller, fix indexing
 volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
+
 
 muos_error
 muos_error_set_isr (muos_error err)
@@ -38,24 +40,6 @@ muos_error_set_isr (muos_error err)
 }
 
 
-muos_error
-muos_error_set (muos_error err)
-{
-  if (err)
-    {
-      muos_interrupt_disable ();
-      muos_error_set_isr (err);
-      muos_interrupt_enable ();
-    }
-  return err;
-}
-
-bool
-muos_error_peek (muos_error err)
-{
-  return muos_errors_[err/8] & 1<<(err%8);
-}
-
 
 bool
 muos_error_check_isr (muos_error err)
@@ -66,10 +50,12 @@ muos_error_check_isr (muos_error err)
     {
       ret = muos_error_peek (err);
 
-      muos_errors_[err/8] &= ~(1<<(err%8));
 
       if (ret)
-        --muos_errors_pending_;
+        {
+          muos_errors_[err/8] &= ~(1<<(err%8));
+          --muos_errors_pending_;
+        }
 
 #ifdef MUOS_DEBUG_ERROR
       if (!muos_errors_pending_)
@@ -82,16 +68,5 @@ muos_error_check_isr (muos_error err)
   return ret;
 }
 
-bool
-muos_error_check (muos_error err)
-{
-  bool ret = false;
-
-  muos_interrupt_disable ();
-  ret = muos_error_check_isr (err);
-  muos_interrupt_enable ();
-
-  return ret;
-}
 
 

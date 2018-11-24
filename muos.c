@@ -28,6 +28,8 @@
 #include <muos/cppm.h>
 
 //PLANNED: stash muos_now_ away on recursive mainloops
+//PLANNED: make ERRORFN optional
+//PLANNED: ignoremask for ERRORFN for errors handled elsewhere
 
 volatile struct muos_status_flags muos_status;
 
@@ -109,6 +111,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                       muos_interrupt_disable ();
                     }
 
+                  MUOS_DEBUG_SWITCH_TOGGLE;
                   muos_now_ = muos_clock_now_isr ();
                 }
                while (muos_clpq_schedule (muos_now_));
@@ -146,6 +149,7 @@ muos_yield (uint8_t count)
                   MUOS_ERRORFN ();
                   muos_interrupt_disable ();
                 }
+              MUOS_DEBUG_SWITCH_TOGGLE;
               muos_now_ = muos_clock_now_isr ();
             }
           while (count && muos_clpq_schedule (muos_now_));
@@ -172,7 +176,6 @@ main()
 
 #ifdef MUOS_DEBUG
   muos_hw_debug_init ();
-  MUOS_DEBUG_BUSY_ON;
 #endif
 
   //TODO: check that calling INITFN before muos_init is documented
@@ -195,12 +198,12 @@ main()
             {
               do
                 {
-
                   if (muos_error_pending ())
                     {
                       MUOS_ERRORFN ();
                       muos_interrupt_disable ();
                     }
+                  MUOS_DEBUG_SWITCH_TOGGLE;
                   muos_now_ = muos_clock_now_isr ();
                 }
               while (muos_clpq_schedule (muos_now_));

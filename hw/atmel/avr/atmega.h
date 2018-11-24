@@ -30,6 +30,8 @@
 #define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect
 #define ISRNAME_COMPMATCH(hw) ISRNAME_COMPMATCH_ hw
 
+#define ISRNAME_EEPROM_READY EE_READY_vect
+
 #define MUOS_HW_CLOCK_REGISTER_(hw, _) TCNT##hw
 #define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_ hw
 

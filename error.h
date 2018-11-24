@@ -24,26 +24,32 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//defined_errors:
-#define MUOS_ERRORS                                                                             \
-  MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                   \
-  MUOS_ERROR(warn_sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */             \
-  MUOS_ERROR(warn_wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                         \
-  MUOS_ERROR(error_clpq_overflow) /*: {ERRORDEF} clock priority queue full */                   \
-  MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                     \
-  MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */               \
-  MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                   \
-  MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                   \
-  MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                   \
-  MUOS_ERROR(error_rx_buffer_overflow) /*: {ERRORDEF} dropped received data (user code) */      \
-  MUOS_ERROR(error_rx_buffer_underflow) /*: {ERRORDEF} read while no data available */          \
-  MUOS_ERROR(error_rx_frame) /*: {ERRORDEF} wrong stop bit timing */                            \
-  MUOS_ERROR(error_rx_overrun) /*: {ERRORDEF} dropped received data (uart driver) */            \
-  MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                           \
-  MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */           \
-  MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                     \
-  MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
+#include MUOS_HW_HEADER
 
+//defined_errors:
+#define MUOS_ERRORS                                                                                     \
+  MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                           \
+    MUOS_ERROR(warn_sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */                   \
+    MUOS_ERROR(warn_wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                               \
+    MUOS_ERROR(error_clpq_overflow) /*: {ERRORDEF} clock priority queue full */                         \
+    MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                           \
+    MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */                     \
+    MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                         \
+    MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                         \
+    MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                         \
+    MUOS_ERROR(error_rx_buffer_overflow) /*: {ERRORDEF} dropped received data (user code) */            \
+    MUOS_ERROR(error_rx_buffer_underflow) /*: {ERRORDEF} read while no data available */                \
+    MUOS_ERROR(error_rx_frame) /*: {ERRORDEF} wrong stop bit timing */                                  \
+    MUOS_ERROR(error_rx_overrun) /*: {ERRORDEF} dropped received data (uart driver) */                  \
+    MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                                 \
+    MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */                 \
+    MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                         \
+    MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                        \
+    MUOS_ERROR(error_configstore_locked) /*: {ERRORDEF} configstore operation in process  */            \
+    MUOS_ERROR(error_configstore_invalid) /*: {ERRORDEF} configstore has a problem (check status) */    \
+    MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
+    MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
+  
 
 //error_api:
 //: .The type used for error codes
@@ -105,8 +111,18 @@ muos_error_pending (void)
 muos_error
 muos_error_set_isr (muos_error err);
 
-muos_error
-muos_error_set (muos_error err);
+static inline muos_error
+muos_error_set (muos_error err)
+{
+  if (err)
+    {
+      muos_interrupt_disable ();
+      muos_error_set_isr (err);
+      muos_interrupt_enable ();
+    }
+  return err;
+}
+
 
 
 //error_api:
@@ -120,9 +136,16 @@ muos_error_set (muos_error err);
 //:
 //: Returns 'true' when the error is flagged, 'false' otherwise.
 //:
-bool
-muos_error_peek (muos_error err);
+static inline bool
+muos_error_peek (muos_error err)
+{
+  return muos_errors_[err/8] & 1<<(err%8);
+}
 
+
+
+bool
+muos_error_check_isr (muos_error err);
 
 //error_api:
 //: .Check for errors
@@ -138,10 +161,18 @@ muos_error_peek (muos_error err);
 //:
 //: The '*_isr' function is for contexts where interrupts are disabled.
 //:
-bool
-muos_error_check (muos_error err);
+static inline bool
+muos_error_check (muos_error err)
+{
+  bool ret = false;
 
-bool
-muos_error_check_isr (muos_error err);
+  muos_interrupt_disable ();
+  ret = muos_error_check_isr (err);
+  muos_interrupt_enable ();
+
+  return ret;
+}
+
+
 
 #endif

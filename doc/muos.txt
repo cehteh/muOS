@@ -4,6 +4,8 @@ In default configuration mµOS provides a mainloop which schedules queues
 holding user-defined functions to be called. 'main()' is part of mµOS and not
 defined in user programs.
 
+PIPADOC:FIXME: document that functions must disable interrupts
+
 At start up mµOS first schedules a (configurable) 'init()' function which does
 the initialization defined by the user. This init is called with the timer and
 drivers still uninitialized/stopped, second after the 'init()' function

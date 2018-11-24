@@ -253,10 +253,15 @@ VERSION: FORCE
 # maintainer targets
 gitpush: FORCE
 	$(PRINTFMT) $@ GIT_PUSH
-	git push -q --all --prune --force public
-	git push -q --tags --force public
-	git push -q --all --prune --force github
-	git push -q --tags --force github
+	git push -q --all --force public;	\
+	git push -q --tags --force public;	\
+	git push -q --all --force github;	\
+	git push -q --tags --force github;
+	cd muos;				\
+	git push -q --all --force public;	\
+	git push -q --tags --force public;	\
+	git push -q --all --force github;	\
+	git push -q --tags --force github;
 
 publish: doc gitpush FORCE
 	$(PRINTFMT) $@ PUBLISH

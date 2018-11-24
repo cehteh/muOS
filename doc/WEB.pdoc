@@ -11,6 +11,9 @@ PIPADOC:=features
 You can read the online documentation link:muos_manual.html[here]
 or download a PDF book link:muos_manual.pdf[here].
 
+Note: The website and Documentation often reflect a development
+version.
+
 == Download
 
 The git repository is available at
@@ -31,7 +34,7 @@ PIPADOC:TODO: mob repository
 
 Instead a bug-tracking, mµOS tags and documents bugs right inside its code and
 documentation. The documentation system then generates a list of known issues
-which can be viewed http:muos_issues.html[here].
+which can be viewed link:muos_issues.html[here].
 
 PIPADOC:TODO: contact/mailinglist
 

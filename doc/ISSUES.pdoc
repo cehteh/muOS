@@ -1,14 +1,31 @@
 == Issues
 
+We use only three categories
+
+FIXME :: For known bugs and defects. Should not appear in devel/master
+        branch. May appera in feature/development branches.
+
+TODO :: Things considered to be vital for the next release, may appear
+        in devel but should not appear in master and release branches.
+
+PLANNED :: General wishlist/brainfart/planning thing. Just noted, some
+        may become promoted to TODO someday, others may become discarded.
+
 === Fixme
 
+----
 PIPADOC:=FIXME
+----
 
 === Todo
 
+----
 PIPADOC:=TODO
+----
 
 === Planned
 
+----
 PIPADOC:=PLANNED
+----
 

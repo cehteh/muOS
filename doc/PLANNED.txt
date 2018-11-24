@@ -61,7 +61,6 @@ PIPADOC:PLANNED: *driver* Buttons w/ debounce
 PIPADOC:PLANNED: *driver* Encoder
 
 PIPADOC:PLANNED: *driver* PWM
-PIPADOC:PLANNED: *driver* EEprom
 PIPADOC:PLANNED: *driver* Flash
 PIPADOC:PLANNED: *driver* Fuses
 PIPADOC:PLANNED: *driver* Watchdog
