@@ -46,7 +46,7 @@ struct muos_configstore_frame
 
 //TODO: calculate type from array capacity
 //static uint16_t pos;
-static struct muos_configstore_frame the_muos_configstore;
+static struct muos_configstore_frame the_configstore;
 
 static muos_configstore_callback callback;
 
@@ -59,7 +59,7 @@ eeprom_read_done (void)
 
   for (size_t i = 0; i < sizeof(struct muos_configstore_frame); ++i)
     {
-      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_muos_configstore)[i]);
+      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_configstore)[i]);
     }
 
   if (crc == 0)
@@ -87,7 +87,7 @@ muos_configstore_load (muos_configstore_callback cb)
   callback = cb;
 
   //FIXME: simple non redundant version for now
-  muos_eeprom_read (&the_muos_configstore,
+  muos_eeprom_read (&the_configstore,
                     MUOS_CONFIGSTORE_OFFSET,
                     sizeof(struct muos_configstore_frame),
                     eeprom_read_done);
@@ -136,12 +136,12 @@ muos_configstore_save (muos_configstore_callback cb)
 
   for (size_t i = 0; i < sizeof(struct muos_configstore_frame)-2; ++i)
     {
-      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_muos_configstore)[i]);
+      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_configstore)[i]);
     }
 
-  the_muos_configstore.crc = crc;
+  the_configstore.crc = crc;
 
-  muos_eeprom_write (&the_muos_configstore,
+  muos_eeprom_write (&the_configstore,
                      MUOS_CONFIGSTORE_OFFSET,
                      sizeof(struct muos_configstore_frame),
                      eeprom_write_done);
@@ -149,6 +149,24 @@ muos_configstore_save (muos_configstore_callback cb)
   //PLANNED: later, journaled
   return muos_success;
 }
+
+struct muos_configstore_data*
+muos_configstore (void)
+{
+  switch (status)
+    {
+    case CONFIGSTORE_VALID:
+      return &the_configstore.userdata;
+    case CONFIGSTORE_LOCKED:
+      muos_error_set (muos_error_configstore_locked);
+      break;
+    default:
+      muos_error_set (muos_error_configstore_invalid);
+      break;
+    }
+  return NULL;
+}
+
 
 #endif
 

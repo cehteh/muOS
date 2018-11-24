@@ -161,6 +161,23 @@ muos_error
 muos_configstore_save (muos_configstore_callback callback);
 
 
+//configstore_api:
+//: .Access
+//: ----
+//: struct muos_configstore_data*
+//: muos_configstore (void)
+//: ----
+//:
+//: Checks for availability of the configstore.
+//: On success returns a pointer to a 'muos_configstore_data' data
+//: structure which holds all the defined elements.
+//:
+//: The configstore pointer stays valid until another load/save
+//: operation is called.
+//:
+struct muos_configstore_data*
+muos_configstore (void);
+
 // generic api
 
 #if 0
@@ -173,11 +190,6 @@ muos_configstore_index (enum muos_configstore_id id);
 
 // in ram API
 
-//TODO: static inline
-#if 0
-struct muos_configstore_data*
-muos_configstore (void); // inmemory pointer or NULL
-#endif
 
 
 // virtual  API
