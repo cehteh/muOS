@@ -34,6 +34,7 @@ enum muos_eeprom_mode
   {
    MUOS_EEPROM_IDLE,           // no operation in progress
    MUOS_EEPROM_READ,           // eeprom -> memory
+   //PLANNED: MUOS_EEPROM_READ_BLOCKING,           // eeprom -> memory blocking read
    MUOS_EEPROM_VERIFY,         // eeprom == memory, will set error_eeprom_verify on fail
    MUOS_EEPROM_WRITE,          // eeprom -> memory, smart write, erase/write only when necessary
    MUOS_EEPROM_WRITE_CONT,
@@ -104,6 +105,15 @@ muos_eeprom_read (void* address,
 {
   return muos_hw_eeprom_access (MUOS_EEPROM_READ, address, eeprom, size, complete);
 }
+
+
+// static inline muos_error
+// muos_eeprom_read_blocking (void* address,
+//                            uintptr_t eeprom,
+//                           size_t size)
+// {
+//   return muos_hw_eeprom_access (MUOS_EEPROM_READ_BLOCKING, address, eeprom, size, NULL);
+// }
 
 
 //eeprom_api:
