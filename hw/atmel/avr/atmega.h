@@ -99,10 +99,6 @@
   MUOS_HW_SERIAL_RX_REGISTER_(hw)
 
 
-void
-muos_hw_serial_init (void);
-
-
 static inline void
 muos_hw_tx_enable (void)
 {

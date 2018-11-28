@@ -28,6 +28,14 @@
 
 #include <muos/debug.h>
 
+
+/* driver specific declarations/includes */
+#ifdef MUOS_SERIAL
+void
+muos_hw_serial_init (void);
+#endif
+
+
 //PLANNED: cleanup macros when to use arguments, when tuple
 
 //PLANNED: HW() for all hardware specific stuff (s. Makefile)
