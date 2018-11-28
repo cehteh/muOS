@@ -50,7 +50,7 @@ AVRDUDE_PROGRAMMER = arduino
 # build_config:
 # additional C Source file
 #SOURCES += $(wildcard *.c)
-SOURCES += test_configstore.c
+SOURCES += test_stepper.c
 
 # build_config:CCFLAGS
 #: Common CC Flags
@@ -237,7 +237,7 @@ MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,4)'
 #: MUOS_DEBUG_ERROR::
 #: Uses a GPIO to indicate when an error got set,
 #: Turned off when no errors are pending.
-MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,2)'
+#MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,2)'
 
 
 
@@ -592,7 +592,7 @@ MUOS_CONFIG += -DMUOS_CONFIGSTORE
 
 #configstore_config:MUOS_CONFIGSTORE_INCLUDE
 #: MUOS_CONFIGSTORE_INCLUDE::
-#: The file which defines the configuration variiables
+#: The file which defines the configuration variables
 MUOS_CONFIG += -DMUOS_CONFIGSTORE_INCLUDE='<configstore.vars>'
 
 
@@ -662,18 +662,66 @@ MUOS_CONFIG += -DMUOS_CONFIGSTORE_SIZE=1000
 
 #stepper_config:MUOS_STEPPER
 #: MUOS_STEPPER::
-#: Enable the Stepper motor driver
+#: Enable the Stepper motor driver for pulse/dir controlled hardware
 MUOS_CONFIG += -DMUOS_STEPPER
 
 
 #stepper_config:MUOS_STEPPER_HW
 #: MUOS_STEPPER_HW::
 #: Define which hardware (timers) are bound to steppers
+#TODO: docme better list of hardware
+#TODO: docme (timer, outputpin, output_mode, wgm)
+MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,15)'
+#MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,14)'
+
+# testme below
+#MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,14)'
+#MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,14),(3,B,3,14)'
+
+
+
+
+
+#stepper_config:MUOS_STEPPER_DIR_HW
+#: MUOS_STEPPER_DIR_HW::
+#: Pin used for direction control
+#TODO: docme better, list
+#TODO: docme HW(outputport, outputpin, drive_polarity)
+MUOS_CONFIG += -DMUOS_STEPPER_DIR_HW='HW(B,1,0)'
+
+
+#stepper_config:MUOS_STEPPER_ENABLE_ALL_HW
+#: MUOS_STEPPER_ENABLE_ALL_HW::
+#: Pin used for enabling the stepper driver, one pin for all steppers
+#TODO: docme better, list
+#TODO: docme HW(outputport, outputpin, polarity )
+#MUOS_CONFIG += -DMUOS_STEPPER_ENABLE_ALL_HW='HW(B,1, POLARITY(0,INPUT))'
+
+
+
+
+#PLANNED: induvidual enable pins
+# stepper_config:MUOS_STEPPER_ENABLE_HW
+# : MUOS_STEPPER_ENABLE_HW::
+# : Pin used for enabling the stepper driver
+#TODO : docme better, list
+#TODO : docme HW(outputport, outputpin, drive_polarity )
+#MUOS_CONFIG += -DMUOS_STEPPER_ENABLE_HW='(HW(B,1, POLARITY(0,INPUT)))'
+
+
+#stepper_config:MUOS_STEPPER_SIGNAL_NS
+#: MUOS_STEPPER_SIGNAL_NS::
+#: min nanoseconds the direction/enable signals must be ahead of starting pulsing
+#TODO: docme better, list
+MUOS_CONFIG += -DMUOS_STEPPER_SIGNAL_NS='(6000)'
+
+
+
+#stepper_config:MUOS_STEPPER_PULSE_NS
+#: MUOS_STEPPER_PULSE_NS::
+#: min nanoseconds for the pulse signals
 #TODO: docme better
-MUOS_CONFIG += -DMUOS_STEPPER_HW='HW(1,A,ICR)'
-
-
-
+MUOS_CONFIG += -DMUOS_STEPPER_PULSE_NS='(3000)'
 
 
 
