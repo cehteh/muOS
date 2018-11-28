@@ -22,17 +22,93 @@
 
 #include <muos/stepper.h>
 
-#if 0
-//void
-//muos_stepper_50init (void)
-//{
-//
-//}
+struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+
+
+
+
+#ifdef MUOS_STEPPER_ENABLE_ALL_HW
+muos_error
+muos_stepper_all_on (void)
+{
+
+  for (uint8_t i=0; i<MUOS_STEPPER_COUNT)
+    {
+      //muos_steppers[i]
+    }
+
+  //  if state < unknown
+  // && config is valid
+  // check configuration
+  // init prescaler / but timer is stopped
+  // enable controller
+  // start timers
+  // set state to on
+}
+
+muos_error
+muos_stepper_all_off (void)
+{
+  //if state > off
+  //   stop timers
+  //   disable controller
+  //   state = off
+}
+#endif
+
+
+// zeros the axis relative to the current position
+#if 0 //TODO: implement
+muos_error
+muos_stepper_set_zero (uint8_t hw, int32_t offset)
+{
+  //  if state == ON || READY
+                //zero
+}
 #endif
 
 
 
-//  int32_t pos;
+static
+enum muos_stepper_arming_state before_calibration[MUOS_STEPPER_COUNT];
+
+
+muos_error
+muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
+
+muos_error
+muos_stepper_cal_mov (uint8_t hw,
+                      uint8_t prescale,
+                      uint16_t speed_raw,
+                      int32_t offset)
+{
+    MUOS_DEBUG_C1_TOGGLE;
+
+  if (hw >= MUOS_STEPPER_COUNT)
+    return muos_error_nohw;
+
+  //FIXME: iter all states && none calibrating
+  if (muos_steppers[hw].state >= MUOS_STEPPER_SLOW)
+    {
+      return muos_error_stepper_state;
+    }
+
+  if (speed_raw < 8192)
+    {
+      return muos_error_stepper_range;
+    }
+
+  (void) offset;
+  //muos_hw_stepper_set_callback (hw, offset, callback); // isr callback func
+
+  muos_hw_stepper_start (hw, prescale, speed_raw);
+  before_calibration[hw]=muos_steppers[hw].state;
+
+  muos_steppers[hw].state = MUOS_STEPPER_CAL;
+
+  return muos_success;
+}
+
 
 
 #endif

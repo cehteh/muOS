@@ -39,6 +39,8 @@ PIPADOC:=serial
 
 PIPADOC:=eeprom
 
+PIPADOC:=stepper
+
 PIPADOC:=cppm
 
 PIPADOC:=debug

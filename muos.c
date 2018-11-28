@@ -25,6 +25,7 @@
 #include <muos/bgq.h>
 #include <muos/clpq.h>
 #include <muos/serial.h>
+#include <muos/stepper.h>
 #include <muos/cppm.h>
 
 //PLANNED: stash muos_now_ away on recursive mainloops

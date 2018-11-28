@@ -35,18 +35,32 @@ void
 muos_hw_serial_init (void);
 #endif
 
+#ifdef MUOS_STEPPER
+void
+muos_hw_stepper_init (void);
+#endif
+
+
+
+
+
+
 
 //PLANNED: cleanup macros when to use arguments, when tuple
 
 //PLANNED: HW() for all hardware specific stuff (s. Makefile)
 
-//PLANNED: generic macros -> muos.h INPUT, OUTPUT, PULLUP, PULLDOWN, NOP
-//#define CONFIGURE_GPIO_(port, pin) DDR##port |= _BV(DD##port##pin)
-//#define CONFIGURE_GPIO(hw) CONFIGURE_OUTPUT_ hw
+//PLANNED: generic macros -> muos.h INPUT, OUTPUT, PULLUP, PULLDOWN, NOP, ANALOG
+//#define CONFIGURE_GPIO_(port, pin)
+//#define MUOS_GPIO_MODE(hw, mode) MUOS_GPIO_MODE_##hw
+
+
+
 //PLANNED: also GPIO_SET for input states (config + set)
 
 #define MUOS_HW_INIT  CLKPR = _BV(CLKPCE); CLKPR = 0
 
+//FIXME: use HW() macros other way around
 #define MUOS_GPIO_SET(port, pin) PORT##port |= _BV(PORT##port##pin)
 #define MUOS_GPIO_SET_(hw) MUOS_GPIO_SET hw
 
@@ -55,6 +69,9 @@ muos_hw_serial_init (void);
 
 #define MUOS_GPIO_TOGGLE(port, pin) PIN##port |= _BV(PIN##port##pin)
 #define MUOS_GPIO_TOGGLE_(hw) MUOS_GPIO_TOGGLE hw
+
+
+
 
 #define MUOS_PSTR(s) PSTR(s)
 typedef const __flash char muos_flash_cstr[];

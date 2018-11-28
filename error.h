@@ -34,6 +34,7 @@
     MUOS_ERROR(error_clpq_overflow) /*: {ERRORDEF} clock priority queue full */                         \
     MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                           \
     MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */                     \
+    MUOS_ERROR(error_nohw) /*: {ERRORDEF} hardware index out of range */                                \
     MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                         \
     MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                         \
     MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                         \
@@ -47,6 +48,9 @@
     MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                        \
     MUOS_ERROR(error_configstore_locked) /*: {ERRORDEF} configstore operation in process  */            \
     MUOS_ERROR(error_configstore_invalid) /*: {ERRORDEF} configstore has a problem (check status) */    \
+    MUOS_ERROR(error_stepper_noinit) /*: {ERRORDEF} not initialized */                                  \
+    MUOS_ERROR(error_stepper_state) /*: {ERRORDEF} action not possible from current state */            \
+    MUOS_ERROR(error_stepper_range) /*: {ERRORDEF} some parameter out of range */                       \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
     MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
   

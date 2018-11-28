@@ -1,0 +1,191 @@
+=== Stepper motors
+
+Stepper driver for motor controllers taking pulse/direction signals.
+
+
+==== Speed Marks
+
+     *slowest_speed*;;
+     implicit, the slowest speed the hardware can generate.
+
+     'cal_speed';;
+     speed used for calibration/zeroing.
+
+    'min_speed'::
+     motors must not loose steps when started/stopped to this speed.
+     minimum speed for absolute positioning with acceleration/deceleration.
+     maximum speed for relative positioning which does not accelerate/decelerate.
+
+    'max_speed';;
+        absolute maximum speed which will not exceeded. motors must run stable up to this speed.
+
+
+
+
+
+// prescale       prescaler setting
+// cal_speed      slow speed for calibration (zeroing)
+//                starting from min speed, that could be the speed where it can reverse
+//                direction w/o loosing steps with some safety marigin (25%)
+// min_speed      fastest speed which can be accelerated/decelerated from/to zero w/o
+//                loosing steps with some safety marigin (10%)
+// max_speed      maximum speed the motors run stable w/ loosing steps (after acceleration)
+// accel          acceleration factor
+// decel          deceleration factor
+// 
+// conf_valid     bitfield, which values are known good
+
+//    Cares only for stepper control/positioning
+//    End switches are not handled here but rather engage/disengage the stepper via api.
+// 
+//    But all movements are contrained within the configured limits.
+// 
+//    * constant speed api
+//      for slow movements (calibration), relative movements
+// 
+//    * position api
+//      absolute positioning which honors accel/decel and backlash and max speed settings
+//      Movement is defined by up to 3 phases
+// 
+// ----
+// Stepper accelerates, reached max_speed then decelerates
+//            _________
+//           /         \
+//          /           \
+//         /             \
+//     ___/               \____
+// 
+// 
+// Distance is too short to reach max_speed, after acceleration it directly decelerates
+// 
+//           /\
+//     _____/  \____
+// ----
+// 
+// *** Features to implement
+// 
+//    * Variable frequency generation
+//    * Direction signal
+//    * Motor arming
+//    * keep counter for position
+//    * callbacks on position
+//    * machine properties -> higher level
+//      * linear (steps per meter)
+//      * rotary (steps per rotation)
+//    * calibration values
+//      * max speed
+//      * min speed (we still need to reach a destionation even when we are close by)
+//      * acceleration
+//        linear and proportional part
+//      * decelerarion
+//        linear and proportional part
+//      * accel/decel are functions over the distance traveled
+//      * 2x backlash compensation
+//        * offset
+//        * speed
+//    * later: have a small queue for planning ahead that allows smooth
+//      movements without stopping
+// 
+// 
+// **** Backlash compensation
+// 
+//      Two possible strategies:
+// 
+//      1. speed=0
+//         Offset is used directly as distance to the current position.
+//         Can be inaccurate but is fast
+// 
+//      2. speed!=0
+//         Overshoot by offset steps, then move back offset steps with 'speed'
+//         Slow but accurate
+// 
+// 
+// *** API
+// 
+//     disclaimer: function and type names below are just for functional description
+// 
+// 
+// **** Types
+//      typedef int32_t position;  // steps from origin
+//      typedef int32_t offset;    // relative steps
+//      typedef int32_t speed;     // TBD -> translate directly into timer overflow
+// 
+// **** Configuration structure
+//      defined in source, values are directly written there
+// 
+//      * axis limits
+//      * max speed change for constant speed movements
+//      * max speed
+//      * backlash compensation values
+// 
+// **** State structure
+//      defined in source, values are directly written there
+// 
+//      * position
+//      * position valid flag
+//      * arming state
+//      * current speed -> derrived from frequency generator register
+//      * movement phase?
+// 
+// **** Configuration commands
+//      zero_axis(offset)
+//         sets the axis zero to offset from the current position
+// 
+// **** Arming
+// 
+//      Arming states:
+// 
+//      * OFF motors disenganged
+//      * HOLD position hold, but no movents allowed
+//      * ARMED movements allowed
+// 
+//      arm (state)
+//      state arm_get()
+// 
+// 
+// **** Constant speed commands
+//      move_const(speed)
+//        move at constant seed w/o limit, negative speed for reverse
+// 
+//      move_rel(offset, speed)
+//        for slow adjustment/calibration movements
+// 
+// 
+// **** Positioning commands
+// 
+//      time move_abs_estimate(position)
+//        calculate how long it will take to reach position
+// 
+//      move_abs(position, speed_factor)
+//        move to position, speed_factor to slow the movement
+//        speed_factor gets ignored on first version
+// 
+//      later one can make diagonal moves where both axis reach their
+//      position at roughly the same time by matching the faster one to
+//      the slower ones speed. This will reduce vibration and wear.
+// 
+// 
+// **** callback/query
+// 
+//      set_callback_at (position, function)
+//        calls function when position is touched (w/o backlash compensation)
+// 
+//      set_callback (function)
+//        calls function absolute positioning is done (w/ backlash commpensation)
+// 
+//      position query_position ()
+//      position query_speed ()
+
+
+===== API
+
+PIPADOC:=stepper_api
+
+===== configuration
+
+PIPADOC:@stepper_config
+
+
+
+
+
