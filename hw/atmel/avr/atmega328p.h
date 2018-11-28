@@ -23,6 +23,40 @@
 
 #include <muos/hw/atmel/avr/atmega.h>
 
+
+
+// the Following missing in the headers, fix here when eventually added
+#define OC0A_DDR   DDRD
+#define OC0A_PORT  PORTD
+#define OC0A_PIN   PIND
+#define OC0A_BIT   6
+
+#define OC0B_DDR   DDRD
+#define OC0B_PORT  PORTD
+#define OC0B_PIN   PIND
+#define OC0B_BIT   5
+
+#define OC1A_DDR   DDRB
+#define OC1A_PORT  PORTB
+#define OC1A_PIN   PINB
+#define OC1A_BIT   1
+
+#define OC1B_DDR   DDRB
+#define OC1B_PORT  PORTB
+#define OC1B_PIN   PINB
+#define OC1B_BIT   2
+
+#define OC2A_DDR   DDRB
+#define OC2A_PORT  PORTB
+#define OC2A_PIN   PINB
+#define OC2A_BIT   3
+
+#define OC2B_DDR   DDRD
+#define OC2B_PORT  PORTD
+#define OC2B_PIN   PIND
+#define OC12_BIT   3
+
+
 // values guessed from datasheet
 // Figure 29-176. Calibrated 8 MHz RC Oscillator Frequency vs. OSCCAL Value
 // doesn't need to be exact
