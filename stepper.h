@@ -52,7 +52,7 @@
 //PLANNED: axis length/limit switches
   limit_deadband limit switch variations
 
-
+//PLANNED: do we need min_start / min_stop speed?
 
 */
 
@@ -89,7 +89,7 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_SLOW,
-   MUOS_STEPPER_FAST   //PLANNED: have a 'VERYFAST' state with simpler isr procedure
+   MUOS_STEPPER_FAST   //PLANNED: have a 'VERYFAST' state with simpler isr procedure?
   };
 
 
@@ -97,20 +97,26 @@ struct stepper_state
 {
   // note: statically initialized to zero, that must be ok for all values
   enum muos_stepper_arming_state state;
-  int32_t position;
+  enum muos_stepper_arming_state before_calibration;
   int32_t movement_start_position;
-  //TODO: callback on pos
-  //TODO: callback on dest
+  volatile int32_t position;
+  volatile struct {
+    int32_t position;
+    uint8_t whattodo;
+    uintptr_t arg;
+  } position_match[MUOS_STEPPER_POSITION_SLOTS];
 };
 
 extern struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+
+
+
 
 static inline void
 muos_stepper_50init (void)
 {
   muos_hw_stepper_init ();
 }
-
 
 
 
@@ -243,6 +249,78 @@ muos_stepper_cal_zigzagpause (uint8_t hw,
 //:
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset);
+
+
+
+
+//stepper_api:
+//: .Actions at Positions
+//: ----
+//: enum muos_stepper_actions
+//: ----
+//:
+//: Define actions to take when the stepper reaches a position. These are bit values
+//: which can be or'ed together.
+//:
+//: MUOS_STEPPER_ACTION_PERMANENT;;
+//:   Keep the registered action. execute it always again on that position.
+//: MUOS_STEPPER_ACTION_STOP;;
+//:   Immediately stop the stepper at the position.
+//: MUOS_STEPPER_HPQ_FRONT;;
+//:   Use the provided argument as function to push it to the front of the hpq. This gives the
+//:   highest possible priority.
+//: MUOS_STEPPER_HPQ_FRONT;;
+//:   Use the provided argument as function to push it to the back of the hpq.
+//:
+enum muos_stepper_actions
+  {
+   MUOS_STEPPER_ACTION_PERMANENT = (1<<0),
+   MUOS_STEPPER_ACTION_STOP = (1<<1),
+   MUOS_STEPPER_HPQ_FRONT = (1<<2),
+   MUOS_STEPPER_HPQ_BACK = (1<<3),
+  };
+
+
+//stepper_api:
+//: ----
+//: muos_error
+//: muos_stepper_register_action (uint8_t hw,
+//:                               int32_t position,
+//:                               uint8_t action,
+//:                               uintptr_t arg)
+//:
+//: muos_error
+//: muos_stepper_remove_action (uint8_t hw,
+//:                             int32_t position,
+//:                             uint8_t action,
+//:                             uintptr_t arg)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to address.
+//: +position+;;
+//:   Position which triggers the action.
+//: +action+;;
+//:   Action flags or'ed together.
+//: +arg+;;
+//:   Argument to the action, callback function for the hpq for example.
+//:
+//TODO: DOCME
+//:
+//:
+muos_error
+muos_stepper_register_action (uint8_t hw, int32_t position, uint8_t action, uintptr_t callback);
+
+
+
+muos_error
+muos_stepper_remove_action (uint8_t hw, int32_t position, uint8_t action, uintptr_t callback);
+
+
+//PLANNED: change all positions after zeroing
+//muos_error
+//muos_stepper_move_action (uint8_t hw, int32_t position, int32_t offset);
+
 
 
 /*
