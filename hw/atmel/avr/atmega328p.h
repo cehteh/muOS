@@ -91,6 +91,7 @@ muos_hw_shutdown (void)
   muos_hw_sleep_prepare (SLEEP_MODE_PWR_DOWN);
   for (;;)
     {
+      cli();
       muos_hw_sleep ();
     }
 }

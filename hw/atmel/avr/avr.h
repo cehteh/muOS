@@ -104,6 +104,9 @@ muos_hw_sleep (void)
   sei ();
   sleep_cpu ();
   cli ();
+#if MUOS_DEBUG_INTR != MUOS_DEBUG_BUSY
+  MUOS_DEBUG_INTR_OFF;
+#endif
   MUOS_DEBUG_BUSY_ON;
 }
 

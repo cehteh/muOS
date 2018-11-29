@@ -43,7 +43,6 @@ muos_sleep (void)
       muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
       // muos_hw_sleep () enables interrupts while sleeping
       muos_hw_sleep ();
-      MUOS_DEBUG_INTR_OFF;
       muos_hw_sleep_done ();
     }
   else
