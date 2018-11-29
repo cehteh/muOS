@@ -53,6 +53,7 @@
             if (muos_steppers[index].position_match[i].whattodo                                                 \
                 && (1<<MUOS_STEPPER_ACTION_STOP))                                                               \
               {                                                                                                 \
+                TCCR##timer##A = 0;                                                                             \
                 TCCR##timer##B = 0;                                                                             \
                 TIMSK##timer &= ~_BV(TOIE##timer);                                                              \
               }                                                                                                 \
