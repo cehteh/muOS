@@ -227,8 +227,7 @@ muos_hw_stepper_register_action (uint8_t hw,
                                  uint8_t action,
                                  uintptr_t arg)
 {
-  if (muos_steppers[hw].state >= MUOS_STEPPER_SLOW
-      || muos_steppers[hw].state == MUOS_STEPPER_CAL)
+  if (!muos_stepper_mutable_state(hw))
     {
       return muos_error_stepper_state;
     }

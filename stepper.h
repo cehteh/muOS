@@ -65,11 +65,13 @@
 //:
 //: MUOS_STEPPER_UNKNOWN;;
 //:   not fully initialized yet
-//: MUOS_STEPPER_OFF;;
-//:   stepper not energized, position unknown
+//: MUOS_STEPPER_DISABLED;;
+//:   externally disabled (when inout pin is configured)
 //: MUOS_STEPPER_CAL;;
 //:   stepper energized, position unknown, only calibration movements,
 //:   no configuration necessary
+//: MUOS_STEPPER_OFF;;
+//:   stepper not energized, position unknown
 //: MUOS_STEPPER_HOLD;;
 //:   stepper energized, position unknown, only relative movements
 //: MUOS_STEPPER_SLOW;;
@@ -84,8 +86,9 @@
 enum muos_stepper_arming_state
   {
    MUOS_STEPPER_UNKNOWN,
+   MUOS_STEPPER_DISABLED,
+   MUOS_STEPPER_CAL, //FIXME: check state checks
    MUOS_STEPPER_OFF,
-   MUOS_STEPPER_CAL,
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_SLOW,
@@ -109,6 +112,24 @@ struct stepper_state
 
 extern struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 
+
+//: .Check State
+//: ----
+//: static inline bool
+//: muos_stepper_mutable_state (uint8_t hw)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to control.
+//:
+//: Returns 'true' when the state can be modified by the API.
+//: States can only be changed when the motors are not moving and not externally disabled.
+//:
+static inline bool
+muos_stepper_mutable_state (uint8_t hw)
+{
+  return muos_steppers[hw].state > MUOS_STEPPER_CAL && muos_steppers[hw].state < MUOS_STEPPER_SLOW;
+}
 
 
 

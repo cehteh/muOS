@@ -87,8 +87,7 @@ muos_stepper_cal_mov (uint8_t hw,
 
   for (uint8_t i = 0; i<MUOS_STEPPER_COUNT; ++i)
     {
-      if (muos_steppers[i].state >= MUOS_STEPPER_SLOW
-          || muos_steppers[i].state == MUOS_STEPPER_CAL)
+      if (!muos_stepper_mutable_state(hw))
         {
           return muos_error_stepper_state;
         }
