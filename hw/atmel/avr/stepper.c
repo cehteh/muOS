@@ -246,6 +246,33 @@ muos_hw_stepper_register_action (uint8_t hw,
   return muos_error_stepper_noslot;
 }
 
+
+muos_error
+muos_hw_stepper_remove_action (uint8_t hw,
+                               int32_t position,
+                               uint8_t action,
+                               uintptr_t arg)
+{
+  if (!muos_stepper_mutable_state(hw))
+    {
+      return muos_error_stepper_state;
+    }
+
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
+    {
+      if (muos_steppers[hw].position_match[i].whattodo == action
+          && muos_steppers[hw].position_match[i].position == position
+          && muos_steppers[hw].position_match[i].arg == arg)
+        {
+          muos_steppers[hw].position_match[i].whattodo = 0;
+          return muos_success;
+        }
+    }
+
+  return muos_error_stepper_noslot;
+}
+
+
 //PLANNED: have a on-stop callback?
 
 #if 0 //TODO: needs locked access while runing

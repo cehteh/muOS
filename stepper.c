@@ -74,6 +74,12 @@ muos_hw_stepper_register_action (uint8_t hw,
                                  uintptr_t arg);
 
 muos_error
+muos_hw_stepper_remove_action (uint8_t hw,
+                               int32_t position,
+                               uint8_t action,
+                               uintptr_t arg);
+
+muos_error
 muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
 
 muos_error
