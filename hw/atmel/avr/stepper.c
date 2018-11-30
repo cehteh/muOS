@@ -48,28 +48,28 @@
     muos_steppers[index].position += (GET_DIRECTION(MUOS_STEPPER_DIR_HW))?+1:-1;                                \
     for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                       \
       {                                                                                                         \
-        if (muos_steppers[index].position == muos_steppers[index].position_match[i].position)                   \
+        if (muos_steppers[index].position == muos_steppers[index].position_match[i].position                    \
+            && muos_steppers[index].position_match[i].whattodo)                                                 \
           {                                                                                                     \
             if (muos_steppers[index].position_match[i].whattodo                                                 \
-                && (1<<MUOS_STEPPER_ACTION_STOP))                                                               \
+                & MUOS_STEPPER_ACTION_STOP)                                                                     \
               {                                                                                                 \
                 TCCR##timer##A = 0;                                                                             \
                 TCCR##timer##B = 0;                                                                             \
                 TIMSK##timer &= ~_BV(TOIE##timer);                                                              \
               }                                                                                                 \
-            if (muos_steppers[index].position_match[i].whattodo                                                 \
-                && muos_steppers[index].position_match[i].arg)                                                  \
+            if (muos_steppers[index].position_match[i].arg)                                                     \
               {                                                                                                 \
                 if (muos_steppers[index].position_match[i].whattodo                                             \
-                    & (1<<MUOS_STEPPER_HPQ_FRONT))                                                              \
+                    & MUOS_STEPPER_HPQ_FRONT)                                                                   \
                   muos_error_set_isr (muos_hpq_pushfront_isr ((muos_queue_function)                             \
                                                               muos_steppers[index].position_match[i].arg));     \
                 else if (muos_steppers[index].position_match[i].whattodo                                        \
-                         & (1<<MUOS_STEPPER_HPQ_BACK))                                                          \
+                         & MUOS_STEPPER_HPQ_BACK)                                                               \
                   muos_error_set_isr (muos_hpq_pushback_isr ((muos_queue_function)                              \
-                                                              muos_steppers[index].position_match[i].arg));     \
+                                                             muos_steppers[index].position_match[i].arg));      \
               }                                                                                                 \
-            if (!(muos_steppers[index].position_match[i].whattodo & (1<<MUOS_STEPPER_ACTION_PERMANENT)))        \
+            if (!(muos_steppers[index].position_match[i].whattodo & MUOS_STEPPER_ACTION_PERMANENT))             \
               {                                                                                                 \
                 muos_steppers[index].position_match[i].whattodo = 0;                                            \
               }                                                                                                 \
@@ -84,6 +84,9 @@
 MUOS_PP_CODEGEN(MAKE_OVF_ISR, MUOS_STEPPER_HW);
 
 
+
+
+//TODO: refactor all the codegen #defines into a stepper_meta.h
 
 void
 muos_hw_stepper_init (void)
@@ -112,7 +115,32 @@ muos_hw_stepper_init (void)
 
   MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_PIN, MUOS_STEPPER_HW);  /* generate code */
 
-  //TODO: init enable and direction pins
+
+#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
+  // first set the drive direction then set it to output
+
+#define MUOS_STEPPER_DISABLEALL_SET_1(port, pin)  PORT##port |= _BV(PORT##port##pin)
+#define MUOS_STEPPER_DISABLEALL_SET_0(port, pin)  PORT##port &= ~_BV(PORT##port##pin)
+
+#define MUOS_STEPPER_DISABLEALL_SET_(port, pin, polarity) \
+  MUOS_STEPPER_DISABLEALL_SET_##polarity(port, pin)
+
+#define MUOS_STEPPER_DISABLEALL_SET(hw)      \
+  MUOS_STEPPER_DISABLEALL_SET_ hw
+
+  MUOS_STEPPER_DISABLEALL_SET (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+
+#define MUOS_STEPPER_DISABLEALL_DDR_OUTPUT_(port, pin, polarity) \
+  DDR##port |= _BV(DD##port##pin);
+
+#define MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(hw)                 \
+  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT_ hw
+
+  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW);
+
+#endif
+
+  //TODO: init direction pins
 
 #define MUOS_STEPPER_PIN_DDR(timer, output, output_mode, wgm)   \
   OC##timer##output##_DDR |=                                    \
@@ -129,7 +157,7 @@ muos_hw_stepper_init (void)
 
 //TODO: conditional for different parts
 // the values for prescalers are irregular, depending on the actual timer/hardware
-// only common is that 0 means off, thus we don't handle that here
+// only common is that 0 means off, thus we don't handle that here [prescale-1] below
 static const uint16_t timerdividers0[] = {1,8,64,256,1024};
 static const uint16_t* const timerdividers1 = timerdividers0;
 static const uint16_t timerdividers2[] = {1,8,32,64,128,256,1024};
@@ -273,9 +301,83 @@ muos_hw_stepper_remove_action (uint8_t hw,
 }
 
 
-//PLANNED: have a on-stop callback?
 
-#if 0 //TODO: needs locked access while runing
+#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
+
+muos_error
+muos_hw_stepper_enableall (void)
+{
+#define MUOS_STEPPER_DISABLEALL_DDR_INPUT_(port, pin, polarity) \
+  DDR##port &= ~_BV(DD##port##pin);
+
+#define MUOS_STEPPER_DISABLEALL_DDR_INPUT(hw)                 \
+  MUOS_STEPPER_DISABLEALL_DDR_INPUT_ hw
+
+  MUOS_STEPPER_DISABLEALL_DDR_INPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+
+  //TODO: when not driven down, then disable pullup
+#define MUOS_STEPPER_DISABLEALL_NOPULL_1(port, pin)  error not implemented yet
+#define MUOS_STEPPER_DISABLEALL_NOPULL_0(port, pin)
+#define MUOS_STEPPER_DISABLEALL_NOPULL_(port, pin, polarity) \
+  MUOS_STEPPER_DISABLEALL_NOPULL_##polarity(port, pin)
+#define MUOS_STEPPER_DISABLEALL_NOPULL(hw)      \
+  MUOS_STEPPER_DISABLEALL_NOPULL_ hw
+
+  MUOS_STEPPER_DISABLEALL_NOPULL (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+
+  if (muos_warn_wait_timeout != muos_wait (0, 0, MUOS_CLOCK_NANOSECONDS (MUOS_STEPPER_ENABLE_NS)))
+    {
+      MUOS_STEPPER_DISABLEALL_DDR_OUTPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+      return muos_warn_sched_depth;
+    }
+
+#define MUOS_STEPPER_DISABLEALL_CHECK_1(port, pin) !(PIN##port & _BV(PIN##port##pin))
+#define MUOS_STEPPER_DISABLEALL_CHECK_0(port, pin) (PIN##port & _BV(PIN##port##pin))
+#define MUOS_STEPPER_DISABLEALL_CHECK_(port, pin, polarity) \
+  MUOS_STEPPER_DISABLEALL_CHECK_##polarity(port, pin)
+
+#define MUOS_STEPPER_DISABLEALL_CHECK(hw) \
+  MUOS_STEPPER_DISABLEALL_CHECK_ hw
+
+  if (MUOS_STEPPER_DISABLEALL_CHECK (MUOS_STEPPER_DISABLEALL_INOUT_HW))
+    {
+      return muos_success;
+    }
+
+  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+  return muos_error_stepper_state;
+}
+
+
+
+void
+muos_hw_stepper_disableall (void)
+{
+  MUOS_STEPPER_DISABLEALL_SET (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW);
+}
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0 //TODO: needs locked access while running, why does one want the position when running?
 int32_t
 muos_hw_stepper_position (uint8_t hw)
 {
