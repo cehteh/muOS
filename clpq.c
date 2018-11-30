@@ -43,7 +43,10 @@ muos_clpq_schedule (muos_spriq_priority when)
       if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
         {
           // no need for time barrier
-          muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
+          if (muos_clpq.descriptor.spriq[0].fn)
+            {
+              muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
+            }
           muos_interrupt_disable ();
           muos_spriq_pop (&muos_clpq.descriptor);
         }
@@ -73,7 +76,7 @@ muos_clpq_schedule (muos_spriq_priority when)
 }
 
 
-
+//TODO: return error instead async
 void
 muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {

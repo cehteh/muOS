@@ -20,7 +20,7 @@
 
 #include <muos/lib/spriq.h>
 
-
+//FIXME: schedule with when = 1 doesn't work
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {

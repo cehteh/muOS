@@ -81,15 +81,13 @@ extern volatile struct muos_status_flags
 //:   time limit for the wait
 //:
 //: Calls a recursive mainloop and with testing for a given condition for some time.
-//: Returns 'true' when the condition succeeded and 'false' on timeout or recursion limit.
 //:
 //: Care must be taken that I/O (and other things) are not anymore in order when the
 //: mainloop is called recursively. Often it is better to avoid waiting and divide the
 //: work into smaller tasks which are put in order on the work queues.
 //:
 //: Because of stack limits entering the mainloop recursively is limited. One should always
-//: expect that a wait can return instantly with 'false' and the error 'muos_warn_sched_depth'
-//: being flagged.
+//: expect that a wait can return instantly with 'muos_warn_sched_depth'.
 //:
 //: 'muos_wait()' is only available when MUOS_SCHED_DEPTH is defined.
 //:
