@@ -99,10 +99,12 @@ muos_stepper_cal_mov (uint8_t hw,
         }
     }
 
-  if (speed_raw < 8192)
+#ifndef MUOS_STEPPER_UNSAFE
+  if (speed_raw < 8192 || !offset)
     {
       return muos_error_stepper_range;
     }
+#endif
 
   //TODO: enable steppers, possibly disable (check all states) on-stop callback
   // on stop callback restoring before_calibration state
