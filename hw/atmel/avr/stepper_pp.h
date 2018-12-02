@@ -26,10 +26,9 @@
 /*
   only macro definitions for the code generation here
 */
-
-
-#define GET_DIRECTION_(port, pin, inv) (inv^!(PORT##port & _BV(PORT##port##pin)))
-#define GET_DIRECTION(hw) GET_DIRECTION_ hw
+#define GET_DIRECTION__(port, pin, inv) (inv^!(PORT##port & _BV(PORT##port##pin)))
+#define GET_DIRECTION_(hw) GET_DIRECTION__ hw
+#define GET_DIRECTION(index) GET_DIRECTION_(MUOS_PP_INDEX(index, MUOS_STEPPER_DIR_HW))
 
 /*
   ISR
@@ -38,7 +37,7 @@
 #define MAKE_OVF_ISR__(index, timer, output, output_mode, wgm)                                                  \
   ISR(TIMER##timer##_OVF_vect)                                                                                  \
   {                                                                                                             \
-    muos_steppers[index].position += GET_DIRECTION(MUOS_STEPPER_DIR_HW)?+1:-1;                                  \
+    muos_steppers[index].position += GET_DIRECTION(index)?+1:-1;                                                \
     for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                       \
       {                                                                                                         \
         if (muos_steppers[index].position == muos_steppers[index].position_match[i].position                    \
@@ -115,10 +114,10 @@
 #endif
 
 
-#define MUOS_STEPPER_DIR_DDR_(port, pin, polarity)      \
+#define MUOS_STEPPER_DIR_DDR_(port, pin, polarity)        \
   DDR##port |= _BV(DD##port##pin)
 
-#define MUOS_STEPPER_DIR_DDR(hw)                \
+#define MUOS_STEPPER_DIR_DDR(index, hw)         \
   MUOS_STEPPER_DIR_DDR_ hw
 
 #define MUOS_STEPPER_INIT_PIN_IMPL(timer, output, output_mode, wgm)     \
@@ -191,13 +190,14 @@
 #define MUOS_STEPPER_DISABLEALL_DDR_INPUT(hw)                 \
   MUOS_STEPPER_DISABLEALL_DDR_INPUT_ hw
 
+
   //TODO: when not driven down, then disable pullup
-#define MUOS_STEPPER_DISABLEALL_NOPULL_1(port, pin)  error not implemented yet
-#define MUOS_STEPPER_DISABLEALL_NOPULL_0(port, pin)
-#define MUOS_STEPPER_DISABLEALL_NOPULL_(port, pin, polarity) \
-  MUOS_STEPPER_DISABLEALL_NOPULL_##polarity(port, pin)
-#define MUOS_STEPPER_DISABLEALL_NOPULL(hw)      \
-  MUOS_STEPPER_DISABLEALL_NOPULL_ hw
+#define MUOS_STEPPER_DISABLEALL_ENABLE_1(port, pin)  error not implemented yet
+#define MUOS_STEPPER_DISABLEALL_ENABLE_0(port, pin)
+#define MUOS_STEPPER_DISABLEALL_ENABLE_(port, pin, polarity) \
+  MUOS_STEPPER_DISABLEALL_ENABLE_##polarity(port, pin)
+#define MUOS_STEPPER_DISABLEALL_ENABLE(hw)      \
+  MUOS_STEPPER_DISABLEALL_ENABLE_ hw
 
 #define MUOS_STEPPER_DISABLEALL_CHECK_1(port, pin) !(PIN##port & _BV(PIN##port##pin))
 #define MUOS_STEPPER_DISABLEALL_CHECK_0(port, pin) (PIN##port & _BV(PIN##port##pin))
