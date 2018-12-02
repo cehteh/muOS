@@ -136,16 +136,21 @@
 #define MUOS_STEPPER_TOP_1_14 ICR1
 #define MUOS_STEPPER_TOP_1_15 OCR1A
 
+
+
+
 //PLANNED: abstract F_CPU for timers running on other clock sources
 #define MUOS_STEPPER_START_IMPL_(index, timer, output, output_mode, wgm)                        \
-      TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);     \
-      OCR##timer##B =                                                                           \
-        MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS)                                          \
-        /(F_CPU/4000UL/timerdividers##timer[prescale-1])-1;                                     \
-      MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed_raw;                                        \
-      TIFR##timer = _BV(TOV##timer);                                                            \
-      TIMSK##timer = _BV(TOIE##timer);                                                          \
-      TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2)) | prescale;
+  TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);         \
+  TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                            \
+  OCR##timer##B =                                                                               \
+    MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS)                                              \
+    /(F_CPU/4000UL/timerdividers##timer[prescale-1])-1;                                         \
+  MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed_raw;                                            \
+  TIFR##timer = _BV(TOV##timer);                                                                \
+  TIMSK##timer = _BV(TOIE##timer);                                                              \
+  TCCR##timer##B |= prescale
+
 
 #define MUOS_STEPPER_START_IMPL(index, exp) MUOS_STEPPER_START_IMPL_ (index, exp)
 
@@ -186,8 +191,14 @@
 
 #ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
 
+#define MUOS_STEPPER_DISABLEALL_IS_INPUT_(port, pin, polarity) \
+  !(DDR##port & _BV(DD##port##pin))
+
+#define MUOS_STEPPER_DISABLEALL_IS_INPUT(hw)   \
+  MUOS_STEPPER_DISABLEALL_IS_INPUT_ hw
+
 #define MUOS_STEPPER_DISABLEALL_DDR_INPUT_(port, pin, polarity) \
-  DDR##port &= ~_BV(DD##port##pin);
+  DDR##port &= ~_BV(DD##port##pin)
 
 #define MUOS_STEPPER_DISABLEALL_DDR_INPUT(hw)                 \
   MUOS_STEPPER_DISABLEALL_DDR_INPUT_ hw

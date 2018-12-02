@@ -92,7 +92,6 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir);
 muos_error
 muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
 
-
 static void
 muos_stepper_cal_restorestate (void)
 {
@@ -105,6 +104,7 @@ muos_stepper_cal_restorestate (void)
         return;
     }
 
+  // disable when the steppers where disabled before calibration
   muos_hw_stepper_disableall ();
 }
 

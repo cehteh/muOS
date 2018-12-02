@@ -178,6 +178,11 @@ muos_hw_stepper_remove_action (uint8_t hw,
 muos_error
 muos_hw_stepper_enableall (void)
 {
+  // nothing needs to be done when already enabled
+  if (MUOS_STEPPER_DISABLEALL_IS_INPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW)
+      && !MUOS_STEPPER_DISABLEALL_CHECK (MUOS_STEPPER_DISABLEALL_INOUT_HW))
+      return muos_success;
+
   MUOS_STEPPER_DISABLEALL_DDR_INPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
 
   MUOS_STEPPER_DISABLEALL_ENABLE (MUOS_STEPPER_DISABLEALL_INOUT_HW);
@@ -194,6 +199,7 @@ muos_hw_stepper_enableall (void)
     }
 
   MUOS_STEPPER_DISABLEALL_DDR_OUTPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
+
   return muos_error_stepper_state;
 }
 
