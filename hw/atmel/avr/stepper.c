@@ -37,15 +37,14 @@
 */
 
 
-#define GET_DIRECTION_(port, pin, inv) (((PORT##port & _BV(PORT##port##pin)))?!inv:inv)
+#define GET_DIRECTION_(port, pin, inv) (inv^!(PORT##port & _BV(PORT##port##pin)))
 #define GET_DIRECTION(hw) GET_DIRECTION_ hw
 
 
 #define MAKE_OVF_ISR__(index, timer, output, output_mode, wgm)                                                  \
   ISR(TIMER##timer##_OVF_vect)                                                                                  \
   {                                                                                                             \
-    MUOS_DEBUG_INTR_ON;                                                                                         \
-    muos_steppers[index].position += (GET_DIRECTION(MUOS_STEPPER_DIR_HW))?+1:-1;                                \
+    muos_steppers[index].position += GET_DIRECTION(MUOS_STEPPER_DIR_HW)?+1:-1;                                  \
     for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                       \
       {                                                                                                         \
         if (muos_steppers[index].position == muos_steppers[index].position_match[i].position                    \
@@ -108,16 +107,9 @@ muos_hw_stepper_init (void)
   OC##timer##output##_PORT |=                   \
     _BV(OC##timer##output##_BIT);
 
-#define MUOS_STEPPER_INIT_PIN_IMPL(timer, output, output_mode, wgm) \
-  MUOS_STEPPER_PIN_IDLE_##output_mode(timer, output)
-
-#define MAKE_STEPPER_INIT_PIN(index, hw) MUOS_STEPPER_INIT_PIN_IMPL hw
-
-  MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_PIN, MUOS_STEPPER_HW);  /* generate code */
-
 
 #ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
-  // first set the drive direction then set it to output
+  // first set the drive polarity then set it to output
 
 #define MUOS_STEPPER_DISABLEALL_SET_1(port, pin)  PORT##port |= _BV(PORT##port##pin)
 #define MUOS_STEPPER_DISABLEALL_SET_0(port, pin)  PORT##port &= ~_BV(PORT##port##pin)
@@ -131,7 +123,7 @@ muos_hw_stepper_init (void)
   MUOS_STEPPER_DISABLEALL_SET (MUOS_STEPPER_DISABLEALL_INOUT_HW);
 
 #define MUOS_STEPPER_DISABLEALL_DDR_OUTPUT_(port, pin, polarity) \
-  DDR##port |= _BV(DD##port##pin);
+  DDR##port |= _BV(DD##port##pin)
 
 #define MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(hw)                 \
   MUOS_STEPPER_DISABLEALL_DDR_OUTPUT_ hw
@@ -140,7 +132,22 @@ muos_hw_stepper_init (void)
 
 #endif
 
-  //TODO: init direction pins
+#define MUOS_STEPPER_DIR_DDR_(port, pin, polarity)      \
+  DDR##port |= _BV(DD##port##pin)
+
+#define MUOS_STEPPER_DIR_DDR(hw)                \
+  MUOS_STEPPER_DIR_DDR_ hw
+
+  MUOS_STEPPER_DIR_DDR(MUOS_STEPPER_DIR_HW);
+
+
+#define MUOS_STEPPER_INIT_PIN_IMPL(timer, output, output_mode, wgm)     \
+  MUOS_STEPPER_PIN_IDLE_##output_mode(timer, output)
+
+#define MAKE_STEPPER_INIT_PIN(index, hw) MUOS_STEPPER_INIT_PIN_IMPL hw
+
+  MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_PIN, MUOS_STEPPER_HW);  /* generate code */
+
 
 #define MUOS_STEPPER_PIN_DDR(timer, output, output_mode, wgm)   \
   OC##timer##output##_DDR |=                                    \
@@ -158,10 +165,11 @@ muos_hw_stepper_init (void)
 //TODO: conditional for different parts
 // the values for prescalers are irregular, depending on the actual timer/hardware
 // only common is that 0 means off, thus we don't handle that here [prescale-1] below
+#ifdef MUOS_HW_ATMEL_ATMEGA328P_H
 static const uint16_t timerdividers0[] = {1,8,64,256,1024};
 static const uint16_t* const timerdividers1 = timerdividers0;
 static const uint16_t timerdividers2[] = {1,8,32,64,128,256,1024};
-
+#endif
 
 //PLANNED: dynamic prescaler change to increase range and resolution
 //PLANNED: does const uint8_t hw compile better?
@@ -176,7 +184,7 @@ muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw)
 #define MUOS_STEPPER_TOP_1_14 ICR1
 #define MUOS_STEPPER_TOP_1_15 OCR1A
 
-      //PLANNED: abstract F_CPU for timers running on other clocks
+      //PLANNED: abstract F_CPU for timers running on other clock sources
 #define MUOS_STEPPER_START_IMPL_(index, timer, output, output_mode, wgm)                        \
       TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);     \
       OCR##timer##B =                                                                           \
@@ -204,47 +212,41 @@ muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw)
 }
 
 
-static inline bool
-muos_hw_stepper_interrupt_disable (uint8_t hw)
+
+muos_error
+muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 {
-  bool ret = false;
   switch (hw)
     {
-#define MUOS_STEPPER_INTERRUPT_DISABLE_(timer, output, output_mode, wgm)               \
-      ret = TIMSK##timer & _BV(TOIE##timer);                                           \
-      TIMSK##timer &= ~_BV(TOIE##timer);
+      //TODO: exec and wait only when direction changes
 
-#define MAKE_STEPPER_INTERRUPT_DISABLE(index, hw)       \
-      case index:                                       \
-        MUOS_STEPPER_INTERRUPT_DISABLE_ hw;             \
+#define MUOS_STEPPER_DIR_IMPL_(index, port, pin, polarity)      \
+      if (dir^polarity)                                         \
+        {                                                       \
+          PORT##port &= ~_BV(PORT##port##pin);                  \
+        }                                                       \
+      else                                                      \
+        {                                                       \
+          PORT##port |= _BV(PORT##port##pin);                   \
+        }
+
+#define MUOS_STEPPER_DIR_IMPL(index, exp) MUOS_STEPPER_DIR_IMPL_ (index, exp)
+
+#define MAKE_STEPPER_SET_DIR(index, hw)                                 \
+      case index:                                                       \
+        MUOS_STEPPER_DIR_IMPL(index, MUOS_PP_LIST_EXPAND(hw));          \
         break;
 
-      MUOS_PP_CODEGEN(MAKE_STEPPER_INTERRUPT_DISABLE, MUOS_STEPPER_HW);  /* generate code */
+      MUOS_PP_CODEGEN(MAKE_STEPPER_SET_DIR, MUOS_STEPPER_DIR_HW);  /* generate code */
+
+    default:
+      return muos_error_nohw;
     }
-  return ret;
+
+  // wait dir ns
+  //TODO: if (muos_warn_wait_timeout != muos_wait (0, 0, MUOS_CLOCK_NANOSECONDS (MUOS_STEPPER_ENABLE_NS)))
+  return muos_success;
 }
-
-static inline void
-muos_hw_stepper_interrupt_enable (uint8_t hw, bool really)
-{
-  if (really)
-    {
-      switch (hw)
-        {
-#define MUOS_STEPPER_INTERRUPT_ENABLE_(timer, output, output_mode, wgm)        \
-          TIMSK##timer |= _BV(TOIE##timer);
-
-#define MAKE_STEPPER_INTERRUPT_ENABLE(index, hw)        \
-          case index:                                   \
-            MUOS_STEPPER_INTERRUPT_ENABLE_ hw;          \
-            break;
-
-          MUOS_PP_CODEGEN(MAKE_STEPPER_INTERRUPT_ENABLE, MUOS_STEPPER_HW);  /* generate code */
-        }
-    }
-}
-
-
 
 
 
@@ -255,6 +257,9 @@ muos_hw_stepper_register_action (uint8_t hw,
                                  uint8_t action,
                                  uintptr_t arg)
 {
+  if (hw >= MUOS_STEPPER_COUNT)
+    return muos_error_nohw;
+
   if (!muos_stepper_mutable_state(hw))
     {
       return muos_error_stepper_state;
@@ -281,6 +286,9 @@ muos_hw_stepper_remove_action (uint8_t hw,
                                uint8_t action,
                                uintptr_t arg)
 {
+  if (hw >= MUOS_STEPPER_COUNT)
+    return muos_error_nohw;
+
   if (!muos_stepper_mutable_state(hw))
     {
       return muos_error_stepper_state;
@@ -358,9 +366,6 @@ muos_hw_stepper_disableall (void)
 }
 
 #endif
-
-
-
 
 
 

@@ -285,6 +285,9 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset);
 //:
 //: MUOS_STEPPER_ACTION_PERMANENT;;
 //:   Keep the registered action. execute it always again on that position.
+//: MUOS_STEPPER_ACTION_2ND;;
+//:   Exceute the registered action when the stepper hits the position the second time.
+//:   Incompatible with MUOS_STEPPER_ACTION_PERMANENT. Used for backlash compensation.
 //: MUOS_STEPPER_ACTION_STOP;;
 //:   Immediately stop the stepper at the position.
 //: MUOS_STEPPER_HPQ_FRONT;;
@@ -296,9 +299,11 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset);
 enum muos_stepper_actions
   {
    MUOS_STEPPER_ACTION_PERMANENT = (1<<0),
-   MUOS_STEPPER_ACTION_STOP = (1<<1),
-   MUOS_STEPPER_HPQ_FRONT = (1<<2),
-   MUOS_STEPPER_HPQ_BACK = (1<<3),
+   MUOS_STEPPER_ACTION_2ND = (1<<1), //TODO: implement me
+   MUOS_STEPPER_ACTION_STOP = (1<<2),
+   //: MUOS_STEPPER_ACTION_OFF;;  //TODO: needed?
+   MUOS_STEPPER_HPQ_FRONT = (1<<3),
+   MUOS_STEPPER_HPQ_BACK = (1<<4),
   };
 
 
@@ -326,16 +331,61 @@ enum muos_stepper_actions
 //: +arg+;;
 //:   Argument to the action, callback function for the hpq for example.
 //:
-//TODO: DOCME
+//: Register or remove and action to be done when the stepper hits a position.
+//: Action must be at least one or more of the action flags above or'ed together.
+//: Optionally a pointer to a function which gets pushed to the HPQ can be supplied.
 //:
+//: Actions can only be registered or removed while the stepper is not moving.
+//:
+//: Removing an action needs the exact same arguments as given registering it. Only one
+//: instance gets removed even when the action was registered multiple times.
+//:
+//: Returning +muos_success+ when everything worked well or one of the following errors:
+//: +muos_error_nohw+;;
+//:   'hw' out of range.
+//: +muos_error_stepper_state+;;
+//:   Tried to register/remove an action while the steppers are moving.
+//: +muos_error_stepper_noslot+;;
+//:   'register_action':: no more slots free to register an action.
+//:   'remove_action':: no action found with the given parameters.
 //:
 muos_error
-muos_stepper_register_action (uint8_t hw, int32_t position, uint8_t action, uintptr_t callback);
-
-
+muos_hw_stepper_register_action (uint8_t hw,
+                                 int32_t position,
+                                 uint8_t action,
+                                 uintptr_t arg);
 
 muos_error
-muos_stepper_remove_action (uint8_t hw, int32_t position, uint8_t action, uintptr_t callback);
+muos_hw_stepper_remove_action (uint8_t hw,
+                               int32_t position,
+                               uint8_t action,
+                               uintptr_t arg);
+
+
+static inline muos_error
+muos_stepper_register_action (uint8_t hw,
+                                 int32_t position,
+                                 uint8_t action,
+                                 uintptr_t arg)
+{
+  return muos_hw_stepper_register_action (hw,
+                                          position,
+                                          action,
+                                          arg);
+}
+
+
+static inline muos_error
+muos_stepper_remove_action (uint8_t hw,
+                            int32_t position,
+                            uint8_t action,
+                            uintptr_t arg)
+{
+  return muos_hw_stepper_remove_action (hw,
+                                        position,
+                                        action,
+                                        arg);
+}
 
 
 //PLANNED: change all positions after zeroing

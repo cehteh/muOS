@@ -73,6 +73,7 @@ muos_hw_stepper_register_action (uint8_t hw,
                                  uint8_t action,
                                  uintptr_t arg);
 
+
 muos_error
 muos_hw_stepper_remove_action (uint8_t hw,
                                int32_t position,
@@ -86,9 +87,10 @@ muos_error
 muos_hw_stepper_disableall (void);
 
 muos_error
+muos_hw_stepper_set_direction (uint8_t hw, bool dir);
+
+muos_error
 muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
-
-
 
 
 static void
@@ -135,23 +137,11 @@ muos_stepper_cal_mov (uint8_t hw,
   muos_error err = muos_hw_stepper_enableall ();
   if(err) return err; //could not enable
 
-  muos_hw_stepper_register_action (hw,
-                                   muos_steppers[hw].position - offset,
-                                   MUOS_STEPPER_ACTION_STOP|MUOS_STEPPER_HPQ_BACK,
-                                   (uintptr_t)muos_stepper_cal_restorestate);
-#if 0
+  muos_hw_stepper_set_direction (hw, offset>0?1:0);
   muos_hw_stepper_register_action (hw,
                                    muos_steppers[hw].position + offset,
                                    MUOS_STEPPER_ACTION_STOP|MUOS_STEPPER_HPQ_BACK,
                                    (uintptr_t)muos_stepper_cal_restorestate);
-
-
-  if (offset<0)
-    muos_hw_stepper_set_direction (hw, 0);
-  else
-    muos_hw_stepper_set_direction (hw, 1);
-#endif
-  //TODO: set enable & handle direction
 
   for(uint8_t i = 0; i < MUOS_STEPPER_COUNT; ++i)
     muos_steppers[i].before_calibration=muos_steppers[i].state;
