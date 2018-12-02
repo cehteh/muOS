@@ -27,6 +27,7 @@
 #include <muos/hpq.h>
 #include <muos/io.h> /*DEBUG*/
 
+#include <util/delay_basic.h>
 #include <stdlib.h>
 /* Signal generation for example drive low polarity
 
@@ -99,15 +100,14 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 {
   switch (hw)
     {
-      //TODO: exec and wait only when direction changes
       MUOS_PP_CODEGEN(MAKE_STEPPER_SET_DIR, MUOS_STEPPER_DIR_HW);
 
     default:
       return muos_error_nohw;
     }
 
-  // wait dir ns
-  //TODO: if (muos_warn_wait_timeout != muos_wait (0, 0, MUOS_CLOCK_NANOSECONDS (MUOS_STEPPER_ENABLE_NS)))
+  //PLANNED: busy loop for very short delays, eventually we need muos function for this
+  _delay_loop_2 (((MUOS_STEPPER_DIR_NS - 5250) * 70000) / 16000000);
   return muos_success;
 }
 

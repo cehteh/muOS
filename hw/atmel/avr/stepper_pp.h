@@ -172,10 +172,12 @@
 
 #define MUOS_STEPPER_DIR_IMPL(index, exp) MUOS_STEPPER_DIR_IMPL_ (index, exp)
 
-#define MAKE_STEPPER_SET_DIR(index, hw)                                 \
-      case index:                                                       \
-        MUOS_STEPPER_DIR_IMPL(index, MUOS_PP_LIST_EXPAND(hw));          \
-        break;
+#define MAKE_STEPPER_SET_DIR(index, hw)                         \
+  case index:                                                   \
+  if (GET_DIRECTION(index) == dir)                              \
+      return muos_success;                                      \
+  MUOS_STEPPER_DIR_IMPL(index, MUOS_PP_LIST_EXPAND(hw));        \
+  break;
 
 
 /*
