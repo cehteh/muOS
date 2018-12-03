@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#PLANNED: use HW(...) for hardware descriptions
 #PLANNED: branch a 'tests' from example with permanent test code/suite
 
 
@@ -116,7 +115,7 @@ MUOS_CONFIG += -DMUOS_EXPLICIT_INIT=0
 #: Set the maximum depth for nested scheduler calls (muos_wait() muos_yield()).
 #: When this depth is exceeded, these calls return immediately, flagging 'muos_warn_sched_depth'.
 #: When not defined then the wait and yield functions become unavailable
-#MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
+MUOS_CONFIG += -DMUOS_SCHED_DEPTH=3
 
 
 
@@ -223,13 +222,15 @@ MUOS_CONFIG += -DMUOS_DEBUG
 #: Uses a GPIO to indicate when the CPU is busy.
 #: While sleeping the GPIO is turned off.
 MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(B,5)'
+#MUOS_CONFIG += -DMUOS_DEBUG_BUSY='(C,1)'
 
 
 
 #debug_config:MUOS_DEBUG_INTR
 #: MUOS_DEBUG_INTR::
 #: Uses a GPIO to indicate when the CPU is handling interrupts.
-MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,4)'
+MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,5)'
+#MUOS_CONFIG += -DMUOS_DEBUG_INTR='(C,1)'
 
 
 
@@ -237,7 +238,7 @@ MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,4)'
 #: MUOS_DEBUG_ERROR::
 #: Uses a GPIO to indicate when an error got set,
 #: Turned off when no errors are pending.
-#MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(B,2)'
+MUOS_CONFIG += -DMUOS_DEBUG_ERROR='(C,0)'
 
 
 
@@ -245,7 +246,8 @@ MUOS_CONFIG += -DMUOS_DEBUG_INTR='(B,4)'
 #: MUOS_DEBUG_SWITCH::
 #: Uses a GPIO to indicate when the scheduler switches to another function,
 #: Pin gets toggled!
-MUOS_CONFIG += -DMUOS_DEBUG_SWITCH='(B,1)'
+#MUOS_CONFIG += -DMUOS_DEBUG_SWITCH='(B,1)'
+MUOS_CONFIG += -DMUOS_DEBUG_SWITCH='(C,1)'
 
 
 
@@ -253,7 +255,7 @@ MUOS_CONFIG += -DMUOS_DEBUG_SWITCH='(B,1)'
 #: MUOS_DEBUG_Cx::
 #: *MUOS_DEBUG_C1, MUOS_DEBUG_C2, MUOS_DEBUG_C3, MUOS_DEBUG_C4*.
 #: User defined Debugging channels.
-MUOS_CONFIG += -DMUOS_DEBUG_C1='(B,3)'
+#MUOS_CONFIG += -DMUOS_DEBUG_C1='(B,3)'
 #MUOS_CONFIG += -DMUOS_DEBUG_C2='()'
 #MUOS_CONFIG += -DMUOS_DEBUG_C3='()'
 #MUOS_CONFIG += -DMUOS_DEBUG_C4='()'
@@ -666,13 +668,22 @@ MUOS_CONFIG += -DMUOS_CONFIGSTORE_SIZE=1000
 MUOS_CONFIG += -DMUOS_STEPPER
 
 
+
+#stepper_config:MUOS_STEPPER_UNSAFE
+#: MUOS_STEPPER_UNSAFE::
+#: Disable some sanity checks for debug builds.
+#: WARNING: May crash/damage hardware, don't use in production!
+MUOS_CONFIG += -DMUOS_STEPPER_UNSAFE
+
+
+
 #stepper_config:MUOS_STEPPER_HW
 #: MUOS_STEPPER_HW::
 #: Define which hardware (timers) are bound to steppers
 #TODO: docme better list of hardware
 #TODO: docme (timer, outputpin, output_mode, wgm)
-MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,15)'
-#MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,14)'
+MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,2,15)'
+#MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,15)'
 
 # testme below
 #MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,14)'
@@ -687,15 +698,18 @@ MUOS_CONFIG += -DMUOS_STEPPER_HW='(1,B,3,15)'
 #: Pin used for direction control
 #TODO: docme better, list
 #TODO: docme HW(outputport, outputpin, drive_polarity)
-MUOS_CONFIG += -DMUOS_STEPPER_DIR_HW='HW(B,1,0)'
+MUOS_CONFIG += -DMUOS_STEPPER_DIR_HW='(B,1,0)'
+#MUOS_CONFIG += -DMUOS_STEPPER_DIR_HW='(B,1,0)'
 
 
-#stepper_config:MUOS_STEPPER_ENABLE_ALL_HW
-#: MUOS_STEPPER_ENABLE_ALL_HW::
+
+#stepper_config:MUOS_STEPPER_DISABLEALL_INOUT_HW
+#: MUOS_STEPPER_DISABLEALL_INOUT_HW::
 #: Pin used for enabling the stepper driver, one pin for all steppers
+#TODO: come up with a input/output bidirectional plan
 #TODO: docme better, list
-#TODO: docme HW(outputport, outputpin, polarity )
-#MUOS_CONFIG += -DMUOS_STEPPER_ENABLE_ALL_HW='HW(B,1, POLARITY(0,INPUT))'
+#TODO: docme 
+MUOS_CONFIG += -DMUOS_STEPPER_DISABLEALL_INOUT_HW='(B,3,0)'
 
 
 
@@ -709,11 +723,22 @@ MUOS_CONFIG += -DMUOS_STEPPER_DIR_HW='HW(B,1,0)'
 #MUOS_CONFIG += -DMUOS_STEPPER_ENABLE_HW='(HW(B,1, POLARITY(0,INPUT)))'
 
 
-#stepper_config:MUOS_STEPPER_SIGNAL_NS
-#: MUOS_STEPPER_SIGNAL_NS::
-#: min nanoseconds the direction/enable signals must be ahead of starting pulsing
+#stepper_config:MUOS_STEPPER_ENABLE_NS
+#: MUOS_STEPPER_ENABLE_NS::
+#: min nanoseconds the enable signal must be ahead of DIR
 #TODO: docme better, list
-MUOS_CONFIG += -DMUOS_STEPPER_SIGNAL_NS='(6000)'
+#PLANNED: global, does this need to be per stepper?
+MUOS_CONFIG += -DMUOS_STEPPER_ENABLE_NS='300000'
+
+
+
+#stepper_config:MUOS_STEPPER_DIR_NS
+#: MUOS_STEPPER_DIR_NS::
+#: min nanoseconds the direction signal must be ahead of starting pulsing
+#TODO: docme better, list
+#PLANNED: global, does this need to be per stepper?
+MUOS_CONFIG += -DMUOS_STEPPER_DIR_NS='6000'
+
 
 
 
@@ -725,6 +750,11 @@ MUOS_CONFIG += -DMUOS_STEPPER_PULSE_NS='(3000)'
 
 
 
+#stepper_config:MUOS_STEPPER_ACTION_SLOTS
+#: MUOS_STEPPER_ACTION_SLOTS::
+#: Number of slots for callback actions.
+#TODO: docme better
+MUOS_CONFIG += -DMUOS_STEPPER_POSITION_SLOTS=4
 
 
 #cppm_config:MUOS_CPPM
