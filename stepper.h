@@ -81,6 +81,10 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir);
 
 muos_error
 muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
+
+muos_error
+muos_hw_stepper_stop (uint8_t hw);
+
 #endif
 
 //stepper_api:
@@ -113,8 +117,8 @@ enum muos_stepper_arming_state
   {
    MUOS_STEPPER_UNKNOWN,
    MUOS_STEPPER_DISABLED,
-   MUOS_STEPPER_CAL, //FIXME: check state checks
    MUOS_STEPPER_OFF,
+   MUOS_STEPPER_CAL, //FIXME: check state checks
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_SLOW,
@@ -154,7 +158,9 @@ extern struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 static inline bool
 muos_stepper_mutable_state (uint8_t hw)
 {
-  return muos_steppers[hw].state > MUOS_STEPPER_CAL && muos_steppers[hw].state < MUOS_STEPPER_SLOW;
+  return muos_steppers[hw].state != MUOS_STEPPER_CAL
+    && muos_steppers[hw].state >= MUOS_STEPPER_OFF
+    && muos_steppers[hw].state < MUOS_STEPPER_SLOW;
 }
 
 
@@ -167,24 +173,69 @@ muos_stepper_50init (void)
 
 
 
-#ifdef MUOS_STEPPER_ENABLE_ALL_HW
+#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
 //stepper_api:
-//: .Switching steppers on and off
+//: .Switching steppers on and off, stopping
 //: ----
 //: muos_error
 //: muos_stepper_all_on (void)
 //:
-//: muos_error
+//: void
 //: muos_stepper_all_off (void)
+//:
+//: void
+//: muos_stepper_stop (uint8_t hw)
+//:
+//: void
+//: muos_stepper_all_stop (void)
 //: ----
 //:
-//: Both functions return 'muos_error_configstore_locked' in case
-//: of an error. Other errors should be handled in 'callback'.
+//: 'muos_stepper_all_on ()' tries to switch on all steppers.
+//: When successful muos_success is returned.
+//: The steppers are in state 'MUOS_STEPPER_HOLD' which
+//: only allows relative and calibration movements. For arming the
+//: Steppers fully the axis has to be zerored.
+//: In case the steppers where already on, no state is changed.
+//:
+//: .On error following values are returned:
+//: +muos_warn_sched_depth+;;
+//    Scheduler depth exceeded
+//: +muos_error_stepper_state+;;
+//:   Steppers are externally disabled, uninitialized or in calibration mode.
+//:
+//: 'muos_stepper_all_off ()' switches all steppers off.
+//: No matter of the state, the steppers will be disabled afterwards.
+//: States 'MUOS_STEPPER_UNKNOWN' and 'MUOS_STEPPER_DISABLED' will stay, otherwise
+//: the new state will be MUOS_STEPPER_OFF.
+//:
+//: Note: turning the steppers off will loose their position and they must zeroed after
+//:       enabling them again.
+//:
+//: 'muos_stepper_stop (hw)' stops movement of a single stepper, but keeps it energized.
+//: For steppers which were running faster than 'MUOS_STEPPER_SLOW' the position will
+//: be invalidated and the state becomes 'MUOS_STEPPER_HOLD'. They need to be re-zeroed
+//: after a stop. For Steppers running at 'MUOS_STEPPER_SLOW' or slower the position is
+//: kept valid and the state becomes 'MUOS_STEPPER_ARMED'.
+//: All position matches registered will be cleared.
+//:
+//: 'muos_stepper_all_stop ()' is the same as 'muos_stepper_stop (hw)' but for all Steppers.
+//:
+//: Stopping and turning steppers off will never fail nor return an error code.
+//: Only the resulting state may differ depending on the initial state. With the exception
+//: that trying to stop a stepper with a non existing hardware descriptor will fail with
+//: +muos_error_nohw+.
+//:
 muos_error
-muos_stepper_on (void);
+muos_stepper_all_on (void);
+
+void
+muos_stepper_all_off (void);
 
 muos_error
-muos_stepper_all_off (void);
+muos_stepper_stop (uint8_t hw);
+
+void
+muos_stepper_all_stop (void);
 #endif // MUOS_STEPPER_ENABLE_ALL_HW
 
 

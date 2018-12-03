@@ -25,34 +25,71 @@
 
 struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 
-
-
-#ifdef MUOS_STEPPER_ENABLE_ALL_HW
+#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
 muos_error
 muos_stepper_all_on (void)
 {
-
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT)
+  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
     {
-      //muos_steppers[i]
+      if (muos_steppers[i].state < MUOS_STEPPER_OFF)
+        return muos_error_stepper_state;
     }
 
-  //  if state < unknown
-  // && config is valid
-  // check configuration
-  // init prescaler / but timer is stopped
-  // enable controller
-  // start timers
-  // set state to on
+  muos_error ret = muos_hw_stepper_enableall ();
+
+  if (ret == muos_success)
+    for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+      {
+        if (muos_steppers[i].state == MUOS_STEPPER_OFF)
+          muos_steppers[i].state = MUOS_STEPPER_HOLD;
+      }
+
+  return ret;
 }
 
+
+
 muos_error
+muos_stepper_stop (uint8_t hw)
+{
+  muos_error ret = muos_hw_stepper_stop (hw);
+  if (!ret)
+    return ret;
+
+  if (muos_steppers[hw].state == MUOS_STEPPER_SLOW)
+    muos_steppers[hw].state = MUOS_STEPPER_ARMED;
+  else if (muos_steppers[hw].state > MUOS_STEPPER_CAL)
+    muos_steppers[hw].state = MUOS_STEPPER_OFF;
+  else if (muos_steppers[hw].state > MUOS_STEPPER_SLOW)
+    muos_steppers[hw].state = MUOS_STEPPER_HOLD;
+
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
+    {
+      muos_steppers[hw].position_match[i].whattodo = 0;
+    }
+
+  return muos_success;
+}
+
+void
+muos_stepper_all_stop (void)
+{
+    for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+      muos_stepper_stop (i);
+}
+
+
+void
 muos_stepper_all_off (void)
 {
-  //if state > off
-  //   stop timers
-  //   disable controller
-  //   state = off
+  muos_stepper_all_stop ();
+  muos_hw_stepper_disableall ();
+
+  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+      {
+        if (muos_steppers[i].state > MUOS_STEPPER_OFF)
+          muos_steppers[i].state = MUOS_STEPPER_OFF;
+      }
 }
 #endif
 

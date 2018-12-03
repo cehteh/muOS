@@ -94,6 +94,22 @@ muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw)
 }
 
 
+muos_error
+muos_hw_stepper_stop (uint8_t hw)
+{
+  switch (hw)
+    {
+      //TODO: implement for other timers (define in hardware header)
+      MUOS_PP_CODEGEN(MAKE_STEPPER_STOP, MUOS_STEPPER_HW);
+
+    default:
+      return muos_error_nohw;
+    }
+
+  return muos_success;
+}
+
+
 
 muos_error
 muos_hw_stepper_set_direction (uint8_t hw, bool dir)

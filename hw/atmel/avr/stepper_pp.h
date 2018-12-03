@@ -160,6 +160,19 @@
         break;
 
 
+#define MUOS_STEPPER_STOP_IMPL_(index, timer, output, output_mode, wgm) \
+  TCCR##timer##A = 0;                                                   \
+  TCCR##timer##B = 0;                                                   \
+  TIMSK##timer &= ~_BV(TOIE##timer);
+
+#define MUOS_STEPPER_STOP_IMPL(index, exp) MUOS_STEPPER_STOP_IMPL_ (index, exp)
+
+#define MAKE_STEPPER_STOP(index, hw)                                    \
+  case index:                                                           \
+    MUOS_STEPPER_STOP_IMPL(index, MUOS_PP_LIST_EXPAND(hw));               \
+    break;
+
+
 
 /*
   direction
