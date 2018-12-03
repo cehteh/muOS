@@ -74,11 +74,11 @@
 //:   stepper not energized, position unknown
 //: MUOS_STEPPER_HOLD;;
 //:   stepper energized, position unknown, only relative movements
+//: MUOS_STEPPER_ARMED;;
+//    stepper energized, position known
 //: MUOS_STEPPER_SLOW;;
 //:   stepper energized, position known, running slower than min_speed
 //:   can be stopped instantly without loosing steps.
-//: MUOS_STEPPER_ARMED;;
-//    stepper energized, position known
 //: MUOS_STEPPER_FAST;;
 //:   stepper energized, position known, running faster than min_speed
 //:   must decelerate for stopping w/o loosing steps.
@@ -267,6 +267,8 @@ muos_stepper_cal_zigzagpause (uint8_t hw,
 //:
 //: Zeros the step counter to the given offset.
 //: Only available when the stepper is energized but not moving.
+//: When the stepper was not 'ARMED' yet (position unknown) it becomes
+//: armed with zeroing. Only then fast absolute movements are possible.
 //:
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset);

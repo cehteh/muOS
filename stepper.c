@@ -56,15 +56,27 @@ muos_stepper_all_off (void)
 #endif
 
 
-// zeros the axis relative to the current position
-#if 0 //TODO: implement
+
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset)
 {
-  //  if state == ON || READY
-                //zero
+  if (hw >= MUOS_STEPPER_COUNT)
+    return muos_error_nohw;
+
+  if (muos_steppers[hw].state != MUOS_STEPPER_HOLD && muos_steppers[hw].state != MUOS_STEPPER_ARMED)
+    return muos_error_stepper_state;
+
+  muos_steppers[hw].position -= offset;
+
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
+    {
+      muos_steppers[hw].position_match[i].position -= offset;
+    }
+
+  muos_steppers[hw].state = MUOS_STEPPER_ARMED;
+
+  return muos_success;
 }
-#endif
 
 
 muos_error
