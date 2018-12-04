@@ -109,6 +109,7 @@ muos_configstore_get_status (void);
 
 #define CONFIGSTORE_ARY_ARRAY(len) [len]
 #define CONFIGSTORE_ARY_0
+#define CONFIGSTORE_ARY_1 [1]
 #define CONFIGSTORE_ARY_2 [2]
 #define CONFIGSTORE_ARY_3 [3]
 #define CONFIGSTORE_ARY_4 [4]
