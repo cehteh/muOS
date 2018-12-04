@@ -96,6 +96,7 @@ muos_configstore_initial (void)
   if (status == CONFIGSTORE_INVALID)
     {
       status = CONFIGSTORE_WLOCK;
+      the_configstore.userdata.config_size = sizeof (struct muos_configstore_data);
       return &the_configstore.userdata;
     }
   return NULL;
@@ -116,7 +117,7 @@ eeprom_read_done (void)
       crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_configstore)[i]);
     }
 
-  if (crc == 0)
+  if (crc == 0 && the_configstore.userdata.config_size == sizeof (struct muos_configstore_data))
     {
       status = CONFIGSTORE_VALID;
     }

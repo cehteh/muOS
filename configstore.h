@@ -92,7 +92,7 @@ typedef void (*muos_configstore_callback)(void);
 typedef enum
   {
    CONFIGSTORE_UNKNOWN,       // status not known yet, did not called load
-   CONFIGSTORE_INVALID,       // load did not find a saved config
+   CONFIGSTORE_INVALID,       // load did not find a saved config, size mismatch
    CONFIGSTORE_DEAD,          // 'save' could not save+verify data, EEPROM is dead (but ram is ok)
    CONFIGSTORE_VALID,         // successfully loaded config
    CONFIGSTORE_RLOCK,         // readlocks start here, count up
@@ -124,10 +124,16 @@ muos_configstore_get_status (void);
 
 #define CONFIGSTORE_ARY(val) CONFIGSTORE_ARY_##val
 
+//TODO: document implicit config_size
+#define CONFIGSTORE_DATA_IMPL                           \
+  CONFIGSTORE_ENTRY  (size_t, 0, config_size,           \
+                      "configuration structure size")   \
+    CONFIGSTORE_DATA
+
 struct muos_configstore_data
 {
-#define CONFIGSTORE_ENTRY(type, ary, name) type name CONFIGSTORE_ARY(ary);
-  CONFIGSTORE_DATA
+#define CONFIGSTORE_ENTRY(type, ary, name, descr) type name CONFIGSTORE_ARY(ary);
+  CONFIGSTORE_DATA_IMPL
 #undef CONFIGSTORE_ENTRY
 };
 
@@ -135,7 +141,7 @@ struct muos_configstore_data
 #if 0
 enum muos_configstore_id
   {
-#define CONFIGSTORE_ENTRY(type, ary, name) MUOS_CONFIGSTORE_ID_##name,
+#define CONFIGSTORE_ENTRY(type, ary, name, descr) MUOS_CONFIGSTORE_ID_##name,
    CONFIGSTORE_DATA
 #undef CONFIGSTORE_ENTRY
   };
