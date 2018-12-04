@@ -91,14 +91,21 @@ typedef void (*muos_configstore_callback)(void);
 
 typedef enum
   {
-   CONFIGSTORE_UNKNOWN,   // status not known yet, did not called load
-   CONFIGSTORE_INVALID,   // load did not find a saved config
-   CONFIGSTORE_VALID,     // successfully loaded config
-   CONFIGSTORE_LOCKED,    // some async operation in progress
-   CONFIGSTORE_DEAD,      // 'save' could not save+verify data, EEPROM is dead
+   CONFIGSTORE_UNKNOWN,       // status not known yet, did not called load
+   CONFIGSTORE_INVALID,       // load did not find a saved config
+   CONFIGSTORE_DEAD,          // 'save' could not save+verify data, EEPROM is dead (but ram is ok)
+   CONFIGSTORE_VALID,         // successfully loaded config
+   CONFIGSTORE_RLOCK,         // readlocks start here, count up
+   CONFIGSTORE_RLOCK_MAX=254, // end of readlocks
+   CONFIGSTORE_WLOCK=255,     // write lock
 } muos_configstore_status;
 
-extern muos_configstore_status status;
+muos_configstore_status
+muos_configstore_get_status (void);
+
+
+//bool muosconfig_loaded (intptr_t unused)
+
 
 #define CONFIGSTORE_ARY_ARRAY(len) [len]
 #define CONFIGSTORE_ARY_0
@@ -157,6 +164,7 @@ enum muos_configstore_id
 muos_error
 muos_configstore_load (muos_configstore_callback callback);
 
+
 muos_error
 muos_configstore_save (muos_configstore_callback callback);
 
@@ -164,19 +172,63 @@ muos_configstore_save (muos_configstore_callback callback);
 //configstore_api:
 //: .Access
 //: ----
+//: const struct muos_configstore_data*
+//: muos_configstore_lock (void)
+//:
 //: struct muos_configstore_data*
-//: muos_configstore (void)
+//: muos_configstore_wlock (void)
+//:
+//: void
+//: muos_configstore_unlock (void)
+//:
+//: struct muos_configstore_data*
+//: muos_configstore_initial (void)
 //: ----
 //:
-//: Checks for availability of the configstore.
-//: On success returns a pointer to a 'muos_configstore_data' data
-//: structure which holds all the defined elements.
+//: The configuration data implements a simple locking scheme with multiple
+//: readers or a single writer. Each successful lock must be paired with a
+//: unlock, no further consistency checks are made!
 //:
-//: The configstore pointer stays valid until another load/save
-//: operation is called.
+//: Locking works only on valid data.
 //:
+//: There are approx. 250 read locks available. Exceeding this number makes the
+//: lock fail.
+//:
+//: 'muos_configstore_lock ()';;
+//:   Checks for availability of the configstore.
+//:   On success it places a read lock on the configstore and returns a pointer
+//:   to a const 'muos_configstore_data' data structure which holds all the defined
+//:   elements. On failure +NULL+ is returned and one may inspect the configstore status.
+//:   No mutations must be made to the data.
+//:
+//: 'muos_configstore_wlock ()';;
+//:   Checks for availability of the configstore.
+//:   On success it places a write lock on the configstore and returns a pointer
+//:   to a 'muos_configstore_data' data structure which holds all the defined elements.
+//:   On failure +NULL+ is returned and one may inspect the configstore status.
+//:   The write lock blocks all other access to the configstore and may modify its contents.
+//:
+//: 'muos_configstore_unlock ()';;
+//:   Frees the lock obtained by 'muos_configstore_lock()' or 'muos_configstore_wlock()'.
+//:   Care must be taken that every *successful* lock is matched by a unlock.
+//:
+//: 'muos_configstore_initial ()';;
+//:   Works only when the configstore is 'invalid'. Places a write locks on the data which
+//:   must be unlocked afterwards. This is used when the configstore is uninitialized/prime
+//:   or damaged to populate it with defaults.
+//:
+const struct muos_configstore_data*
+muos_configstore_lock (void);
+
 struct muos_configstore_data*
-muos_configstore (void);
+muos_configstore_wlock (void);
+
+void
+muos_configstore_unlock (void);
+
+struct muos_configstore_data*
+muos_configstore_initial (void);
+
 
 // generic api
 

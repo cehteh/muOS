@@ -33,6 +33,7 @@
 #error MUOS_EEPROM_CRC16_FN must be configured
 #endif
 
+static
 muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 
 struct muos_configstore_frame
@@ -47,6 +48,59 @@ struct muos_configstore_frame
 //TODO: calculate type from array capacity
 //static uint16_t pos;
 static struct muos_configstore_frame the_configstore;
+
+
+muos_configstore_status
+muos_configstore_get_status (void)
+{
+  return status;
+};
+
+
+const struct muos_configstore_data*
+muos_configstore_lock (void)
+{
+  if (status < CONFIGSTORE_RLOCK_MAX && status >= CONFIGSTORE_VALID)
+    {
+      ++status;
+      return &the_configstore.userdata;
+    }
+  return NULL;
+}
+
+struct muos_configstore_data*
+muos_configstore_wlock (void)
+{
+  if (status == CONFIGSTORE_VALID)
+    {
+      status = CONFIGSTORE_WLOCK;
+      return &the_configstore.userdata;
+    }
+  return NULL;
+}
+
+
+void
+muos_configstore_unlock (void)
+{
+  if (status == CONFIGSTORE_WLOCK)
+    status = CONFIGSTORE_VALID;
+  else
+    --status;
+}
+
+
+struct muos_configstore_data*
+muos_configstore_initial (void)
+{
+  if (status == CONFIGSTORE_INVALID)
+    {
+      status = CONFIGSTORE_WLOCK;
+      return &the_configstore.userdata;
+    }
+  return NULL;
+}
+
 
 static muos_configstore_callback callback;
 
@@ -79,10 +133,10 @@ eeprom_read_done (void)
 muos_error
 muos_configstore_load (muos_configstore_callback cb)
 {
-  if (status != CONFIGSTORE_LOCKED)
-    status = CONFIGSTORE_LOCKED;
+  if (status < CONFIGSTORE_RLOCK)
+    status = CONFIGSTORE_WLOCK;
   else
-    return muos_error_set (muos_error_configstore_locked);
+    return muos_error_configstore_locked;
 
   callback = cb;
 
@@ -114,7 +168,7 @@ eeprom_write_done (void)
     }
   else
     {
-      status = CONFIGSTORE_VALID;
+      --status;
     }
 
   if (callback)
@@ -122,13 +176,16 @@ eeprom_write_done (void)
 }
 
 
+//TODO: allow saving with rlocks?
 muos_error
 muos_configstore_save (muos_configstore_callback cb)
 {
-  if (status != CONFIGSTORE_LOCKED)
-    status = CONFIGSTORE_LOCKED;
-  else
-    return muos_error_set (muos_error_configstore_locked);
+  if (status >= CONFIGSTORE_RLOCK_MAX)
+    return muos_error_configstore_locked;
+  else if (status < CONFIGSTORE_VALID)
+    return muos_error_configstore_invalid;
+
+  ++status;
 
   callback = cb;
 
@@ -149,24 +206,6 @@ muos_configstore_save (muos_configstore_callback cb)
   //PLANNED: later, journaled
   return muos_success;
 }
-
-struct muos_configstore_data*
-muos_configstore (void)
-{
-  switch (status)
-    {
-    case CONFIGSTORE_VALID:
-      return &the_configstore.userdata;
-    case CONFIGSTORE_LOCKED:
-      muos_error_set (muos_error_configstore_locked);
-      break;
-    default:
-      muos_error_set (muos_error_configstore_invalid);
-      break;
-    }
-  return NULL;
-}
-
 
 #endif
 
