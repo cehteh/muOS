@@ -25,10 +25,12 @@
 #include <muos/hw/atmel/avr/atmega328p.h>
 #include <muos/hw/atmel/avr/stepper_pp.h>
 #include <muos/hpq.h>
+#include <muos/configstore.h>
 #include <muos/io.h> /*DEBUG*/
 
 #include <util/delay_basic.h>
 #include <stdlib.h>
+
 /* Signal generation for example drive low polarity
 
    .......      ____________________________      ........
@@ -36,6 +38,8 @@
          |______|                           :.....:
 
 */
+
+extern const struct muos_configstore_data* muos_steppers_config_lock;
 
 
 

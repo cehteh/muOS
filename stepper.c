@@ -20,10 +20,16 @@
 
 #ifdef MUOS_STEPPER
 
+#include <muos/configstore.h>
+
+#include <stdlib.h>
+
 #define MUOS_HW_STEPPER_H
 #include <muos/stepper.h>
 
 struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+
+const struct muos_configstore_data* muos_steppers_config_lock;
 
 #ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
 muos_error
@@ -85,11 +91,17 @@ muos_stepper_all_off (void)
   muos_stepper_all_stop ();
   muos_hw_stepper_disableall ();
 
+  if (muos_steppers_config_lock)
+    {
+      muos_configstore_unlock ();
+      muos_steppers_config_lock = NULL; //PLANNED: check if its smaller/faster when configstore_unlock() returns NULL
+    }
+
   for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
-      {
-        if (muos_steppers[i].state > MUOS_STEPPER_OFF)
-          muos_steppers[i].state = MUOS_STEPPER_OFF;
-      }
+    {
+      if (muos_steppers[i].state > MUOS_STEPPER_OFF)
+        muos_steppers[i].state = MUOS_STEPPER_OFF;
+    }
 }
 #endif
 
@@ -103,6 +115,12 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD && muos_steppers[hw].state != MUOS_STEPPER_ARMED)
     return muos_error_stepper_state;
+
+  if (!muos_steppers_config_lock)
+    muos_steppers_config_lock = muos_configstore_lock();
+
+  if (!muos_steppers_config_lock)
+    return muos_error_configstore_locked;  //FIXME: refine configstore errors
 
   muos_steppers[hw].position -= offset;
 
