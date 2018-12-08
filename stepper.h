@@ -97,8 +97,8 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   not fully initialized yet
 //: MUOS_STEPPER_DISABLED;;
 //:   externally disabled (when inout pin is configured)
-//: MUOS_STEPPER_CAL;;
-//:   stepper energized, position unknown, only calibration movements,
+//: MUOS_STEPPER_RAW;;
+//:   stepper energized, position unknown, only raw movements,
 //:   no configuration necessary
 //: MUOS_STEPPER_OFF;;
 //:   stepper not energized, position unknown
@@ -118,7 +118,7 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_UNKNOWN,
    MUOS_STEPPER_DISABLED,
    MUOS_STEPPER_OFF,
-   MUOS_STEPPER_CAL, //FIXME: check state checks
+   MUOS_STEPPER_RAW, //FIXME: check state checks
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_SLOW,
@@ -130,7 +130,7 @@ struct stepper_state
 {
   // note: statically initialized to zero, that must be ok for all values
   enum muos_stepper_arming_state state;
-  enum muos_stepper_arming_state before_calibration;
+  enum muos_stepper_arming_state before_raw;
   int32_t movement_start_position;
   volatile int32_t position;
   volatile struct {
@@ -158,7 +158,7 @@ extern struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 static inline bool
 muos_stepper_mutable_state (uint8_t hw)
 {
-  return muos_steppers[hw].state != MUOS_STEPPER_CAL
+  return muos_steppers[hw].state != MUOS_STEPPER_RAW
     && muos_steppers[hw].state >= MUOS_STEPPER_OFF
     && muos_steppers[hw].state < MUOS_STEPPER_SLOW;
 }
@@ -250,24 +250,24 @@ muos_stepper_all_stop (void);
 //: .Basic Calibration Movements
 //: ----
 //: muos_error
-//: muos_stepper_cal_mov (uint8_t hw,
-//:                       uint8_t prescale,
-//:                       uint16_t speed_raw,
-//:                       int32_t offset)
+//: muos_stepper_move_raw (uint8_t hw,
+//:                        uint8_t prescale,
+//:                        uint16_t speed_raw,
+//:                        int32_t offset)
 //:
 //: muos_error
-//: muos_stepper_cal_zigzag (uint8_t hw,
-//:                          uint8_t prescale,
-//:                          uint16_t speed_raw,
-//:                          int16_t steps,
-//:                          uint8_t rep)
+//: muos_stepper_move_zigzag (uint8_t hw,
+//:                           uint8_t prescale,
+//:                           uint16_t speed_raw,
+//:                           int16_t steps,
+//:                           uint8_t rep)
 //:
 //: muos_error
-//: muos_stepper_cal_zigzagpause (uint8_t hw,
-//:                               uint8_t prescale,
-//:                               int16_t speed_raw,
-//:                               int16_t steps,
-//:                               uint8_t rep)
+//: muos_stepper_move_zigzagpause (uint8_t hw,
+//:                                uint8_t prescale,
+//:                                int16_t speed_raw,
+//:                                int16_t steps,
+//:                                uint8_t rep)
 //: ----
 //:
 //: +hw+;;
@@ -295,38 +295,38 @@ muos_stepper_all_stop (void);
 //: The 'prescale' parameter has the greatest effect on speeds and should be used with
 //: uttermost care. The actual values are hardware implementation dependent.
 //:
-//: muos_stepper_mov_cal;;
+//: muos_stepper_move_raw;;
 //:   Moves for 'offset' steps at 'speed', negative values give  reverse direction.
 //:
-//: muos_stepper_cal_zigzag;;
+//: muos_stepper_move_zigzag;;
 //:   Moves 'steps' for 'rep' times forth and back. With instant direction change at then ends.
 //:
-//: muos_stepper_cal_zigzagpause;;
+//: muos_stepper_move_zigzagpause;;
 //:   Moves 'steps' for 'rep' times forth and back. Does a short pause before changing direction.
 //:
 //: WARNING: wrong use of this functions can damage the hardware.
 //:
 //:
 muos_error
-muos_stepper_cal_mov (uint8_t hw,
-                      uint8_t prescale,
-                      uint16_t speed_raw,
-                      int32_t offset);
+muos_stepper_move_raw (uint8_t hw,
+                       uint8_t prescale,
+                       uint16_t speed_raw,
+                       int32_t offset);
 
 #if 0 //PLANNED:
 muos_error
-muos_stepper_cal_zigzag (uint8_t hw,
-                         uint8_t prescale,
-                         uint16_t speed_raw,
-                         int16_t steps,
-                         uint8_t rep);
+muos_stepper_move_zigzag (uint8_t hw,
+                          uint8_t prescale,
+                          uint16_t speed_raw,
+                          int16_t steps,
+                          uint8_t rep);
 
 muos_error
-muos_stepper_cal_zigzagpause (uint8_t hw,
-                              uint8_t prescale,
-                              unt16_t speed_raw,
-                              int16_t steps,
-                              uint8_t rep);
+muos_stepper_move_zigzagpause (uint8_t hw,
+                               uint8_t prescale,
+                               unt16_t speed_raw,
+                               int16_t steps,
+                               uint8_t rep);
 #endif
 
 
@@ -467,9 +467,6 @@ muos_stepper_remove_action (uint8_t hw,
 }
 
 
-//PLANNED: change all positions after zeroing
-//muos_error
-//muos_stepper_move_action (uint8_t hw, int32_t position, int32_t offset);
 
 
 
@@ -483,9 +480,6 @@ void
 muos_stepper_get_status (uint8_t hw);
 
 
-//
-muos_error
-muos_stepper_mov_raw (uint8_t hw, uint16_t rawspeed, bool dir);
 
 
 

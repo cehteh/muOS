@@ -58,7 +58,7 @@ muos_stepper_stop (uint8_t hw)
 
   if (muos_steppers[hw].state == MUOS_STEPPER_SLOW)
     muos_steppers[hw].state = MUOS_STEPPER_ARMED;
-  else if (muos_steppers[hw].state > MUOS_STEPPER_CAL)
+  else if (muos_steppers[hw].state > MUOS_STEPPER_RAW)
     muos_steppers[hw].state = MUOS_STEPPER_OFF;
   else if (muos_steppers[hw].state > MUOS_STEPPER_SLOW)
     muos_steppers[hw].state = MUOS_STEPPER_HOLD;
@@ -119,10 +119,10 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
 
 
 static void
-muos_stepper_cal_restorestate (void)
+muos_stepper_raw_restorestate (void)
 {
   for(uint8_t i = 0; i < MUOS_STEPPER_COUNT; ++i)
-    muos_steppers[i].state = muos_steppers[i].before_calibration;
+    muos_steppers[i].state = muos_steppers[i].before_raw;
 
   for (uint8_t i = 0; i<MUOS_STEPPER_COUNT; ++i)
     {
@@ -136,10 +136,10 @@ muos_stepper_cal_restorestate (void)
 
 
 muos_error
-muos_stepper_cal_mov (uint8_t hw,
-                      uint8_t prescale,
-                      uint16_t speed_raw,
-                      int32_t offset)
+muos_stepper_move_raw (uint8_t hw,
+                       uint8_t prescale,
+                       uint16_t speed_raw,
+                       int32_t offset)
 {
   if (hw >= MUOS_STEPPER_COUNT)
     return muos_error_nohw;
@@ -167,12 +167,12 @@ muos_stepper_cal_mov (uint8_t hw,
   muos_hw_stepper_register_action (hw,
                                    muos_steppers[hw].position + offset,
                                    MUOS_STEPPER_ACTION_STOP|MUOS_STEPPER_HPQ_BACK,
-                                   (uintptr_t)muos_stepper_cal_restorestate);
+                                   (uintptr_t)muos_stepper_raw_restorestate);
 
   for(uint8_t i = 0; i < MUOS_STEPPER_COUNT; ++i)
-    muos_steppers[i].before_calibration=muos_steppers[i].state;
+    muos_steppers[i].before_raw=muos_steppers[i].state;
 
-  muos_steppers[hw].state = MUOS_STEPPER_CAL;
+  muos_steppers[hw].state = MUOS_STEPPER_RAW;
 
   muos_hw_stepper_start (hw, prescale, speed_raw);
 
