@@ -13,32 +13,25 @@ uint32_t CLOCK;    // clock ticks
 uint16_t OCRA;     // pulse length
 
 int32_t position;
-int32_t position_end = 5000;
+int32_t position_end = 1500;
 
-uint16_t min_speed = 30000;
-uint16_t max_speed = 1024;
+uint16_t min_speed = 60000;
+uint16_t max_speed = 1000;
 
-uint16_t accel = 250;
-uint16_t decel = 500;
-uint16_t smooth = 10;
-
-enum states{
-      ACCEL,
-      CONSTANT,
-      DECEL,
-};
-
-enum states state;
-
+uint16_t accel = 200;
+uint16_t decel = 255;
 
 int32_t start;
 int32_t end;
+
+
+
+
 
 void
 init (void)
 {
   OCRA = min_speed;
-  state = ACCEL;
 
   start = position;
   end = position_end;
@@ -46,7 +39,7 @@ init (void)
   PRINT(start);
   PRINT(end);
 
-  printf("%u %u %u\n", 0, position, 655360/(OCRA+1));
+  printf("%u %u %u\n", 0, position, (655360)/(min_speed+1));
   uint32_t speed=OCRA;
   PRINT(speed);
 }
@@ -57,23 +50,16 @@ overflow_isr(void)
 {
   CLOCK += OCRA;
   ++position;
-  printf("%u %u %u\n", CLOCK, position, 655360/(OCRA+1));
 
-  int32_t speed =
-    (
-     //accel part
-     (min_speed*256)/(((position-start)*accel)+256)*(end-position)
-     +
-     //decel part
-     (min_speed*256)/(((end-position-1)*decel)+256)*(position-start)
-     )/(end-start)
-    ;
+  uint32_t speed = ((65536*256)/((position-start)*accel+256)
+                    + (65536*256)/((end-position)*decel+256))
+    + max_speed;
 
-  // smooth to max
-  speed = (speed*min_speed)/(min_speed)+max_speed;
 
   PRINT(speed);
-  OCRA = speed;
+  printf("%u %u %u\n", CLOCK, position, (655360)/(speed+1));
+
+  OCRA = speed<min_speed?speed:min_speed;
 
   if (position == position_end)
     return false;
@@ -109,6 +95,7 @@ int
 main(int argc, char* argv[])
 {
   (void) argc; (void) argv;
+  printf("Clock Position Speed\n");
   printf("# Test start...\n");
 
   init();
@@ -118,4 +105,3 @@ main(int argc, char* argv[])
   printf("\n#...Test done\n");
   return 0;
 }
-
