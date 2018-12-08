@@ -106,6 +106,8 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   stepper energized, position unknown, only relative movements
 //: MUOS_STEPPER_ARMED;;
 //    stepper energized, position known
+//: MUOS_STEPPER_STOPPED;;
+//    stepper energized, position known, done moving, stopped
 //: MUOS_STEPPER_SLOW;;
 //:   stepper energized, position known, running slower than min_speed
 //:   can be stopped instantly without loosing steps.
@@ -121,8 +123,10 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_RAW, //FIXME: check state checks
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
+   MUOS_STEPPER_STOPPED,
    MUOS_STEPPER_SLOW,
-   MUOS_STEPPER_FAST   //PLANNED: have a 'VERYFAST' state with simpler isr procedure?
+   MUOS_STEPPER_FAST,
+  //PLANNED: have a 'VERYFAST' state with simpler isr procedure?
   };
 
 
@@ -131,9 +135,10 @@ struct stepper_state
   // note: statically initialized to zero, that must be ok for all values
   enum muos_stepper_arming_state state;
   enum muos_stepper_arming_state before_raw;
-  int32_t movement_start_position;
-  volatile int32_t position;
-  volatile struct {
+  int32_t position;
+  int32_t start_position;
+  int32_t end_position;
+  struct {
     int32_t position;
     uint8_t whattodo;
     uintptr_t arg;
@@ -466,6 +471,21 @@ muos_stepper_remove_action (uint8_t hw,
                                         arg);
 }
 
+/*
+
+  Absolute movements w/ acceleration/deceleration
+
+*/
+
+
+
+// speedf is 1/256 factor to min_speed..max_speed (and accel/decel)
+muos_error
+muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf);
+
+
+
+
 
 
 
@@ -501,13 +521,10 @@ muos_stepper_mov_rel (uint8_t hw, int32_t offset, int8_t speed);
 uint32_t
 muos_stepper_abs_estim (uint8_t hw, int32_t position);
 
-// speedf is 1/256 factor to min_speed..max_speed (and accel/decel)
-muos_error
-muos_stepper_mov_abs (uint8_t hw, int32_t position, uint8_t speedf);
 */
 
 
-#if 0 // TODO from DESIGN.orgin
+#if 0 // TODO from DESIGN.org
 /*
 
 

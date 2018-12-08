@@ -37,6 +37,7 @@
 #define MAKE_OVF_ISR__(index, timer, output, output_mode, wgm)                                                  \
   ISR(TIMER##timer##_OVF_vect)                                                                                  \
   {                                                                                                             \
+    MUOS_DEBUG_INTR_ON;                                                                                         \
     muos_steppers[index].position += GET_DIRECTION(index)?+1:-1;                                                \
     for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                       \
       {                                                                                                         \
@@ -49,6 +50,7 @@
                 TCCR##timer##A = 0;                                                                             \
                 TCCR##timer##B = 0;                                                                             \
                 TIMSK##timer &= ~_BV(TOIE##timer);                                                              \
+                muos_steppers[index].state = MUOS_STEPPER_STOPPED;                                              \
               }                                                                                                 \
             if (muos_steppers[index].position_match[i].arg)                                                     \
               {                                                                                                 \
@@ -67,7 +69,20 @@
               }                                                                                                 \
           }                                                                                                     \
       }                                                                                                         \
-   }
+    if (muos_steppers[index].state == MUOS_STEPPER_FAST)                                                        \
+      {                                                                                                         \
+    uint32_t speed = ((65536*256) /                                                                             \
+      ((muos_steppers[index].position - muos_steppers[index].start_position)                                    \
+       * muos_steppers_config_lock->stepper_accel[index] + 256)                                                 \
+      + (65536*256) /                                                                                           \
+      ((muos_steppers[index].end_position - muos_steppers[index].position)                                      \
+      * muos_steppers_config_lock->stepper_decel[index] + 256))                                                 \
+      + muos_steppers_config_lock->stepper_maxspeed[index];                                                     \
+    OCR##timer##A = speed < muos_steppers_config_lock->stepper_minspeed[index] ?                                \
+      speed : muos_steppers_config_lock->stepper_minspeed[index];                                               \
+    }                                                                                                           \
+  }
+
 
 
 #define MAKE_OVF_ISR_(...) MAKE_OVF_ISR__ (__VA_ARGS__)
@@ -138,14 +153,14 @@
 
 
 
-
+//FIXME: OCRB calculation is borked
 //PLANNED: abstract F_CPU for timers running on other clock sources
 #define MUOS_STEPPER_START_IMPL_(index, timer, output, output_mode, wgm)                        \
   TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);         \
   TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                            \
-  OCR##timer##B =                                                                               \
-    MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS)                                              \
-    /(F_CPU/4000UL/timerdividers##timer[prescale-1])-1;                                         \
+  OCR##timer##B = 20;                                                                           \
+    /*    MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS)  */                                    \
+          /* /(F_CPU/4000UL/timerdividers##timer[prescale-1])-1;*/                              \
   MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed_raw;                                            \
   TIFR##timer = _BV(TOV##timer);                                                                \
   TIMSK##timer = _BV(TOIE##timer);                                                              \

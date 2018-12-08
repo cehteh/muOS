@@ -199,5 +199,61 @@ muos_stepper_move_raw (uint8_t hw,
 
 
 
+
+
+/*
+  absolute movements
+ */
+
+//PLANNED: end speed parameter for flying movements
+
+muos_error
+muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf)
+{
+  if (hw >= MUOS_STEPPER_COUNT)
+    return muos_error_nohw;
+
+  //TODO: backlash compensation
+  //TODO: mutable_state | slow -> abs_state
+  if (muos_steppers[hw].state != MUOS_STEPPER_HOLD
+      && muos_steppers[hw].state != MUOS_STEPPER_ARMED
+      && muos_steppers[hw].state != MUOS_STEPPER_SLOW
+      )
+    return muos_error_stepper_state;
+
+  if (!muos_steppers_config_lock)
+    return muos_error_configstore_locked;  //FIXME: refine configstore errors
+
+  //PLANNED: have some config rejecting very short distances when at slow speed (may loose a hit otherwise)
+
+  if (position == muos_steppers[hw].position)
+    {
+      //TODO: check if HPQ action is registered at current position, then execute it
+      // maybe factor out a function for that
+      return muos_success;
+    }
+
+  muos_hw_stepper_set_direction (hw, position > muos_steppers[hw].position?1:0);
+
+  muos_steppers[hw].start_position = muos_steppers[hw].position;
+  muos_steppers[hw].end_position = position;
+
+  muos_hw_stepper_register_action (hw,
+                                   position,
+                                   MUOS_STEPPER_ACTION_STOP, 0);
+
+
+  muos_steppers[hw].state = MUOS_STEPPER_FAST;
+
+  (void) speedf; //TODO: use it
+  muos_hw_stepper_start (hw,
+                         muos_steppers_config_lock->stepper_prescale[hw],
+                         muos_steppers_config_lock->stepper_minspeed[hw]);
+
+  return muos_success;
+}
+
+
+
 #endif
 
