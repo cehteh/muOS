@@ -26,7 +26,6 @@
 #include <muos/hw/atmel/avr/stepper_pp.h>
 #include <muos/hpq.h>
 #include <muos/configstore.h>
-#include <muos/io.h> /*DEBUG*/
 
 #include <util/delay_basic.h>
 #include <stdlib.h>
@@ -71,6 +70,7 @@ muos_hw_stepper_init (void)
 
 
 //TODO: conditional for different parts
+//TODO: progmem
 // the values for prescalers are irregular, depending on the actual timer/hardware
 // only common is that 0 means off, thus we don't handle that here [prescale-1] below
 #ifdef MUOS_HW_ATMEL_ATMEGA328P_H

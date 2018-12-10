@@ -30,10 +30,16 @@
 #define GET_DIRECTION_(hw) GET_DIRECTION__ hw
 #define GET_DIRECTION(index) GET_DIRECTION_(MUOS_PP_INDEX(index, MUOS_STEPPER_DIR_HW))
 
+
+//TODO: implement for other timers (define in hardware header)
+#define MUOS_STEPPER_TOP_REGISTER(timer, wgm) MUOS_STEPPER_TOP_##timer##_##wgm
+#define MUOS_STEPPER_TOP_1_14 ICR1
+#define MUOS_STEPPER_TOP_1_15 OCR1A
+
+
 /*
   ISR
 */
-
 #define MAKE_OVF_ISR__(index, timer, output, output_mode, wgm)                                                  \
   ISR(TIMER##timer##_OVF_vect)                                                                                  \
   {                                                                                                             \
@@ -69,21 +75,40 @@
               }                                                                                                 \
           }                                                                                                     \
       }                                                                                                         \
-    if (muos_steppers[index].state == MUOS_STEPPER_FAST)                                                        \
+    if (muos_steppers[index].state > MUOS_STEPPER_SLOW)                                                         \
       {                                                                                                         \
-    uint32_t speed = ((65536*256) /                                                                             \
-      ((muos_steppers[index].position - muos_steppers[index].start_position)                                    \
-       * muos_steppers_config_lock->stepper_accel[index] + 256)                                                 \
-      + (65536*256) /                                                                                           \
-      ((muos_steppers[index].end_position - muos_steppers[index].position)                                      \
-      * muos_steppers_config_lock->stepper_decel[index] + 256))                                                 \
-      + muos_steppers_config_lock->stepper_maxspeed[index];                                                     \
-    OCR##timer##A = speed < muos_steppers_config_lock->stepper_minspeed[index] ?                                \
-      speed : muos_steppers_config_lock->stepper_minspeed[index];                                               \
-    }                                                                                                           \
-  }
-
-
+        if (muos_steppers[index].position == muos_steppers[index].accel_end)                                    \
+          muos_steppers[index].state = MUOS_STEPPER_FAST;                                                       \
+        if (muos_steppers[index].position == muos_steppers[index].decel_start)                                  \
+          muos_steppers[index].state = MUOS_STEPPER_DECEL;                                                      \
+        uint32_t speed;                                                                                         \
+        switch (muos_steppers[index].state)                                                                     \
+          {                                                                                                     \
+          case MUOS_STEPPER_ACCEL:                                                                              \
+            speed =                                                                                             \
+              (muos_steppers_config_lock->stepper_accel[index]                                                  \
+               * (uint32_t)(muos_steppers_config_lock->stepper_minspeed[index]                                  \
+                  - muos_steppers_config_lock->stepper_maxspeed[index]))                                        \
+              / ((muos_steppers[index].position - muos_steppers[index].start)                                   \
+                 * 32 + muos_steppers_config_lock->stepper_accel[index]);                                       \
+            break;                                                                                              \
+          case MUOS_STEPPER_DECEL:                                                                              \
+            speed =                                                                                             \
+              (muos_steppers_config_lock->stepper_decel[index]                                                  \
+               * (uint32_t)(muos_steppers_config_lock->stepper_minspeed[index]                                  \
+                  - muos_steppers_config_lock->stepper_maxspeed[index]))                                        \
+              / ((muos_steppers[index].end - muos_steppers[index].position - 1)                                 \
+                 * 32 + muos_steppers_config_lock->stepper_decel[index]);                                       \
+            break;                                                                                              \
+          default:                                                                                              \
+            return;                                                                                             \
+          }                                                                                                     \
+        speed += muos_steppers_config_lock->stepper_maxspeed[index] - muos_steppers[index].ad;                  \
+        if (speed < muos_steppers_config_lock->stepper_maxspeed[index])                                         \
+          speed = muos_steppers_config_lock->stepper_maxspeed[index];                                           \
+        MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed;                                                          \
+      }                                                                                                         \
+   }
 
 #define MAKE_OVF_ISR_(...) MAKE_OVF_ISR__ (__VA_ARGS__)
 #define MAKE_OVF_ISR(index, hw) MAKE_OVF_ISR_ (index, MUOS_PP_LIST_EXPAND(hw))
@@ -146,25 +171,18 @@
 
 #define MAKE_STEPPER_INIT_DDR(index, hw) MUOS_STEPPER_PIN_DDR hw;
 
-//TODO: implement for other timers (define in hardware header)
-#define MUOS_STEPPER_TOP_REGISTER(timer, wgm) MUOS_STEPPER_TOP_##timer##_##wgm
-#define MUOS_STEPPER_TOP_1_14 ICR1
-#define MUOS_STEPPER_TOP_1_15 OCR1A
-
-
-
-//FIXME: OCRB calculation is borked
 //PLANNED: abstract F_CPU for timers running on other clock sources
-#define MUOS_STEPPER_START_IMPL_(index, timer, output, output_mode, wgm)                        \
-  TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);         \
-  TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                            \
-  OCR##timer##B = 20;                                                                           \
-    /*    MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS)  */                                    \
-          /* /(F_CPU/4000UL/timerdividers##timer[prescale-1])-1;*/                              \
-  MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed_raw;                                            \
-  TIFR##timer = _BV(TOV##timer);                                                                \
-  TIMSK##timer = _BV(TOIE##timer);                                                              \
+#define MUOS_STEPPER_START_IMPL_(index, timer, output, output_mode, wgm)                \
+  TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0); \
+  TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                    \
+  OCR##timer##B =                                                                       \
+    (F_CPU / (1000UL * timerdividers##timer[prescale - 1]))                             \
+    * (uint32_t)MUOS_PP_LIST_NTH0(index,MUOS_STEPPER_PULSE_NS) / 1000000L ;             \
+  MUOS_STEPPER_TOP_REGISTER(timer, wgm) = speed_raw;                                    \
+  TIFR##timer = _BV(TOV##timer);                                                        \
+  TIMSK##timer = _BV(TOIE##timer);                                                      \
   TCCR##timer##B |= prescale
+
 
 
 #define MUOS_STEPPER_START_IMPL(index, exp) MUOS_STEPPER_START_IMPL_ (index, exp)

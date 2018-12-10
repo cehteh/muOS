@@ -54,6 +54,9 @@
 
 //PLANNED: do we need min_start / min_stop speed?
 
+//PLANNED: have a sum-speed all steppers together wont go faster
+//         bucket allocator for stepper speed
+
 */
 
 #ifdef MUOS_HW_STEPPER_H
@@ -111,22 +114,28 @@ muos_hw_stepper_stop (uint8_t hw);
 //: MUOS_STEPPER_SLOW;;
 //:   stepper energized, position known, running slower than min_speed
 //:   can be stopped instantly without loosing steps.
-//: MUOS_STEPPER_FAST;;
-//:   stepper energized, position known, running faster than min_speed
+//: MUOS_STEPPER_ACCEL;;
+//:   stepper energized, position known, accerating faster than min_speed
 //:   must decelerate for stopping w/o loosing steps.
+//: MUOS_STEPPER_FAST;;
+//:   stepper energized, position known, running at max_speed
+//:   must decelerate for stopping w/o loosing steps.
+//: MUOS_STEPPER_DECEL;;
+//:   stepper energized, position known, decelerating, faster than min_speed
 //:
 enum muos_stepper_arming_state
   {
    MUOS_STEPPER_UNKNOWN,
    MUOS_STEPPER_DISABLED,
-   MUOS_STEPPER_OFF,
    MUOS_STEPPER_RAW, //FIXME: check state checks
+   MUOS_STEPPER_OFF,
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_STOPPED,
    MUOS_STEPPER_SLOW,
+   MUOS_STEPPER_ACCEL,
    MUOS_STEPPER_FAST,
-  //PLANNED: have a 'VERYFAST' state with simpler isr procedure?
+   MUOS_STEPPER_DECEL,
   };
 
 
@@ -135,9 +144,15 @@ struct stepper_state
   // note: statically initialized to zero, that must be ok for all values
   enum muos_stepper_arming_state state;
   enum muos_stepper_arming_state before_raw;
-  int32_t position;
-  int32_t start_position;
-  int32_t end_position;
+  int32_t position; // not volatile, should not be read when stepper is running
+  // internal state for the ISR
+  int32_t start;
+  int32_t end;
+  int32_t accel_end;
+  int32_t decel_start;
+  uint16_t ad;
+  uint16_t slope;
+
   struct {
     int32_t position;
     uint8_t whattodo;
@@ -380,6 +395,8 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset);
 //: MUOS_STEPPER_HPQ_FRONT;;
 //:   Use the provided argument as function to push it to the back of the hpq.
 //:
+//:
+//PLANNED: mergeable flag, registering actions on the same position might be merged if compatible
 enum muos_stepper_actions
   {
    MUOS_STEPPER_ACTION_PERMANENT = (1<<0),
@@ -470,6 +487,9 @@ muos_stepper_remove_action (uint8_t hw,
                                         action,
                                         arg);
 }
+
+//PLANNED: muos_stepper_remove_all_actions(hw)
+
 
 /*
 

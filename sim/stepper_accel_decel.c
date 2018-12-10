@@ -9,82 +9,136 @@
 #define PRINT(var) printf("# %30s: %d\n", #var, var)
 
 
+
+// configuration
+
+const uint8_t accel = 100;
+const uint8_t decel = 150;
+
+const uint16_t min_speed = 65000;
+const uint16_t max_speed = 1000;
+
+
+// state
+
+int32_t position;
+//int32_t position_end = 20000;
+int32_t accel_end;
+int32_t decel_start;
+int32_t start;
+int32_t end;
+uint16_t ad;
+uint16_t slope;
+
+enum states
+  {
+   ACCEL,
+   CONSTANT,
+   DECEL
+  };
+
+enum states state;
+
+
+// sim
 uint32_t CLOCK;    // clock ticks
 uint16_t OCRA;     // pulse length
 
-int32_t position;
-int32_t position_end = 1024;
 
-const uint16_t min_speed = 65535;
-const uint16_t max_speed = 1024;
+/*TODO:
 
-//TODO: max_slope var, code for long movements
-uint16_t max_slope = 65000;
+      optimize 32 / 16bit division
 
-const uint8_t accel = 15;
-const uint8_t decel = 15;
-
-int32_t start;
-int32_t end;
-
-
-
+ */
 
 
 void
-init (void)
+init (int32_t togo)
 {
   OCRA = min_speed;
+  state = ACCEL;
+
+  int32_t len;
+
+  slope = (accel+decel)*64;
+  ad = (accel+decel)*2048/slope;
 
   start = position;
-  end = position_end;
+  end = togo;
+  len = end-start;
 
+
+  if (len <= slope)
+    {
+      accel_end = (len*accel) / (accel+decel);
+      decel_start = accel_end;
+    }
+  else
+    {
+      accel_end = (slope*accel) / (accel+decel);
+      decel_start = accel_end+len-slope;
+    }
+
+  PRINT(slope);
   PRINT(start);
   PRINT(end);
+  PRINT(accel_end);
+  PRINT(decel_start);
+  PRINT(ad);
 
-  printf("%u %u %u %u\n", 0, position, (65536*16)/(min_speed+1), min_speed);
+  printf("%u %u %u %u\n", 0, position, (65536*16)/(min_speed-1), min_speed);
   uint32_t speed=OCRA;
   PRINT(speed);
 }
 
 
 
-
-uint16_t
-usqrt16 (uint16_t x)
-{
-  uint16_t i;
-  for (i=1; i<256 && i*i<x; ++i);
-  return i;
-}
-
 bool
 overflow_isr(void)
 {
   CLOCK += OCRA;
   ++position;
-  if (position == position_end)
+  if (position == start+end)
     return false;
 
-  //TODO: init these as constants
-  const uint32_t M  = (65535-max_speed)*256;
-  //const uint16_t OFFSET = M/(min_speed-max_speed+1)+236;  // end = 4
-  //const uint16_t OFFSET = M/(min_speed-max_speed+1)+210;  // end = 8
-  //const uint16_t OFFSET = M/(min_speed-max_speed+1)+168;  // end = 16
-  //const uint16_t OFFSET = M/(min_speed-max_speed+1)+18;  // end = 255
-  // const uint16_t OFFSET = M/(min_speed-max_speed+1)+5;  // end = 1024
-  //const uint16_t OFFSET = M/(min_speed-max_speed+1)+1;  // end = 8192
-  const uint16_t OFFSET = M/(min_speed-max_speed);  // end = 8192
+  if (position == accel_end)
+    {
+      printf("%u NAN NAN NAN 0\n", CLOCK);
+      printf("%u NAN NAN NAN 1.0\n", CLOCK);
+      state= CONSTANT;
+    }
 
-  uint32_t a = (position-start+1)*accel+OFFSET;
-  uint32_t d = (end-position-1)*decel+OFFSET;
-  uint32_t speed = M/a + M/d + max_speed;
+  if (position == decel_start)
+    {
+      printf("%u NAN NAN NAN 0\n", CLOCK);
+      printf("%u NAN NAN NAN 1.0\n", CLOCK);
+      state= DECEL;
+    }
+
+  uint16_t speed;
+
+  switch (state)
+    {
+    case CONSTANT:
+      goto done;
+    case ACCEL:
+      speed = (accel*(min_speed-max_speed))/((position-start)*32+accel);
+      break;
+    case DECEL:
+      speed = (decel*(min_speed-max_speed))/((end-position-1)*32+decel);
+    }
+
+  speed += max_speed-ad;
+
+  // safety only triggered by rounding errors
+  if (speed < max_speed)
+    speed = max_speed;
 
   PRINT(speed);
-  printf("%u %u %u %u\n", CLOCK, position, (uint32_t)((65536*16)/(speed+1)), speed);
 
   OCRA = speed;
-
+ done:
+  printf("%u %u %u %u\n", CLOCK, position, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
 
   return true;
 }
@@ -120,10 +174,11 @@ main(int argc, char* argv[])
   printf("Clock Position Speed\n");
   printf("# Test start...\n");
 
-  init();
+  init(25000);
 
   while (overflow_isr());
 
   printf("\n#...Test done\n");
   return 0;
 }
+

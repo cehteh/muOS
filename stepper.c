@@ -27,6 +27,8 @@
 #define MUOS_HW_STEPPER_H
 #include <muos/stepper.h>
 
+//TODO: API for setting each axis and then start all together
+
 struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 
 const struct muos_configstore_data* muos_steppers_config_lock;
@@ -37,7 +39,7 @@ muos_stepper_all_on (void)
 {
   for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
     {
-      if (muos_steppers[i].state < MUOS_STEPPER_OFF)
+      if (muos_steppers[i].state <= MUOS_STEPPER_DISABLED)
         return muos_error_stepper_state;
     }
 
@@ -113,7 +115,7 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
   if (hw >= MUOS_STEPPER_COUNT)
     return muos_error_nohw;
 
-  if (muos_steppers[hw].state != MUOS_STEPPER_HOLD && muos_steppers[hw].state != MUOS_STEPPER_ARMED)
+  if (muos_steppers[hw].state <= MUOS_STEPPER_OFF || muos_steppers[hw].state > MUOS_STEPPER_STOPPED)
     return muos_error_stepper_state;
 
   if (!muos_steppers_config_lock)
@@ -210,15 +212,15 @@ muos_stepper_move_raw (uint8_t hw,
 muos_error
 muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf)
 {
+  (void) speedf; //TODO: use it
+
   if (hw >= MUOS_STEPPER_COUNT)
     return muos_error_nohw;
 
   //TODO: backlash compensation
   //TODO: mutable_state | slow -> abs_state
-  if (muos_steppers[hw].state != MUOS_STEPPER_HOLD
-      && muos_steppers[hw].state != MUOS_STEPPER_ARMED
-      && muos_steppers[hw].state != MUOS_STEPPER_SLOW
-      )
+  //TODO: allow changes when slow moving
+  if (!muos_stepper_mutable_state (hw))
     return muos_error_stepper_state;
 
   if (!muos_steppers_config_lock)
@@ -228,31 +230,62 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf)
 
   if (position == muos_steppers[hw].position)
     {
-      //TODO: check if HPQ action is registered at current position, then execute it
-      // maybe factor out a function for that
+      // already at position
+      //TOOD: execute actions at position (just registered ones)
       return muos_success;
     }
 
   muos_hw_stepper_set_direction (hw, position > muos_steppers[hw].position?1:0);
 
-  muos_steppers[hw].start_position = muos_steppers[hw].position;
-  muos_steppers[hw].end_position = position;
 
   muos_hw_stepper_register_action (hw,
                                    position,
                                    MUOS_STEPPER_ACTION_STOP, 0);
 
 
-  muos_steppers[hw].state = MUOS_STEPPER_FAST;
+  muos_steppers[hw].state = MUOS_STEPPER_ACCEL;
 
-  (void) speedf; //TODO: use it
+  muos_steppers[hw].ad =
+    muos_steppers_config_lock->stepper_accel[hw]
+    + muos_steppers_config_lock->stepper_decel[hw];
+
+  muos_steppers[hw].slope =
+    muos_steppers[hw].ad*64;
+
+  muos_steppers[hw].start = muos_steppers[hw].position;
+  muos_steppers[hw].end = position;
+
+  int32_t len = position - muos_steppers[hw].position;
+  len = len < 0 ? -len : len;
+
+  if (len <= muos_steppers[hw].slope)
+    {
+      muos_steppers[hw].accel_end =
+        len * (uint32_t)muos_steppers_config_lock->stepper_accel[hw]
+        / muos_steppers[hw].ad;
+
+      muos_steppers[hw].decel_start = muos_steppers[hw].accel_end;
+    }
+  else
+    {
+      muos_steppers[hw].accel_end =
+        muos_steppers[hw].slope * (uint32_t)muos_steppers_config_lock->stepper_accel[hw]
+        / muos_steppers[hw].ad;
+
+      muos_steppers[hw].decel_start =
+        muos_steppers[hw].accel_end + len
+        - muos_steppers[hw].slope;
+    }
+
+
+  muos_steppers[hw].ad = muos_steppers[hw].ad * 2048
+    / muos_steppers[hw].slope;
   muos_hw_stepper_start (hw,
                          muos_steppers_config_lock->stepper_prescale[hw],
                          muos_steppers_config_lock->stepper_minspeed[hw]);
 
   return muos_success;
 }
-
 
 
 #endif
