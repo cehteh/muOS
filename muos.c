@@ -184,14 +184,14 @@ main()
 #endif
 
 #if MUOS_HPQ_LENGTH >= 2
-  muos_hpq_pushback (muos_init);
   muos_hpq_pushback (MUOS_INITFN);
+  muos_hpq_pushback (muos_init);
 #elif MUOS_BGQ_LENGTH >= 2
-  muos_bgq_pushback (muos_init);
   muos_bgq_pushback (MUOS_INITFN);
+  muos_bgq_pushback (muos_init);
 #else
-  muos_init ();
   MUOS_INITFN ();
+  muos_init ();
 #endif
 
   while (1)
