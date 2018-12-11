@@ -31,6 +31,8 @@
 //PLANNED: stash muos_now_ away on recursive mainloops
 //PLANNED: make ERRORFN optional
 //PLANNED: ignoremask for ERRORFN for errors handled elsewhere
+//PLANNED: fast-track interrupts which signal the scheduling loop that no scheduling should be done after wake
+//PLANNED: instead disabling interrupts have a mutex and temp buffer for work queues
 
 volatile struct muos_status_flags muos_status;
 
@@ -44,6 +46,7 @@ muos_sleep (void)
       // muos_hw_sleep () enables interrupts while sleeping
       muos_hw_sleep ();
       muos_hw_sleep_done ();
+      //PLANNED: if fast-tracked then sleep again
     }
   else
     {

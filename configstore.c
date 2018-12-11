@@ -87,6 +87,8 @@ muos_configstore_unlock (void)
     status = CONFIGSTORE_VALID;
   else
     --status;
+
+  //PLANNED: check if its smaller/faster when configstore_unlock() returns NULL
 }
 
 
@@ -164,6 +166,7 @@ eeprom_write_done (void)
 {
   if (muos_error_check (muos_error_eeprom_verify))
     {
+      //FIXME: DEAD not as state but error, let states only reflect the state in memory
       status = CONFIGSTORE_DEAD;
       muos_error_set (muos_error_configstore_invalid);
     }
@@ -177,7 +180,6 @@ eeprom_write_done (void)
 }
 
 
-//TODO: allow saving with rlocks?
 muos_error
 muos_configstore_save (muos_configstore_callback cb)
 {

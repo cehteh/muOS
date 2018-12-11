@@ -21,7 +21,7 @@ Stepper driver for motor controllers taking pulse/direction signals.
 
 
 
-
+//TODO: document hardware indexing
 
 // prescale       prescaler setting
 // cal_speed      slow speed for calibration (zeroing)

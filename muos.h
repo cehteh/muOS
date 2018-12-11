@@ -62,6 +62,7 @@ extern volatile struct muos_status_flags
   uint8_t lineedit_pending:1;
   uint8_t lineedit_ovwr:1;
   uint8_t txqueue_pending:1;
+  //PLANNED: schedule flag, set by isrs who pushed data on a queue
 } muos_status;
 
 

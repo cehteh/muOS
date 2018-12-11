@@ -26,6 +26,8 @@
 
 #include MUOS_HW_HEADER
 
+
+//TODO: conditional error generation depending on what drivers are enabled
 //defined_errors:
 #define MUOS_ERRORS                                                                                     \
   MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                           \
@@ -46,7 +48,7 @@
     MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */                 \
     MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                         \
     MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                        \
-    MUOS_ERROR(error_configstore_locked) /*: {ERRORDEF} configstore operation in process  */            \
+    MUOS_ERROR(error_configstore_locked) /*: {ERRORDEF} configstore operation in process  */           \
     MUOS_ERROR(error_configstore_invalid) /*: {ERRORDEF} configstore has a problem (check status) */    \
     MUOS_ERROR(error_stepper_noinit) /*: {ERRORDEF} not initialized */                                  \
     MUOS_ERROR(error_stepper_state) /*: {ERRORDEF} action not possible from current state */            \

@@ -3,6 +3,9 @@ PIPADOC:PLANNED: macros for Hz kHz
 PIPADOC:PLANNED: different timebase, stable timing etc
 
 
+PIPADOC:PLANNED: return continutations and schedule them in the schedulers
+
+
 PIPADOC:PLANNED: docme MAKEFILE include  muos/muos.mk
 PIPADOC:PLANNED: docme  All hardware macro and functions have the prefix 'MUOS_HW_' or 'muos_hw_'
 
