@@ -36,6 +36,7 @@
 
 volatile struct muos_status_flags muos_status;
 
+
 void
 muos_sleep (void)
 {
@@ -44,9 +45,11 @@ muos_sleep (void)
       //TODO: select sleep mode depending on active hardware (adc, usart)
       muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
       // muos_hw_sleep () enables interrupts while sleeping
-      muos_hw_sleep ();
+      do
+          muos_hw_sleep ();
+      while (!muos_status.schedule);
+      muos_status.schedule = false;
       muos_hw_sleep_done ();
-      //PLANNED: if fast-tracked then sleep again
     }
   else
     {

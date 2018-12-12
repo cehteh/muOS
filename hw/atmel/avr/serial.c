@@ -115,7 +115,7 @@ ISR(USART_RX_vect)
         {
           muos_status.serial_rxhpq_pending = true;
 #ifdef MUOS_SERIAL_RXCALLBACK
-          muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
+          muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
 #endif
         }
     }

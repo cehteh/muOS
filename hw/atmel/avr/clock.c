@@ -18,12 +18,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <muos/muos.h>
 #include <muos/clock.h>
 
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
   MUOS_DEBUG_INTR_ON;
   ++muos_clock_count_;
+  muos_status.schedule |= true;
 }
 
 ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
@@ -31,6 +33,7 @@ ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
   // compmatch is one-shot
   MUOS_DEBUG_INTR_ON;
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+  muos_status.schedule |= true;
 }
 
 #ifdef MUOS_CLOCK_CALIBRATE

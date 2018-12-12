@@ -63,11 +63,13 @@
                 if (muos_steppers[index].position_match[i].whattodo                                             \
                     & MUOS_STEPPER_HPQ_FRONT)                                                                   \
                   muos_error_set_isr (muos_hpq_pushfront_isr ((muos_queue_function)                             \
-                                                              muos_steppers[index].position_match[i].arg));     \
+                                                              muos_steppers[index].position_match[i].arg,       \
+                                                              true));                                           \
                 else if (muos_steppers[index].position_match[i].whattodo                                        \
                          & MUOS_STEPPER_HPQ_BACK)                                                               \
                   muos_error_set_isr (muos_hpq_pushback_isr ((muos_queue_function)                              \
-                                                             muos_steppers[index].position_match[i].arg));      \
+                                                             muos_steppers[index].position_match[i].arg,        \
+                                                             true));                                            \
               }                                                                                                 \
             if (!(muos_steppers[index].position_match[i].whattodo & MUOS_STEPPER_ACTION_PERMANENT))             \
               {                                                                                                 \

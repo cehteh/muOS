@@ -225,7 +225,7 @@ muos_serial_rxhpq_call (void)
 
   muos_interrupt_disable (); // no need for enable, mainloop will disable on return
   if (again && MUOS_CBUFFER_USED (muos_rxbuffer))
-    muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call));
+    muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
   else
     muos_status.serial_rxhpq_pending = false;
 }

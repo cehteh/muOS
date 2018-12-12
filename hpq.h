@@ -51,16 +51,19 @@ muos_hpq_check (uint8_t need)
 //: muos_error muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
 //: muos_error muos_hpq_pushfront (muos_queue_function fn)
 //: muos_error muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushback_isr (muos_queue_function fn)
-//: muos_error muos_hpq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushfront_isr (muos_queue_function fn)
-//: muos_error muos_hpq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_pushback_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_hpq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
+//: muos_error muos_hpq_pushfront_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_hpq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
 //: ----
 //:
 //: +fn+::
 //:  function to schedule
 //: +arg+::
 //:  argument to pass to the function
+//: +schedule+::
+//:  when false the scheduler will not check for functions scheduled
+//:  after a wake up from sleep.
 //:
 //: The *_isr variants of these functions are intended to be called from Interrupt handlers
 //: or contexts where interrupts are already disabled.
@@ -89,16 +92,16 @@ muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
 
 
 muos_error
-muos_hpq_pushback_isr (muos_queue_function f);
+muos_hpq_pushback_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
 
 muos_error
-muos_hpq_pushfront_isr (muos_queue_function f);
+muos_hpq_pushfront_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
 
 intptr_t
 muos_hpq_pop_isr (void);
