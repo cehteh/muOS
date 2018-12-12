@@ -255,8 +255,11 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf)
   muos_steppers[hw].start = muos_steppers[hw].position;
   muos_steppers[hw].end = position;
 
-  int32_t len = position - muos_steppers[hw].position;
-  len = len < 0 ? -len : len;
+  uint32_t len;
+  if (position > muos_steppers[hw].position)
+    len = position - muos_steppers[hw].position;
+  else
+    len = muos_steppers[hw].position - position;
 
   if (len <= muos_steppers[hw].slope)
     {

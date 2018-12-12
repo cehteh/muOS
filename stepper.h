@@ -150,8 +150,8 @@ struct stepper_state
   int32_t end;
   int32_t accel_end;
   int32_t decel_start;
-  uint16_t ad;
-  uint16_t slope;
+  uint32_t ad;
+  uint32_t slope;
 
   struct {
     int32_t position;
