@@ -3,41 +3,62 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-
+#include <stdlib.h>
 
 
 #define PRINT(var) printf("# %30s: %d\n", #var, var)
 
-
-
 // configuration
 
-const uint8_t accel = 100;
-const uint8_t decel = 150;
+const uint16_t accel = 4500;
+const uint16_t decel = 4500;
 
 const uint16_t min_speed = 65000;
-const uint16_t max_speed = 1000;
+uint16_t max_speed = 1000;
 
+uint16_t speed_in = 65000;
+uint16_t speed_out=10000;
+
+int32_t position_end = 1000;
 
 // state
 
-int32_t position;
-//int32_t position_end = 20000;
-int32_t accel_end;
-int32_t decel_start;
-int32_t start;
-int32_t end;
-uint16_t ad;
-uint16_t slope;
-
-enum states
+enum muos_stepper_arming_state
   {
-   ACCEL,
-   CONSTANT,
-   DECEL
+   MUOS_STEPPER_UNKNOWN,
+   MUOS_STEPPER_DISABLED,
+   MUOS_STEPPER_RAW,
+   MUOS_STEPPER_OFF,
+   MUOS_STEPPER_HOLD,
+   MUOS_STEPPER_ARMED,
+   MUOS_STEPPER_STOPPED,
+   MUOS_STEPPER_SLOW,
+   MUOS_STEPPER_ACCEL,
+   MUOS_STEPPER_FAST,
+   MUOS_STEPPER_DECEL,
   };
 
-enum states state;
+#define MUOS_STEPPER_POSITION_SLOTS 4
+
+struct stepper_state
+{
+  enum muos_stepper_arming_state state;
+  enum muos_stepper_arming_state before_raw;
+  int32_t position;
+  int32_t start;
+  int32_t end;
+  int32_t accel_end;
+  int32_t mid;
+  int32_t decel_start;
+  uint16_t accel_offset; //FIXME: bounds checking against integer overflows
+  uint16_t decel_offset;
+  uint16_t decel_length;
+  uint16_t accel_max;
+  uint16_t decel_max;
+};
+
+struct stepper_state muos_stepper;
+
 
 
 // sim
@@ -51,120 +72,137 @@ uint16_t OCRA;     // pulse length
 
  */
 
+uint16_t
+isqrt (uint32_t n)
+{
+  uint32_t c = 0x8000;
+  uint32_t g = 0x8000;
+
+  for(;;)
+    {
+      if(g*g > n)
+        g ^= c;
+      c >>= 1;
+      if(c == 0)
+        return g;
+      g |= c;
+    }
+}
 
 void
-init (int32_t togo)
+init (int32_t dest, uint16_t start_speed, uint16_t max_speed, uint16_t end_speed)
 {
-  OCRA = min_speed;
-  state = ACCEL;
+  OCRA = speed_in;
+  muos_stepper.state = MUOS_STEPPER_ACCEL;
 
-  int32_t len;
+  muos_stepper.start = muos_stepper.position;
+  muos_stepper.end = dest;
 
-  slope = (accel+decel)*64;
-  ad = (accel+decel)*2048/slope;
-
-  start = position;
-  end = togo;
-  len = end-start;
-
-
-  if (len <= slope)
-    {
-      accel_end = (len*accel) / (accel+decel);
-      decel_start = accel_end;
-    }
+  uint32_t len;
+  if (muos_stepper.end > muos_stepper.start)
+    len = muos_stepper.end - muos_stepper.start;
   else
-    {
-      accel_end = (slope*accel) / (accel+decel);
-      decel_start = accel_end+len-slope;
-    }
+    len = muos_stepper.start - muos_stepper.end;
 
-  PRINT(slope);
-  PRINT(start);
-  PRINT(end);
-  PRINT(accel_end);
-  PRINT(decel_start);
-  PRINT(ad);
+  (void) len;
+  (void) start_speed;
+  (void) max_speed;
+  (void) end_speed;
 
-  printf("%u %u %u %u\n", 0, position, (65536*16)/(min_speed-1), min_speed);
+  //accel
+
+  // vertex to max_speed
+  muos_stepper.accel_max = max_speed - isqrt(16*accel);
+  PRINT(muos_stepper.accel_max);
+
+  // find start offset
+  muos_stepper.accel_offset =
+    -16*accel/(muos_stepper.accel_max - speed_in);
+  PRINT(muos_stepper.accel_offset);
+
+  muos_stepper.accel_end =
+    isqrt(16*accel) - muos_stepper.accel_offset;
+  PRINT(muos_stepper.accel_end);
+
+  //decel
+  muos_stepper.decel_max = max_speed - isqrt(16*decel);
+  PRINT(muos_stepper.decel_max);
+
+  muos_stepper.decel_offset =
+    -16*decel/(muos_stepper.decel_max - speed_out);
+  PRINT(muos_stepper.decel_offset);
+
+  muos_stepper.decel_start =
+    len - isqrt(16*decel) +  muos_stepper.decel_offset;
+  PRINT(muos_stepper.decel_start);
+
+  printf("%u %u %u %u\n", 0, muos_stepper.position, (65536*16)/(speed_in-1), speed_in);
   uint32_t speed=OCRA;
   PRINT(speed);
 }
 
 
+#define CLOCKP (CLOCK/1000)
 
 bool
 overflow_isr(void)
 {
   CLOCK += OCRA;
-  ++position;
-  if (position == start+end)
-    return false;
-
-  if (position == accel_end)
+  ++muos_stepper.position;
+  if (muos_stepper.position == muos_stepper.start+muos_stepper.end)
     {
-      printf("%u NAN NAN NAN 0\n", CLOCK);
-      printf("%u NAN NAN NAN 1.0\n", CLOCK);
-      state= CONSTANT;
+      OCRA = speed_out;
+      printf("%u %u %u %u\n", CLOCKP, muos_stepper.position, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
+      return false;
     }
 
-  if (position == decel_start)
+  if (muos_stepper.position == muos_stepper.accel_end)
     {
-      printf("%u NAN NAN NAN 0\n", CLOCK);
-      printf("%u NAN NAN NAN 1.0\n", CLOCK);
-      state= DECEL;
+      printf("%u NAN NAN NAN 0\n", CLOCKP);
+      printf("%u NAN NAN NAN 1.0\n", CLOCKP);
+      muos_stepper.state= MUOS_STEPPER_FAST;
     }
 
-  uint16_t speed;
-
-  switch (state)
+  if (muos_stepper.position == muos_stepper.decel_start)
     {
-    case CONSTANT:
+      printf("%u NAN NAN NAN 0\n", CLOCKP);
+      printf("%u NAN NAN NAN 1.0\n", CLOCKP);
+      muos_stepper.state= MUOS_STEPPER_DECEL;
+    }
+
+  uint32_t speed;
+
+  switch (muos_stepper.state)
+    {
+    default:
+      return false;
+    case MUOS_STEPPER_FAST:
       goto done;
-    case ACCEL:
-      speed = (accel*(min_speed-max_speed))/((position-start)*32+accel);
+    case MUOS_STEPPER_ACCEL:
+      speed = 16*accel/(muos_stepper.position+muos_stepper.accel_offset) + muos_stepper.accel_max;
+      
       break;
-    case DECEL:
-      speed = (decel*(min_speed-max_speed))/((end-position-1)*32+decel);
+    case MUOS_STEPPER_DECEL:
+      speed = 16*decel/
+        ( muos_stepper.end -
+        muos_stepper.position + muos_stepper.decel_offset)
+        + muos_stepper.decel_max;
+
+
+      break;
     }
 
-  speed += max_speed-ad;
-
-  // safety only triggered by rounding errors
-  if (speed < max_speed)
-    speed = max_speed;
 
   PRINT(speed);
 
   OCRA = speed;
  done:
-  printf("%u %u %u %u\n", CLOCK, position, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
+  printf("%u %u %u %u\n", CLOCKP, muos_stepper.position, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
 
   return true;
 }
 
-#if 0
-// linear for test
-void
-init (void)
-{
-  OCRA = 8192;
-}
 
-bool
-overflow_isr(void)
-{
-  CLOCK += OCRA;
-  ++position;
-
-  printf("%u %u %u\n", CLOCK, position, 65536/OCRA);
-
-  if (position == position_end)
-    return false;
-
-  return true;
-}
-#endif
 
 
 int
@@ -174,8 +212,10 @@ main(int argc, char* argv[])
   printf("Clock Position Speed\n");
   printf("# Test start...\n");
 
-  init(25000);
+  muos_stepper.position = 0;
 
+  
+  init(position_end, speed_in, max_speed, speed_out);
   while (overflow_isr());
 
   printf("\n#...Test done\n");
