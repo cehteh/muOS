@@ -122,9 +122,9 @@ ISR(ISRNAME_EEPROM_READY)
   if (callback)
     {
 #if MUOS_BGQ_LENGTH >= 1
-      muos_error_set_isr (muos_bgq_pushback_isr (callback));
+      muos_error_set_isr (muos_bgq_pushback_isr (callback, true));
 #elif MUOS_HPQ_LENGTH >= 1
-      muos_error_set_isr (muos_hpq_pushback_isr (callback));
+      muos_error_set_isr (muos_hpq_pushback_isr (callback, true));
 #endif
     }
   return;
@@ -234,9 +234,9 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
       readbatch ();
       return muos_success;
 #elif MUOS_BGQ_LENGTH >= 1
-      return muos_bgq_pushback (readbatch);
+      return muos_bgq_pushback (readbatch, true);
 #elif MUOS_HPQ_LENGTH >= 1
-      return muos_hpq_pushback (readbatch);
+      return muos_hpq_pushback (readbatch, true);
 #endif
     }
 

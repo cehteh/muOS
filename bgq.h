@@ -50,16 +50,19 @@ muos_bgq_check (uint8_t need)
 //: muos_error muos_bgq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
 //: muos_error muos_bgq_pushfront (muos_queue_function fn)
 //: muos_error muos_bgq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_bgq_pushback_isr (muos_queue_function fn)
-//: muos_error muos_bgq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_bgq_pushfront_isr (muos_queue_function fn)
-//: muos_error muos_bgq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_pushback_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_bgq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
+//: muos_error muos_bgq_pushfront_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_bgq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
 //: ----
 //:
 //: +fn+::
 //: function to schedule
 //: +arg+::
 //:  argument to pass to the function
+//: +schedule+::
+//:  when false the scheduler will not check for functions scheduled
+//:  after a wake up from sleep.
 //:
 //: The *_isr variants of these functions are intended to be called from Interrupt handlers
 //: or contexts where interrupts are already disabled.
@@ -74,46 +77,17 @@ muos_bgq_check (uint8_t need)
 //: while interrupts are still disabled at the start of scheduled functions.
 //: (Note: no safety net when the caller didn't push an argument)
 
-static inline muos_error
-muos_bgq_pushback_isr (muos_queue_function f)
-{
-  if (!muos_bgq_check (1))
-    return muos_error_bgq_overflow;
+muos_error
+muos_bgq_pushback_isr (muos_queue_function f, bool schedule);
 
-  muos_queue_pushback (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f);
-  return muos_success;
-}
+muos_error
+muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
 
-static inline muos_error
-muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a)
-{
-  if (!muos_bgq_check (2))
-    return muos_error_bgq_overflow;
+muos_error
+muos_bgq_pushfront_isr (muos_queue_function f, bool schedule);
 
-  muos_queue_pushback_arg (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f, a);
-  return muos_success;
-}
-
-static inline muos_error
-muos_bgq_pushfront_isr (muos_queue_function f)
-{
-  if (!muos_bgq_check (1))
-    return muos_error_bgq_overflow;
-
-  muos_queue_pushfront (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f);
-  return muos_success;
-}
-
-static inline muos_error
-muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a)
-{
-  if (!muos_bgq_check (2))
-    return muos_error_bgq_overflow;
-
-  muos_queue_pushfront_arg (&muos_bgq.descriptor, MUOS_BGQ_LENGTH, f, a);
-  return muos_success;
-}
-
+muos_error
+muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
 
 muos_error
 muos_bgq_pushback (muos_queue_function f);
