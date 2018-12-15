@@ -36,6 +36,7 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_ACCEL,
    MUOS_STEPPER_FAST,
    MUOS_STEPPER_DECEL,
+   MUOS_STEPPER_DUAL,  //single formula test
   };
 
 #define MUOS_STEPPER_POSITION_SLOTS 4
@@ -156,18 +157,21 @@ overflow_isr(void)
       return false;
     }
 
-  if (muos_stepper.position == muos_stepper.accel_end)
+  if (muos_stepper.state != MUOS_STEPPER_DUAL)
     {
-      printf("%u NAN NAN NAN 0\n", CLOCKP);
-      printf("%u NAN NAN NAN 1.0\n", CLOCKP);
-      muos_stepper.state= MUOS_STEPPER_FAST;
-    }
+      if (muos_stepper.position == muos_stepper.accel_end)
+        {
+          printf("%u NAN NAN NAN 0\n", CLOCKP);
+          printf("%u NAN NAN NAN 1.0\n", CLOCKP);
+          muos_stepper.state= MUOS_STEPPER_FAST;
+        }
 
-  if (muos_stepper.position == muos_stepper.decel_start)
-    {
-      printf("%u NAN NAN NAN 0\n", CLOCKP);
-      printf("%u NAN NAN NAN 1.0\n", CLOCKP);
-      muos_stepper.state= MUOS_STEPPER_DECEL;
+      if (muos_stepper.position == muos_stepper.decel_start)
+        {
+          printf("%u NAN NAN NAN 0\n", CLOCKP);
+          printf("%u NAN NAN NAN 1.0\n", CLOCKP);
+          muos_stepper.state= MUOS_STEPPER_DECEL;
+        }
     }
 
   uint32_t speed;
@@ -187,8 +191,15 @@ overflow_isr(void)
         ( muos_stepper.end -
         muos_stepper.position + muos_stepper.decel_offset)
         + muos_stepper.decel_max;
-
-
+      break;
+    case MUOS_STEPPER_DUAL:
+      speed =
+        16*accel/(muos_stepper.position+muos_stepper.accel_offset)
+        +
+        16*decel/
+        ( muos_stepper.end -
+          muos_stepper.position + muos_stepper.decel_offset+1)
+        + max_speed;
       break;
     }
 
