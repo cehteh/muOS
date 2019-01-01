@@ -27,6 +27,15 @@
 #include MUOS_HW_HEADER
 
 
+//error_api:
+//: .Error Check Macro
+//: ----
+//: MUOS_OK(fn)
+//: ----
+//: Wraps fn which must be a function call returning a 'muos_error' an a check for success
+//: or returning the error.
+#define MUOS_OK(fn) do { muos_error err = fn; if (!err) return err; } while(0)
+
 //TODO: conditional error generation depending on what drivers are enabled
 //defined_errors:
 #define MUOS_ERRORS                                                                                     \
