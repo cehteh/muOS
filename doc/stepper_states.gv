@@ -1,0 +1,44 @@
+digraph stepper_states_fwd
+{
+	node [shape = box] UNKNOWN;
+	node [shape = ellipse];
+        
+        {rank = same; ARMED; WAIT};
+        {rank = same; SLOW_CAL; SLOPE};
+        {rank = same; SLOW; FAST};
+        
+        // Edges
+        UNKNOWN -> OFF [ label = "init()"];
+        OFF -> ON [ label = "enable()"];
+        //ON -> OFF [ label = "disable()", style = dotted];
+
+
+
+        ON -> HOLD [ label = "config_lock()"];
+        //HOLD -> ON [ label = "config_unlock()", style = dotted];
+
+        ON -> RAW [ label = "move_raw()"];
+
+
+        HOLD -> ARMED [ label = "set_zero()"];
+        //HOLD -> OFF [ label = "disable()", style = dotted];
+        HOLD -> SLOW_RE [ label = "move_cal()"];
+
+        ARMED -> SLOPE [ label = "move_abs()"];
+        ARMED -> SLOW [ label = "move_rel()"];
+
+        ARMED -> SLOW_REL [ label = "move_cal()"];
+        //ARMED -> OFF [ label = "disable()", style = dotted];
+
+
+
+        SLOPE -> FAST;
+        SLOPE -> SLOW;
+        SLOPE -> WAIT [ label = "wait"];
+        WAIT -> SLOPE [ label = "continue"];
+
+        FAST -> SLOPE;
+        SLOW -> SLOPE;
+}
+
+
