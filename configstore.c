@@ -81,14 +81,16 @@ muos_configstore_wlock (void)
 
 
 void
-muos_configstore_unlock (void)
+muos_configstore_unlock (const struct muos_configstore_data** lock)
 {
-  if (status == CONFIGSTORE_WLOCK)
-    status = CONFIGSTORE_VALID;
-  else
-    --status;
-
-  //PLANNED: check if its smaller/faster when configstore_unlock() returns NULL
+  if (*lock)
+    {
+      if (status == CONFIGSTORE_WLOCK)
+        status = CONFIGSTORE_VALID;
+      else
+        --status;
+      *lock = NULL;
+    }
 }
 
 

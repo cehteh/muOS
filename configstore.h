@@ -124,6 +124,7 @@ muos_configstore_get_status (void);
 
 #define CONFIGSTORE_ARY(val) CONFIGSTORE_ARY_##val
 
+//TODO: add callback when config gets changed for reinitializeing dependencies
 //TODO: document implicit config_size
 #define CONFIGSTORE_DATA_IMPL                           \
   CONFIGSTORE_ENTRY  (size_t, 0, config_size,           \
@@ -186,7 +187,10 @@ muos_configstore_save (muos_configstore_callback callback);
 //: muos_configstore_wlock (void)
 //:
 //: void
-//: muos_configstore_unlock (void)
+//: muos_configstore_unlock (const struct muos_configstore_data** lock)
+//:
+//: void
+//: muos_configstore_unwlock (struct muos_configstore_data** lock)
 //:
 //: struct muos_configstore_data*
 //: muos_configstore_initial (void)
@@ -215,27 +219,33 @@ muos_configstore_save (muos_configstore_callback callback);
 //:   On failure +NULL+ is returned and one may inspect the configstore status.
 //:   The write lock blocks all other access to the configstore and may modify its contents.
 //:
-//: 'muos_configstore_unlock ()';;
-//:   Frees the lock obtained by 'muos_configstore_lock()' or 'muos_configstore_wlock()'.
-//:   Care must be taken that every *successful* lock is matched by a unlock.
-//:
 //: 'muos_configstore_initial ()';;
 //:   Works only when the configstore is 'invalid'. Places a write locks on the data which
 //:   must be unlocked afterwards. This is used when the configstore is uninitialized/prime
 //:   or damaged to populate it with defaults.
 //:
+//: 'muos_configstore_unlock ()' 'muos_configstore_unwlock ()';;
+//:   Frees the lock obtained by 'muos_configstore_lock()', 'muos_configstore_wlock()' or
+//:  'muos_configstore_initial ()'. Care must be taken that lock is matched by a unlock.
+//:
+//:
 const struct muos_configstore_data*
 muos_configstore_lock (void);
+
+void
+muos_configstore_unlock (const struct muos_configstore_data** lock);
 
 struct muos_configstore_data*
 muos_configstore_wlock (void);
 
-void
-muos_configstore_unlock (void);
-
 struct muos_configstore_data*
 muos_configstore_initial (void);
 
+static inline void
+muos_configstore_unwlock (struct muos_configstore_data** lock)
+{
+  muos_configstore_unlock ((const struct muos_configstore_data**) lock);
+}
 
 // generic api
 
