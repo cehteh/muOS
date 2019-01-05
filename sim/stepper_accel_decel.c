@@ -90,7 +90,6 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_SLOW,
    MUOS_STEPPER_SLOPE,
    MUOS_STEPPER_FAST,
-   MUOS_STEPPER_FASTOUT,
   };
 
 #define MUOS_STEPPER_POSITION_SLOTS 4
@@ -333,21 +332,15 @@ overflow_isr(void)
     {
     default:
       return false;
+      //case MUOS_STEPPER_SLOW:   //TODO: set slow whenever running constant <minspeed
     case MUOS_STEPPER_FAST:
       PRINTF("FAST");
-      if (!--slope->fast)
+      if (slope->fast && !--slope->fast)
         muos_steppers.state = MUOS_STEPPER_SLOPE;
 
       printf("%u %u %u %u\n", CLOCKP, muos_steppers.position,
              65536*16/(OCRA+config->max_speed), OCRA);
 
-      return true;
-      break;
-    case MUOS_STEPPER_FASTOUT:
-      PRINTF("FASTOUT");
-
-      printf("%u %u %u %u\n", CLOCKP, muos_steppers.position,
-             65536*16/(OCRA+config->max_speed), OCRA);
       return true;
     case MUOS_STEPPER_SLOPE:
       speed =
@@ -360,7 +353,9 @@ overflow_isr(void)
         config->max_speed;
 
       uint16_t old_flt =  muos_steppers.speed_flt;
-      muos_steppers.speed_flt = (muos_steppers.speed_flt + speed)/2;
+      muos_steppers.speed_flt = (muos_steppers.speed_flt/2 + speed/2)
+        + ((uint8_t)muos_steppers.speed_flt & (uint8_t)speed & (uint8_t)1);
+      
       if (slope->fast && muos_steppers.speed_flt > old_flt)
         {
           PRINTF("ENTER FAST");
@@ -369,9 +364,9 @@ overflow_isr(void)
         }
       else if (slope->pos == slope->end)
         {
-          PRINTF("ENTER FASTOUT");
           speed = slope->speed_out;
-          muos_steppers.state = MUOS_STEPPER_FASTOUT;
+          muos_steppers.state = MUOS_STEPPER_FAST;
+          //PLANNED: specialcase speed 65535 and out_steps=0 for stop
         }
       else
         ++slope->pos;
@@ -381,6 +376,10 @@ overflow_isr(void)
 
 
   PRINT(speed);
+
+
+  //PLANNED: see if steppers run smoother when using filtered speed
+  //OCRA = muos_steppers.speed_flt;
 
   OCRA = speed;
 
@@ -399,7 +398,7 @@ set_config (void)
   config->accel = 4800;
   config->decel =  600;
   config->min_speed = 65000;
-  config->max_speed = 1000;
+  config->max_speed = 100;
   //config->max_slope = 32768;  //TODO: adjust max_speed by smallest point on max_slope
   config->max_slope = 1800;  //TODO: adjust max_speed by smallest point on max_slope
 }
@@ -407,8 +406,8 @@ set_config (void)
 
 
 uint16_t speed_in = 65000;
-uint16_t speed_out = 1500;
-uint16_t out_steps = 1000;
+uint16_t speed_out = 500;
+uint16_t out_steps = 100;
 int32_t position_end = 20000;
 
 

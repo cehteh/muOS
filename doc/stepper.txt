@@ -1,23 +1,96 @@
 === Stepper motors
 
 Stepper driver for motor controllers taking pulse/direction signals.
-
+Allows for continious movements of stepper motors with speed profiles.
 
 ==== Speed Marks
 
-     *slowest_speed*;;
-     implicit, the slowest speed the hardware can generate.
+*min_speed*;;
+        implicit, the slowest speed the hardware can generate.
 
-     'cal_speed';;
-     speed used for calibration/zeroing.
+'cal_speed';;
+        speed used for calibration/zeroing.
 
-    'min_speed'::
-     motors must not loose steps when started/stopped to this speed.
-     minimum speed for absolute positioning with acceleration/deceleration.
-     maximum speed for relative positioning which does not accelerate/decelerate.
+'slow_speed'::
+        motors must not loose steps when started/stopped to this speed.
+        minimum speed for absolute positioning with acceleration/deceleration.
+        maximum speed for relative positioning which does not accelerate/decelerate.
 
-    'max_speed';;
-        absolute maximum speed which will not exceeded. motors must run stable up to this speed.
+'max_speed';;
+        absolute maximum speed which will not exceeded. motors must run stable up
+        to this speed.
+
+
+==== Speed Profiles
+
+The Driver generates a slope which accelerates towards 'max_speed'
+with decreasing acceleration (steppers have less torque at higher
+speeds), then running a stretch on constant (max.) speed, then going
+into deceleration until the target speed is reached. Finally some
+steps are done at the target speed. As soon a slope is loaded and
+executed the next slope can be generated in background to allow fluent
+movement.
+
+
+==== General Operation Overview
+
+Before one can start moving a steppers it needs some preparations. If
+configured then one needs to enable (energize) the steppers first.
+This may already be blocked by some external input (Emergency
+Switch).
+
+An energized stepper still does not know it's position,
+further some configuration for the machine parameters (speed limits,
+prescaler, acceleration/deceleration etc.) is required for all but the
+simplest raw movements.
+
+With steppers enabled and configuration given the stepper can do slow
+relative movements. But the origin is not known yet. For this the
+stepper needs to be zeroed (by probing limit switches or similar).
+When zeroing is done the steppers becomme fully armed and all movement
+types are possible.
+
+When a stepper completes one or multiple movements it will usually
+stay in the highest possible state, staying enabled and keep
+its position until they become explicitly disabled.
+
+Raw movemnt are provided for low level calibration taskes. Care must
+been taken when using 'raw' movements because these are not
+constrained by machine parameters and may cause overload/damages.
+
+//TODO: document that steppers *must* move before zeroing to lock in phase
+
+==== Slope Preparation
+
+Since the generation of slope parameters is relatively expensive it
+can not be done at the instant the stepper shall start moving but need
+to be prepared beforehand.
+
+For this the set of slope parameters is doublebuffered and a callback
+function can be invoked to generate the next set of parameters as soon
+the current ones get activated.
+
+It is also possible to pregenerate and cache slope parameters for
+common, esp. short movements.
+
+
+==== Moving multiple Axis in sync
+
+PIPADOC:PLANNED:
+
+The Stepper driver does not provide any means of moving multiple axis
+exactly synchronized, but it is possible to arrange it that the axis
+doing the shorter move wait for completion all other axis and then
+continue with the operation. Together with matched max_speed for each
+move, reasonable synchronized moves are possible.
+
+
+==== States
+
+Each stepper motor can be in one of the following states.
+
+PIPADOC:=stepper_states
+
 
 
 

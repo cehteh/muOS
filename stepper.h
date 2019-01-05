@@ -23,25 +23,26 @@
 
 #include <stdint.h>
 #include <muos/muos.h>
-#include <muos/pp.h>
+#include <muos/hpq.h>
+//y#include <muos/pp.h>
 
 #ifndef MUOS_STEPPER_HW
 #error need MUOS_STEPPER_HW configuration
 #endif
-#define MUOS_STEPPER_COUNT (MUOS_PP_NARGS(MUOS_STEPPER_HW))  //FIXME: unpack (...)
 
 
+//TODO: startall()
+//TODO: sync moves
+//PLANNED: budget/cost for each movement
 
 /*
-
-
   configstore:
 
   prescale       prescaler setting
   cal_speed      slow speed for calibration (zeroing)
-                 starting from min speed, that could be the speed where it can reverse
+                 starting from slow_speed, that could be the speed where it can reverse
                  direction w/o loosing steps with some safety marigin (25%)
-  min_speed      fastest speed which can be accelerated/decelerated from/to zero w/o
+  slow_speed     fastest speed which can be accelerated/decelerated from/to zero w/o
                  loosing steps with some safety margin (10%)
   max_speed      maximum speed the steppers run stable w/ loosing steps (after acceleration)
   accel          acceleration factor
@@ -52,302 +53,224 @@
 //PLANNED: axis length/limit switches
   limit_deadband limit switch variations
 
-//PLANNED: do we need min_start / min_stop speed?
-
-//PLANNED: have a sum-speed all steppers together wont go faster
-//         bucket allocator for stepper speed
-
 */
 
 #ifdef MUOS_HW_STEPPER_H
 muos_error
-muos_hw_stepper_register_action (uint8_t hw,
-                                 int32_t position,
-                                 uint8_t action,
-                                 uintptr_t arg);
+muos_hw_stepper_enable_all (void);
 
-
-muos_error
-muos_hw_stepper_remove_action (uint8_t hw,
-                               int32_t position,
-                               uint8_t action,
-                               uintptr_t arg);
-
-muos_error
-muos_hw_stepper_enableall (void);
-
-muos_error
-muos_hw_stepper_disableall (void);
+void
+muos_hw_stepper_disable_all (void);
 
 muos_error
 muos_hw_stepper_set_direction (uint8_t hw, bool dir);
 
 muos_error
-muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw);
+muos_hw_stepper_start (uint8_t hw, uint16_t speed_raw, uint8_t prescale);
 
-muos_error
+void
 muos_hw_stepper_stop (uint8_t hw);
-
 #endif
 
-//stepper_api:
-//: .States
+//stepper_states:
 //: ----
 //: enum muos_stepper_state
 //: ----
 //:
 //: MUOS_STEPPER_UNKNOWN;;
-//:   not fully initialized yet
-//: MUOS_STEPPER_DISABLED;;
-//:   externally disabled (when inout pin is configured)
-//: MUOS_STEPPER_RAW;;
-//:   stepper energized, position unknown, only raw movements,
-//:   no configuration necessary
+//:   - no initialized yet
 //: MUOS_STEPPER_OFF;;
-//:   stepper not energized, position unknown
+//:   - stepper not energized
+//:   - position unknown
+//: MUOS_STEPPER_ON;;
+//:   - stepper energized
+//:   - position unknown, only raw movements
 //: MUOS_STEPPER_HOLD;;
-//:   stepper energized, position unknown, only relative movements
+//:   - stepper energized
+//:   - position unknown
+//:   - only relative movements
 //: MUOS_STEPPER_ARMED;;
-//    stepper energized, position known
-//: MUOS_STEPPER_STOPPED;;
-//    stepper energized, position known, done moving, stopped
+//:   - stepper energized
+//:   - position known
+//:   - all kinds of movements allowed
+//: MUOS_STEPPER_WAIT;;
+//:   - stepper energized
+//:   - position known
+//:   - done moving, waiting for sync/continuation
+//: MUOS_STEPPER_RAW;;
+//:   - stepper moving
+//:   - position unknown
+//:   - no configuration necessary
+//:   - dangerous/invalid moves possible!
+//: MUOS_STEPPER_SLOW_CAL;;
+//:   - stepper moving slower than slow_speed
+//:   - position unknown
+//:   - can be stopped instantly without loosing steps
+//: MUOS_STEPPER_SLOW_REL;;
+//:   - stepper moving slower than slow_speed
+//:   - position known
+//:   - can be stopped instantly without loosing steps
 //: MUOS_STEPPER_SLOW;;
-//:   stepper energized, position known, running slower than min_speed
-//:   can be stopped instantly without loosing steps.
-//: MUOS_STEPPER_ACCEL;;
-//:   stepper energized, position known, accerating faster than min_speed
-//:   must decelerate for stopping w/o loosing steps.
+//:   - stepper moving slower than slow_speed
+//:   - position known
+//:   - can be stopped instantly without loosing steps
+//: MUOS_STEPPER_SLOPE;;
+//:   - stepper moving, accelerating or decelerating on slope parameters
+//:   - position known
+//    - must decelerate for stopping w/o loosing steps.
 //: MUOS_STEPPER_FAST;;
-//:   stepper energized, position known, running at max_speed
-//:   must decelerate for stopping w/o loosing steps.
-//: MUOS_STEPPER_DECEL;;
-//:   stepper energized, position known, decelerating, faster than min_speed
+//:   - stepper moving faster than slow_speed
+//:   - position known
+//:   - must decelerate for stopping w/o loosing steps.
+//: MUOS_STEPPER_STOPPING;;
+//:   - stepper moving faster than slow_speed, braking
+//:   - position known
+//:   - Controlled brake to a slow_speed, then stop
 //:
 enum muos_stepper_arming_state
   {
    MUOS_STEPPER_UNKNOWN,
-   MUOS_STEPPER_DISABLED,
-   MUOS_STEPPER_RAW, //FIXME: check state checks
    MUOS_STEPPER_OFF,
+   MUOS_STEPPER_ON,
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
-   MUOS_STEPPER_STOPPED,
+   MUOS_STEPPER_WAIT,
+   MUOS_STEPPER_RAW,
+   MUOS_STEPPER_SLOW_CAL,
+   MUOS_STEPPER_SLOW_REL,
    MUOS_STEPPER_SLOW,
-   MUOS_STEPPER_ACCEL,
+   MUOS_STEPPER_SLOPE,
    MUOS_STEPPER_FAST,
-   MUOS_STEPPER_DECEL,
+   MUOS_STEPPER_STOPPING,  //TODO: unimplemented
   };
 
 
-struct stepper_state
-{
-  // note: statically initialized to zero, that must be ok for all values
-  enum muos_stepper_arming_state state;
-  enum muos_stepper_arming_state before_raw;
-  int32_t position; // not volatile, should not be read when stepper is running
-  // internal state for the ISR
-  int32_t start;
-  int32_t end;
-  int32_t accel_end;
-  int32_t decel_start;
-  uint32_t ad;
-  uint32_t slope;
+typedef void (*muos_stepper_fn)(uint8_t hw);
 
-  struct {
-    int32_t position;
-    uint8_t whattodo;
-    uintptr_t arg;
-  } position_match[MUOS_STEPPER_POSITION_SLOTS];
+struct muos_stepper_action
+{
+  int32_t position;
+  uint8_t whattodo;
+  uintptr_t arg;
 };
 
-extern struct stepper_state muos_steppers[MUOS_STEPPER_COUNT];
 
-
-//: .Check State
-//: ----
-//: static inline bool
-//: muos_stepper_mutable_state (uint8_t hw)
-//: ----
-//:
-//: +hw+;;
-//:   Stepper to control.
-//:
-//: Returns 'true' when the state can be modified by the API.
-//: States can only be changed when the motors are not moving and not externally disabled.
-//:
-static inline bool
-muos_stepper_mutable_state (uint8_t hw)
+struct muos_stepper_slope
 {
-  return muos_steppers[hw].state != MUOS_STEPPER_RAW
-    && muos_steppers[hw].state >= MUOS_STEPPER_OFF
-    && muos_steppers[hw].state < MUOS_STEPPER_SLOW;
-}
+  int32_t position;
+  uint32_t constant;               // constant speed steps at the top of the slope
+  uint16_t pos;                    // slope position
+  uint16_t end;                    // only slope part
+  uint16_t len;                    // only slope part
+  uint16_t max_speed;              //TODO: calculate for maxslope
+  uint16_t speed_out;
+};
 
-
-
-static inline void
-muos_stepper_50init (void)
+struct muos_stepper_state
 {
-  muos_hw_stepper_init ();
-}
+  volatile enum muos_stepper_arming_state state;
+  volatile int32_t position;
+
+  uint16_t speed_flt;               // filtered speed to mitigate rounding errors
+
+  muos_queue_function slope_gen;
+
+  volatile uint8_t active:1;         // which one is the active from the buffer
+  volatile uint8_t ready:1;          // set when the next slope is prepared
+  struct muos_stepper_slope slope[2];     // double buffered
+
+  struct muos_stepper_action position_match[MUOS_STEPPER_POSITION_SLOTS];
+};
+
+
+extern struct muos_stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+
+
+void
+muos_stepper_50init (void);
 
 
 
-#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
 //stepper_api:
 //: .Switching steppers on and off, stopping
 //: ----
 //: muos_error
-//: muos_stepper_all_on (void)
+//: muos_stepper_enable_all (void)
 //:
 //: void
-//: muos_stepper_all_off (void)
+//: muos_stepper_disable_all (void)
 //:
 //: void
 //: muos_stepper_stop (uint8_t hw)
 //:
 //: void
-//: muos_stepper_all_stop (void)
+//: muos_stepper_stop_all (void)
 //: ----
 //:
-//: 'muos_stepper_all_on ()' tries to switch on all steppers.
+//: 'muos_stepper_enable_all ()' tries to switch on all steppers.
 //: When successful muos_success is returned.
-//: The steppers are in state 'MUOS_STEPPER_HOLD' which
-//: only allows relative and calibration movements. For arming the
-//: Steppers fully the axis has to be zerored.
-//: In case the steppers where already on, no state is changed.
+//: The steppers are energized and in state 'MUOS_STEPPER_ON' which
+//: allows only raw movements.
 //:
 //: .On error following values are returned:
 //: +muos_warn_sched_depth+;;
 //    Scheduler depth exceeded
 //: +muos_error_stepper_state+;;
-//:   Steppers are externally disabled, uninitialized or in calibration mode.
+//:   Steppers are externally disabled, uninitialized or otherwise unavailable.
 //:
-//: 'muos_stepper_all_off ()' switches all steppers off.
+//: 'muos_stepper_disable_all ()' switches all steppers off.
 //: No matter of the state, the steppers will be disabled afterwards.
-//: States 'MUOS_STEPPER_UNKNOWN' and 'MUOS_STEPPER_DISABLED' will stay, otherwise
-//: the new state will be MUOS_STEPPER_OFF.
-//:
-//: Note: turning the steppers off will loose their position and they must zeroed after
-//:       enabling them again.
+//: States 'MUOS_STEPPER_UNKNOWN' will stay, otherwise the new state will be MUOS_STEPPER_OFF.
+//: Turning the steppers off will loose their position and free the configuration lock.
 //:
 //: 'muos_stepper_stop (hw)' stops movement of a single stepper, but keeps it energized.
 //: For steppers which were running faster than 'MUOS_STEPPER_SLOW' the position will
 //: be invalidated and the state becomes 'MUOS_STEPPER_HOLD'. They need to be re-zeroed
 //: after a stop. For Steppers running at 'MUOS_STEPPER_SLOW' or slower the position is
 //: kept valid and the state becomes 'MUOS_STEPPER_ARMED'.
-//: All position matches registered will be cleared.
 //:
 //: 'muos_stepper_all_stop ()' is the same as 'muos_stepper_stop (hw)' but for all Steppers.
 //:
 //: Stopping and turning steppers off will never fail nor return an error code.
-//: Only the resulting state may differ depending on the initial state. With the exception
-//: that trying to stop a stepper with a non existing hardware descriptor will fail with
-//: +muos_error_nohw+.
+//: Only the resulting state may differ depending on the initial state.
 //:
+//PLANNED: api for braking to stop
 muos_error
-muos_stepper_all_on (void);
+muos_stepper_enable_all (void);
 
 void
-muos_stepper_all_off (void);
+muos_stepper_disable_all (void);
 
-muos_error
+void
 muos_stepper_stop (uint8_t hw);
 
 void
-muos_stepper_all_stop (void);
-#endif // MUOS_STEPPER_ENABLE_ALL_HW
+muos_stepper_stop_all (void);
 
-
-
-
-
-
-
-// move commands for calibration
 
 //stepper_api:
-//: .Basic Calibration Movements
+//: .Locking the config
 //: ----
 //: muos_error
-//: muos_stepper_move_raw (uint8_t hw,
-//:                        uint8_t prescale,
-//:                        uint16_t speed_raw,
-//:                        int32_t offset)
+//: muos_stepper_lock_all (void);
 //:
-//: muos_error
-//: muos_stepper_move_zigzag (uint8_t hw,
-//:                           uint8_t prescale,
-//:                           uint16_t speed_raw,
-//:                           int16_t steps,
-//:                           uint8_t rep)
-//:
-//: muos_error
-//: muos_stepper_move_zigzagpause (uint8_t hw,
-//:                                uint8_t prescale,
-//:                                int16_t speed_raw,
-//:                                int16_t steps,
-//:                                uint8_t rep)
+//: void
+//: muos_stepper_unlock_all (void)
 //: ----
 //:
-//: +hw+;;
-//:   Stepper to control.
-//: +prescale+;;
-//;   Hardware specific prescaler selection.
-//: +speed_raw+;;
-//;   Direct frequency generator value.
-//: +offset+;;
-//:   Distance and direction to travel.
-//: +steps+;;
-//:   Steps to zigzag (and pause).
-//: +rep+;;
-//:   Repetitions.
+//: All higher level stepper movements need to place a read lock on the configuration. For this
+//: The steppers must be first turned into ON state with 'muos_stepper_enable_all()'. Then the
+//: 'muos_stepper_lock_all()' will put them in HOLD state. From there calibration movements and
+//: zeroing becomes possible.
 //:
-//: Calibration needs needs some special commands bypassing the normal logic and
-//: being functional even when there is no configuration available yet. The calibration
-//: commands will turn the steppers (all, when MUOS_STEPPER_ENABLE_ALL_HW is
-//: set) on.
-//:
-//: The speed here is defined as direct 16 bit counter value for the underlying hardware.
-//: 65535 is the slowest possible speed. 8192 is the fastest speed. These functions
-//  restrict the speed for safety.
-//:
-//: The 'prescale' parameter has the greatest effect on speeds and should be used with
-//: uttermost care. The actual values are hardware implementation dependent.
-//:
-//: muos_stepper_move_raw;;
-//:   Moves for 'offset' steps at 'speed', negative values give  reverse direction.
-//:
-//: muos_stepper_move_zigzag;;
-//:   Moves 'steps' for 'rep' times forth and back. With instant direction change at then ends.
-//:
-//: muos_stepper_move_zigzagpause;;
-//:   Moves 'steps' for 'rep' times forth and back. Does a short pause before changing direction.
-//:
-//: WARNING: wrong use of this functions can damage the hardware.
-//:
+//: 'muos_stepper_unlock_all()' stops all steppers, releases the configuration lock, and puts them
+//: back into ON state.
 //:
 muos_error
-muos_stepper_move_raw (uint8_t hw,
-                       uint8_t prescale,
-                       uint16_t speed_raw,
-                       int32_t offset);
+muos_stepper_lock_all (void);
 
-#if 0 //PLANNED:
-muos_error
-muos_stepper_move_zigzag (uint8_t hw,
-                          uint8_t prescale,
-                          uint16_t speed_raw,
-                          int16_t steps,
-                          uint8_t rep);
-
-muos_error
-muos_stepper_move_zigzagpause (uint8_t hw,
-                               uint8_t prescale,
-                               unt16_t speed_raw,
-                               int16_t steps,
-                               uint8_t rep);
-#endif
+void
+muos_stepper_unlock_all (void);
 
 
 // zeros the axis relative to the current position
@@ -363,12 +286,253 @@ muos_stepper_move_zigzagpause (uint8_t hw,
 //:   Offset to the current position.
 //:
 //: Zeros the step counter to the given offset.
-//: Only available when the stepper is energized but not moving.
-//: When the stepper was not 'ARMED' yet (position unknown) it becomes
-//: armed with zeroing. Only then fast absolute movements are possible.
+//: Only available when the stepper is in HOLD state. Zeroing puts a stepper
+//: in ARMED state which allows fast movements.
 //:
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset);
+
+
+
+//stepper_api:
+//: .Raw Movements
+//: ----
+//: muos_error
+//: muos_stepper_move_raw (uint8_t hw,
+//:                        int32_t offset,
+//:                        uint16_t speed,
+//:                        uint8_t prescale,
+//:                        muos_queue_function done)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to control.
+//: +offset+;;
+//:   Distance and direction to travel.
+//: +speed+;;
+//;   Direct frequency generator value.
+//: +prescale+;;
+//;   Hardware specific prescaler selection.
+//: +done+;;
+//:   Function to be scheduled when done
+// : +steps+;;
+// :   Steps to zigzag (and pause).
+// : +rep+;;
+//:   Repetitions.
+//:
+//: Raw movement bypassing the normal logic and being functional even when there is no
+//: configuration available yet.
+//:
+//: The 'prescale' parameter has the greatest effect on speeds and should be used with
+//: uttermost care. The actual values are hardware implementation dependent.
+//:
+//: WARNING: wrong use of this functions can damage the hardware.
+//:
+//: Raw movements are used to probe stepper configuration and find maximum speeds, acceleration
+//: and deceleration factors.
+//:
+//: muos_stepper_move_raw;;
+//:   Moves for 'offset' steps at 'speed', negative values  reverse the direction.
+//:
+//TODO: what helper functions are needed foor low level configuration? zigzag etc.
+muos_error
+muos_stepper_move_raw (uint8_t hw,
+                       int32_t offset,
+                       uint16_t speed_raw,
+                       uint8_t prescale,
+                       muos_queue_function done);
+
+
+
+
+//stepper_api:
+//: .Calibration Movements
+//: ----
+//: muos_error
+//: muos_stepper_move_cal (uint8_t hw,
+//:                        uint16_t speed,
+//:                        int32_t offset,
+//:                        muos_queue_function done)
+//:
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to control.
+//: +offset+;;
+//:   Distance and direction to travel.
+//: +speed+;;
+//;   Direct frequency generator value.
+//: +done+;;
+//:   Function to be scheduled when done
+//:
+//: Calibration movement is needs basic machine configuration and is restricted to 'stepper_calspeed'.
+//: This should be used to find end switch positions and zero the axis.
+//:
+muos_error
+muos_stepper_move_cal (uint8_t hw,
+                       int32_t offset,
+                       uint16_t speed,
+                       muos_queue_function done);
+
+
+
+
+
+
+//stepper_api:
+//: .Relative Movements
+//: ----
+//: muos_error
+//: muos_stepper_move_rel (uint8_t hw,
+//:                        unt16_t speed,
+//:                        int32_t offset,
+//:                        muos_queue_function done)
+//:
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to control.
+//: +offset+;;
+//:   Distance and direction to travel.
+//: +speed+;;
+//;   Direct frequency generator value.
+//: +done+;;
+//:   Function to be scheduled when done
+//:
+//PLANNED: use out_steps of slope, no extra state
+muos_error
+muos_stepper_move_rel (uint8_t hw,
+                       int32_t offset,
+                       uint16_t speed,
+                       muos_queue_function done); //FIXME: done -> plan
+
+
+
+
+
+/*
+
+  Absolute movements w/ acceleration/deceleration
+
+*/
+
+
+//stepper_api:
+//: .Absolute Movements
+//: ----
+//: muos_error
+//: muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to control.
+//: +slope_gen+;;
+//:   Function to be scheduled to generate then next move
+//:
+//:
+muos_error
+muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen);
+
+
+
+//stepper_api:
+//: .Slope Calculations
+//: ----
+//: struct muos_stepper_slope*
+//: muos_stepper_slope_get (uint8_t hw)
+//:
+//: muos_error
+//: muos_stepper_slope_prep (uint8_t hw,
+//:                          struct muos_stepper_slope* slope,
+//:                          uint32_t distance,
+//:                          uint16_t speed_in,
+//:                          uint16_t max_speed,
+//:                          uint16_t speed_out,
+//:                          uint16_t out_steps)
+//:
+//: void
+//: muos_stepper_slope_commit (uint8_t hw, int32_t position)
+// :
+// : muos_error
+// : muos_stepper_slope_load (uint8_t hw,
+// :                          int32_t position,
+// :                          const struct muos_stepper_slope* slope)
+//: ----
+//:
+//: Fast movements require a slope for acceleration and deceleration to be prepared.
+//: Such a slope starts at speed_in, accelerates to max_speed (when there is enough
+//: distance to travel), keeps the max_speed for some distance, then decelerates to
+//: speed_out and finally does some 'out_steps' at constant speed_out.
+//:
+//: The stepper state itself keeps 2 such slopes internally, one as the active slope for the
+//: current movement the other for preparing a slope in the background for the next move.
+//: When a move completes it swaps buffers and executes the next move. While scheduling
+//: a job to prepare the slope for the next movement.
+//:
+//: Besides this 2 internal buffers it is also possible for a user to prepare slope for common
+//: movements which can be copied in place instead recalculating them for every move.
+//:
+//TODO: implement slope_load() (doing get, copy, commit)
+//:
+//: 'muos_stepper_slope_get()' returns a handle to the inactive slope buffer for the next move.
+//: This buffer can then be initialized with 'muos_stepper_slope_prep()' or loaded with
+//: an already prepared slope. When done, the buffer needs to be committed to tell the driver
+//: that the slope is ready to use.
+//:
+//: 'muos_stepper_slope_get()' will return NULL if either the stepper is not in a state >= ARMED or did
+//: not consume the previous slope yet. Zeroing/Arming invalidates the slope buffer and makes it
+//: ready to load new slopes (Those error's wont happen with the slope callback).
+//: When it is not possible to generate new slopes in a timely manner,the stepper driver will
+//: call 'muos_stepper_stop_all()' and error out.
+//:
+//: 'muos_stepper_slope_prep()' initializes a slope buffer. This calculation is somewhat expensive.
+//: Slope calculation is over a distance to travel, while there is a destination position stored
+//: within the slope structure this gets only be set when the slope is commited or loaded.
+//: +hw+;;
+//:   Stepper for which the slope is.
+//: +slope+;;
+//:   The slope buffer to be initialized.
+//: +distance+;;
+//:   The absolute amounts of steps to travel (direction doesn't matter).
+//: +speed_in+;;
+//:   The starting speed, either less than 'stepper_slowspeed' or the speed the stepper is already
+//:   moving.
+//: +max_speed+;;
+//:   Maximum speed for the fastest part of the slope
+//: +speed_out+;;
+//:   The speed at the end of the slope. must be less than 'stepper_slowspeed' when the slope is not
+//:   followed by another movement in the same direction.
+//: +out_steps+;;
+//:   Steps done at the end at 'speed_out'.
+//:
+muos_error
+muos_stepper_slope_prep (uint8_t hw,
+                         struct muos_stepper_slope* slope,
+                         uint32_t distance,
+                         uint16_t speed_in,
+                         uint16_t max_speed,
+                         uint16_t speed_out,
+                         uint16_t out_steps);
+
+
+struct muos_stepper_slope*
+muos_stepper_slope_get (uint8_t hw);
+
+
+static inline void
+muos_stepper_slope_commit (uint8_t hw, int32_t position)
+{
+  // no hw check because this must always be called after slope_get() which does the check
+  muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
+  muos_steppers[hw].ready = 1;
+}
+
+//TODO: slope_load w/ fixing destination
+// : muos_error
+// : muos_stepper_slope_load (uint8_t hw,
+// :                          const struct muos_stepper_slope* slope)
+
+
 
 
 
@@ -387,24 +551,29 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset);
 //: MUOS_STEPPER_ACTION_2ND;;
 //:   Exceute the registered action when the stepper hits the position the second time.
 //:   Incompatible with MUOS_STEPPER_ACTION_PERMANENT. Used for backlash compensation.
+//:   Implementation detail: This flag gets deleted on first hit.
 //: MUOS_STEPPER_ACTION_STOP;;
 //:   Immediately stop the stepper at the position.
+//: MUOS_STEPPER_ACTION_SYNC;;
+//:   Together with STOP: stops the stepper and puts it in WAIT state
+//:   Without STOP: wakes all waiting steppers.
 //: MUOS_STEPPER_HPQ_FRONT;;
 //:   Use the provided argument as function to push it to the front of the hpq. This gives the
 //:   highest possible priority.
-//: MUOS_STEPPER_HPQ_FRONT;;
+//: MUOS_STEPPER_HPQ_BACK;;
 //:   Use the provided argument as function to push it to the back of the hpq.
 //:
-//:
-//PLANNED: mergeable flag, registering actions on the same position might be merged if compatible
 enum muos_stepper_actions
   {
    MUOS_STEPPER_ACTION_PERMANENT = (1<<0),
    MUOS_STEPPER_ACTION_2ND = (1<<1), //TODO: implement me
-   MUOS_STEPPER_ACTION_STOP = (1<<2),
-   //: MUOS_STEPPER_ACTION_OFF;;  //TODO: needed?
-   MUOS_STEPPER_HPQ_FRONT = (1<<3),
-   MUOS_STEPPER_HPQ_BACK = (1<<4),
+   MUOS_STEPPER_ACTION_SLOPE = (1<<2),
+   MUOS_STEPPER_ACTION_STOP = (1<<3),
+   MUOS_STEPPER_ACTION_SYNC = (1<<4),//TODO: implement me
+   MUOS_STEPPER_HPQ_FRONT = (1<<5),
+   MUOS_STEPPER_HPQ_BACK = (1<<6),
+
+   //PLANNED:   MUOS_STEPPER_MERGE = (1<<7),
   };
 
 
@@ -450,116 +619,36 @@ enum muos_stepper_actions
 //:   'register_action':: no more slots free to register an action.
 //:   'remove_action':: no action found with the given parameters.
 //:
+//PLANNED: muos_stepper_remove_all_actions(hw)
 muos_error
-muos_hw_stepper_register_action (uint8_t hw,
+muos_stepper_register_action (uint8_t hw,
                                  int32_t position,
                                  uint8_t action,
                                  uintptr_t arg);
 
 muos_error
-muos_hw_stepper_remove_action (uint8_t hw,
+muos_stepper_remove_action (uint8_t hw,
                                int32_t position,
                                uint8_t action,
                                uintptr_t arg);
 
 
-static inline muos_error
-muos_stepper_register_action (uint8_t hw,
-                                 int32_t position,
-                                 uint8_t action,
-                                 uintptr_t arg)
-{
-  return muos_hw_stepper_register_action (hw,
-                                          position,
-                                          action,
-                                          arg);
-}
+
+// functions suitable for muos_wait()
+
+bool muos_stepper_not_moving (intptr_t hw);
 
 
-static inline muos_error
-muos_stepper_remove_action (uint8_t hw,
-                            int32_t position,
-                            uint8_t action,
-                            uintptr_t arg)
-{
-  return muos_hw_stepper_remove_action (hw,
-                                        position,
-                                        action,
-                                        arg);
-}
-
-//PLANNED: muos_stepper_remove_all_actions(hw)
 
 
+
+
+
+
+
+
+//TODO:  backlash compensation
 /*
-
-  Absolute movements w/ acceleration/deceleration
-
-*/
-
-
-
-// speedf is 1/256 factor to min_speed..max_speed (and accel/decel)
-muos_error
-muos_stepper_move_abs (uint8_t hw, int32_t position, uint8_t speedf);
-
-
-
-
-
-
-
-
-/*
-
-// READY|RUNNING->ON
-void
-muos_stepper_invalidate (uint8_t hw);
-
-void
-muos_stepper_get_status (uint8_t hw);
-
-
-
-
-
-
-
-// speed is slowest_speed..min_speed/127, negative speed for reverse,
-// 0==1 (saves some error handling)
-muos_error
-muos_stepper_mov_const (uint8_t hw, int8_t speed);
-
-
-muos_error
-muos_stepper_mov_rel (uint8_t hw, int32_t offset, int8_t speed);
-
-
-
-
-// returns time when moving at full speed
-uint32_t
-muos_stepper_abs_estim (uint8_t hw, int32_t position);
-
-*/
-
-
-#if 0 // TODO from DESIGN.org
-/*
-
-
-config:
-  backlash compensation
-       * offset
-       * speed
-
-
-
-
-   * later: have a small queue for planning ahead that allows smooth
-     movements without stopping
-
-
 **** Backlash compensation -> higher level
 
      Two possible strategies:
@@ -571,58 +660,6 @@ config:
      2. speed!=0
         Overshoot by offset steps, then move back offset steps with 'speed'
         Slow but accurate
-
-
-*** API
-
-    disclaimer: function and type names below are just for functional description
-
-
-
-**** Configuration structure
-     defined in source, values are directly written there
-
-     * axis limits
-     * max speed change for constant speed movements
-     * max speed
-     * backlash compensation values
-
-**** State structure
-     defined in source, values are directly written there
-
-     * position
-     * position valid flag
-     * arming state
-     * current speed -> derrived from frequency generator register
-     * movement phase?
-
-**** Configuration commands
-     zero_axis(offset)
-        sets the axis zero to offset from the current position
-
-
-
-
-
-**** callback/query
-
-     set_callback_at (position, function)
-       calls function when position is touched (w/o backlash compensation)
-
-     set_callback (function)
-       calls function absolute positioning is done (w/ backlash commpensation)
-
-     position query_position ()
-     position query_speed ()
-
-
-
- */
-#endif
-
-
-
-
-
+*/
 
 #endif

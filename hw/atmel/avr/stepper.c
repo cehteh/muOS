@@ -20,53 +20,426 @@
 
 #ifdef MUOS_STEPPER
 
+#define MUOS_HW_STEPPER_H
 #include <muos/stepper.h>
 #include <muos/muos.h>
 #include <muos/hw/atmel/avr/atmega328p.h>
-#include <muos/hw/atmel/avr/stepper_pp.h>
 #include <muos/hpq.h>
 #include <muos/configstore.h>
 
 #include <util/delay_basic.h>
 #include <stdlib.h>
 
-/* Signal generation for example drive low polarity
-
-   .......      ____________________________      ........
-         |      |                           :     :
-         |______|                           :.....:
-
-*/
-
 extern const struct muos_configstore_data* muos_steppers_config_lock;
 
 
+//PLANNED: dynamic prescaler change to increase range and resolution
 
-MUOS_PP_CODEGEN(MAKE_OVF_ISR, MUOS_STEPPER_HW);
+// unsigned 32bit/32bit division with 16bit result
+__attribute__((always_inline))
+static inline uint16_t
+udiv_inline (uint32_t num, uint32_t den)
+{
+  uint32_t mask = 1;
+  uint16_t res = 0;
+
+  while (mask && den < num  && !(den & (1L<<31)))
+    {
+      den <<= 1;
+      mask <<= 1;
+    }
+
+  while (mask)
+    {
+      if (num >= den)
+	{
+	  num -= den;
+          res |= mask;
+	}
+      mask >>=1;
+      den >>=1;
+    }
+  return res;
+}
 
 
 
 
-//TODO: refactor all the codegen #defines into a stepper_meta.h
+
+/*
+  generate phase tables and states for unipolar steppers
+*/
+
+#ifdef MUOS_STEPPER_TABLES
+#define TABLE(name, ...)   static const uint8_t muos_stepper_table_##name[] = {__VA_ARGS__};
+MUOS_STEPPER_TABLES;
+#undef TABLE
+#endif
+
+
+struct muos_stepper_unipolar_state
+{
+  uint8_t phase;  // offset to position for correct phase
+  int8_t dir_ena; // -1 reverse, 0 disabled, 1 forward
+};
+
+
+#define STEPDIR(...)
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)                             \
+  static struct muos_stepper_unipolar_state stepper_hw_unipolar_state_##hw;
+
+MUOS_STEPPER_HW;
+#undef STEPDIR
+#undef UNIPOLAR
+
+
+/*
+  Overflow interrupt per stepper/timer
+  Each stepper needs its own 16 bit timer
+*/
+
+//boilerplate
+#define POSITION_MATCH(hw, timer)                                                                       \
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                 \
+    {                                                                                                   \
+      if (muos_steppers[hw].position == muos_steppers[hw].position_match[i].position                    \
+          && muos_steppers[hw].position_match[i].whattodo)                                              \
+        {                                                                                               \
+          if (muos_steppers[hw].position_match[i].whattodo                                              \
+              & MUOS_STEPPER_ACTION_SLOPE)                                                              \
+            {                                                                                           \
+              if (!muos_steppers[hw].ready)                                                             \
+                {                                                                                       \
+                  muos_error_set_isr (muos_error_stepper_slope);                                        \
+                  muos_hw_stepper_disable_all ();                                                       \
+                  return;                                                                               \
+                  }                                                                                     \
+                  muos_steppers[hw].active = !muos_steppers[hw].active;                                 \
+                  muos_steppers[hw].ready = false;                                                      \
+                  muos_steppers[hw].position_match[i].position                                          \
+                  = muos_steppers[hw].slope[muos_steppers[hw].active].position;                         \
+                  muos_hw_stepper_set_direction (hw,                                                    \
+                                                 muos_steppers[hw].position_match[i].position           \
+                                                 > muos_steppers[hw].position);                         \
+                  muos_error_set_isr (muos_hpq_pushback_isr (muos_steppers[hw].slope_gen, true));       \
+                  continue;                                                                             \
+                  }                                                                                     \
+          if (muos_steppers[hw].position_match[i].whattodo                                              \
+              & MUOS_STEPPER_ACTION_STOP)                                                               \
+            {                                                                                           \
+              TCCR##timer##A = 0;                                                                       \
+              TCCR##timer##B = 0;                                                                       \
+              TIMSK##timer &= ~_BV(TOIE##timer);                                                        \
+              switch (muos_steppers[hw].state)                                                          \
+                {                                                                                       \
+                case MUOS_STEPPER_RAW:                                                                  \
+                  muos_steppers[hw].state = MUOS_STEPPER_ON; break;                                     \
+                case MUOS_STEPPER_SLOW_CAL:                                                             \
+                case MUOS_STEPPER_SLOPE:                                                                \
+                case MUOS_STEPPER_FAST:                                                                 \
+                  muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;                                   \
+                case MUOS_STEPPER_SLOW:                                                                 \
+                case MUOS_STEPPER_SLOW_REL:                                                             \
+                  muos_steppers[hw].state = MUOS_STEPPER_ARMED; break;                                  \
+                default:                                                                                \
+                  break;                                                                                \
+                }                                                                                       \
+            }                                                                                           \
+          if (muos_steppers[hw].position_match[i].arg)                                                  \
+            {                                                                                           \
+              if (muos_steppers[hw].position_match[i].whattodo                                          \
+                  & MUOS_STEPPER_HPQ_FRONT)                                                             \
+                muos_error_set_isr (muos_hpq_pushfront_isr ((muos_queue_function)                       \
+                                                            muos_steppers[hw].position_match[i].arg,    \
+                                                            true));                                     \
+              else if (muos_steppers[hw].position_match[i].whattodo                                     \
+                       & MUOS_STEPPER_HPQ_BACK)                                                         \
+                muos_error_set_isr (muos_hpq_pushback_isr ((muos_queue_function)                        \
+                                                           muos_steppers[hw].position_match[i].arg,     \
+                                                           true));                                      \
+            }                                                                                           \
+          if (!(muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_ACTION_PERMANENT))          \
+            {                                                                                           \
+              muos_steppers[hw].position_match[i].whattodo = 0;                                         \
+            }                                                                                           \
+        }                                                                                               \
+    }
+
+
+#define SLOPE_CALCULATION(hw)                                                                           \
+  uint16_t speed=0;                                                                                     \
+  struct muos_stepper_slope* slope = &muos_steppers[hw].slope[muos_steppers[hw].active];                \
+  switch (muos_steppers[hw].state)                                                                      \
+    {                                                                                                   \
+      /*TODO:  case MUOS_STEPPER_STOPPING: */                                                           \
+    case MUOS_STEPPER_RAW:                                                                              \
+    case MUOS_STEPPER_SLOW_CAL:                                                                         \
+    case MUOS_STEPPER_SLOW_REL:                                                                         \
+      return;                                                                                           \
+    case MUOS_STEPPER_SLOW:                                                                             \
+    case MUOS_STEPPER_FAST:                                                                             \
+      if (slope->constant && !--slope->constant)                                                        \
+        {                                                                                               \
+          muos_steppers[hw].state = MUOS_STEPPER_SLOPE;                                                 \
+        }                                                                                               \
+      return;                                                                                           \
+    case MUOS_STEPPER_SLOPE:                                                                            \
+      speed =                                                                                           \
+        udiv_inline (muos_steppers_config_lock->stepper_accel[hw] * MUOS_STEPPER_SLOPE_MULTIPLIER,      \
+                     slope->pos)                                                                        \
+        +                                                                                               \
+        udiv_inline (muos_steppers_config_lock->stepper_decel[hw] * MUOS_STEPPER_SLOPE_MULTIPLIER,      \
+                     slope->len - slope->pos)                                                           \
+        +                                                                                               \
+        slope->max_speed;                                                                               \
+      uint16_t old_flt =  muos_steppers[hw].speed_flt;                                                  \
+      muos_steppers[hw].speed_flt = (muos_steppers[hw].speed_flt/2 + speed/2)                           \
+        + ((uint8_t)muos_steppers[hw].speed_flt & (uint8_t)speed & (uint8_t)1);                         \
+      if (slope->constant && muos_steppers[hw].speed_flt > old_flt)                                     \
+        {                                                                                               \
+          --speed;                                                                                      \
+          muos_steppers[hw].state = MUOS_STEPPER_FAST;                                                  \
+        }                                                                                               \
+      else if (slope->pos == slope->end)                                                                \
+        {                                                                                               \
+          speed = slope->speed_out;                                                                     \
+          muos_steppers[hw].state = MUOS_STEPPER_FAST;                                                  \
+        }                                                                                               \
+      else                                                                                              \
+        ++slope->pos;                                                                                   \
+    default:                                                                                            \
+      break;                                                                                            \
+    }
+
+
+
+//PLANNED: see if steppers run smoother when using filtered speed
+
+
+// per type
+#define MUOS_STEPPER_TOP(timer, wgm) MUOS_STEPPER_TOP_##timer##_##wgm
+#define MUOS_STEPPER_TOP_1_14 ICR1
+#define MUOS_STEPPER_TOP_1_15 OCR1A
+
+
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
+  ISR(TIMER##timer##_OVF_vect)                                                  \
+  {                                                                             \
+    MUOS_DEBUG_INTR_ON;                                                         \
+    muos_steppers[hw].position +=                                               \
+      (dirpol^!(PORT##dirport & _BV(PORT##dirport##dirpin)))?+1:-1;             \
+    POSITION_MATCH(hw, timer);                                                  \
+    SLOPE_CALCULATION(hw);                                                      \
+    MUOS_STEPPER_TOP(timer, wgm) = speed;                                       \
+  }
+
+
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)                                             \
+  ISR(TIMER##timer##_OVF_vect)                                                                  \
+  {                                                                                             \
+    MUOS_DEBUG_INTR_ON;                                                                         \
+    muos_steppers[hw].position += stepper_hw_unipolar_state_##hw.dir_ena;                       \
+    uint8_t value = muos_stepper_table_##table[((uint8_t)muos_steppers[hw].position             \
+                                                + stepper_hw_unipolar_state_##hw.phase)         \
+                                               %sizeof(muos_stepper_table_##table)] & mask;     \
+    PORT##port = (PORT##port & ~mask) | value;                                                  \
+    POSITION_MATCH(hw, timer);                                                                  \
+    SLOPE_CALCULATION(hw);                                                                      \
+    MUOS_STEPPER_TOP(timer, wgm) = speed;                                                       \
+  }
+
+
+MUOS_STEPPER_HW
+
+#undef POSITION_MATCH
+#undef SLOPE_CALCULATION
+#undef STEPDIR
+#undef UNIPOLAR
+
+
+
+/*
+  Initialize all steppers
+*/
+
+#define MUOS_STEPPER_PIN_IDLE_2(timer, output)  \
+  OC##timer##output##_PORT &=                   \
+    ~_BV(OC##timer##output##_BIT);
+
+#define MUOS_STEPPER_PIN_IDLE_3(timer, output)  \
+  OC##timer##output##_PORT |=                   \
+    _BV(OC##timer##output##_BIT);
+
+
 
 void
 muos_hw_stepper_init (void)
 {
-  MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_TCCRB, MUOS_STEPPER_HW);
+  //
+#ifdef MUOS_STEPPER_ENABLEALL_INOUT_HW
+#define ENABLEALL(port, pin)                    \
+  PORT##port &= ~_BV(PORT##port##pin);          \
+  DDR##port |= _BV(DD##port##pin)
 
-#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
-  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW);
+  MUOS_STEPPER_ENABLEALL_INOUT_HW;
+#undef ENABLEALL
 #endif
 
-  MUOS_PP_CODEGEN(MUOS_STEPPER_DIR_DDR, MUOS_STEPPER_DIR_HW);
 
-  MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_PIN, MUOS_STEPPER_HW);
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
+  TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                            \
+  DDR##dirport |= _BV(DD##dirport##dirpin);                                     \
+  MUOS_STEPPER_PIN_IDLE_##out_mode(timer, output);                              \
+  OC##timer##output##_DDR |=                                                    \
+    _BV(OC##timer##output##_BIT);
 
-  MUOS_PP_CODEGEN(MAKE_STEPPER_INIT_DDR, MUOS_STEPPER_HW);
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
+  TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));    \
+  PORT##port &= ~mask;                                  \
+  DDR##port |= mask;
 
-  for(uint8_t i = 0; i < MUOS_STEPPER_COUNT; ++i)
-    muos_steppers[i].state = MUOS_STEPPER_OFF;
+  MUOS_STEPPER_HW;
+#undef STEPDIR
+#undef UNIPOLAR
 }
+
+
+
+
+
+
+
+/*
+  enabling / disabling
+ */
+
+
+void
+muos_hw_stepper_disable_all (void)
+{
+#ifdef MUOS_STEPPER_ENABLEALL_INOUT_HW
+  // port to output, pulled down
+#define ENABLEALL(port, pin)                    \
+  DDR##port |= _BV(DD##port##pin);
+
+  MUOS_STEPPER_ENABLEALL_INOUT_HW;
+#undef ENABLEALL
+#endif
+
+  //TODO: set pin to defined state
+#define DISABLE_TIMER(timer)                    \
+  TCCR##timer##A = 0;                           \
+  TCCR##timer##B = 0;                           \
+  TIMSK##timer &= ~_BV(TOIE##timer);
+
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol) \
+  DISABLE_TIMER(timer);
+
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
+  DISABLE_TIMER(timer)                                  \
+  PORT##port = (PORT##port & ~mask);
+
+  MUOS_STEPPER_HW;
+#undef DISABLE_TIMER
+#undef STEPDIR
+#undef UNIPOLAR
+}
+
+
+
+muos_error
+muos_hw_stepper_enable_all (void)
+{
+#ifdef MUOS_STEPPER_ENABLEALL_INOUT_HW
+  bool must_wait; /* only wait when we really switch the steppers on */
+
+#define ENABLEALL(port, pin)                                                                            \
+  must_wait = (DDR##port & _BV(DD##port##pin));                                                         \
+  DDR##port &= ~_BV(DD##port##pin);                                                                     \
+  if (must_wait                                                                                         \
+      && muos_warn_wait_timeout != muos_wait (0, 0, MUOS_CLOCK_NANOSECONDS (MUOS_STEPPER_ENABLE_NS)))   \
+    {                                                                                                   \
+      DDR##port |= _BV(DD##port##pin);                                                                  \
+      return muos_warn_sched_depth;                                                                     \
+    }                                                                                                   \
+  if ((PIN##port & _BV(P##port##pin)) == 0)                                                             \
+    {                                                                                                   \
+      muos_stepper_disable_all ();                                                                      \
+      DDR##port |= _BV(DD##port##pin);                                                                  \
+      return muos_error_stepper_state;                                                                  \
+    }
+
+  MUOS_STEPPER_ENABLEALL_INOUT_HW;
+#undef ENABLEALL
+#endif
+
+  // enable unipolar motors
+  uint8_t value; (void) value;
+
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)
+
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)                                             \
+  value = muos_stepper_table_##table[((uint8_t)muos_steppers[hw].position                       \
+                                      + stepper_hw_unipolar_state_##hw.phase)                   \
+                                     %sizeof(muos_stepper_table_##table)] & mask;               \
+  PORT##port = (PORT##port & ~mask) | value;
+
+  MUOS_STEPPER_HW;
+#undef STEPDIR
+#undef UNIPOLAR
+
+  return muos_success;
+}
+
+
+
+
+
+/*
+ start/stop/direction
+*/
+
+
+muos_error
+muos_hw_stepper_set_direction (uint8_t hw, bool dir)
+{
+  switch (hw)
+    {
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
+      case hw:                                                                  \
+        if (dir^dirpol)                                                         \
+          PORT##dirport &= ~_BV(P##dirport##dirpin);                            \
+        else                                                                    \
+          PORT##dirport |= _BV(P##dirport##dirpin);                             \
+        break;
+
+      //TODO: dirpol for unipolar
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
+      case hw:                                          \
+        if (dir)                                        \
+           stepper_hw_unipolar_state_##hw.dir_ena = 1;  \
+        else                                            \
+          stepper_hw_unipolar_state_##hw.dir_ena = -1;  \
+        break;
+
+      MUOS_STEPPER_HW;
+#undef STEPDIR
+#undef UNIPOLAR
+
+    default:
+      return muos_error_nohw;
+    }
+
+  //PLANNED: busy loop for very short delays, eventually we need muos function for this
+  //PLANNED: only delay when direction was changed
+  _delay_loop_2 (((MUOS_STEPPER_DIR_NS - 5250) * 70000) / 16000000);
+  return muos_success;
+}
+
+
+
+
+
 
 
 //TODO: conditional for different parts
@@ -77,226 +450,80 @@ muos_hw_stepper_init (void)
 static const uint16_t timerdividers0[] = {1,8,64,256,1024};
 static const uint16_t* const timerdividers1 = timerdividers0;
 static const uint16_t timerdividers2[] = {1,8,32,64,128,256,1024};
+#else
+#error "unknown hardware"
 #endif
 
-//PLANNED: dynamic prescaler change to increase range and resolution
-//PLANNED: does const uint8_t hw compile better?
+//PLANNED: abstract F_CPU for timers running on other clock sources
 
 muos_error
-muos_hw_stepper_start (uint8_t hw, uint8_t prescale, uint16_t speed_raw)
+muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
 {
   switch (hw)
     {
-      //TODO: implement for other timers (define in hardware header)
-      MUOS_PP_CODEGEN(MAKE_STEPPER_START, MUOS_STEPPER_HW);
+#define TIMER_START(timer, output, output_mode, wgm)                                            \
+        TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);   \
+        TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                      \
+        MUOS_STEPPER_TOP(timer, wgm) = speed_in;                                                \
+        TIFR##timer = _BV(TOV##timer);                                                          \
+        TIMSK##timer = _BV(TOIE##timer);                                                        \
+        TCCR##timer##B |= prescale                                                              \
 
-    default:
-      return muos_error_nohw;
-    }
-
-  return muos_success;
-}
-
-
-muos_error
-muos_hw_stepper_stop (uint8_t hw)
-{
-  switch (hw)
-    {
-      //TODO: implement for other timers (define in hardware header)
-      MUOS_PP_CODEGEN(MAKE_STEPPER_STOP, MUOS_STEPPER_HW);
-
-    default:
-      return muos_error_nohw;
-    }
-
-  return muos_success;
-}
-
-
-
-muos_error
-muos_hw_stepper_set_direction (uint8_t hw, bool dir)
-{
-  switch (hw)
-    {
-      MUOS_PP_CODEGEN(MAKE_STEPPER_SET_DIR, MUOS_STEPPER_DIR_HW);
-
-    default:
-      return muos_error_nohw;
-    }
-
-  //PLANNED: busy loop for very short delays, eventually we need muos function for this
-  _delay_loop_2 (((MUOS_STEPPER_DIR_NS - 5250) * 70000) / 16000000);
-  return muos_success;
-}
-
-
-
-
-muos_error
-muos_hw_stepper_register_action (uint8_t hw,
-                                 int32_t position,
-                                 uint8_t action,
-                                 uintptr_t arg)
-{
-  if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
-
-  if (!muos_stepper_mutable_state(hw))
-    {
-      return muos_error_stepper_state;
-    }
-
-  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
-    {
-      if (!muos_steppers[hw].position_match[i].whattodo)
-        {
-          muos_steppers[hw].position_match[i].position = position;
-          muos_steppers[hw].position_match[i].whattodo = action;
-          muos_steppers[hw].position_match[i].arg = arg;
-          return muos_success;
-        }
-    }
-
-  return muos_error_stepper_noslot;
-}
-
-
-muos_error
-muos_hw_stepper_remove_action (uint8_t hw,
-                               int32_t position,
-                               uint8_t action,
-                               uintptr_t arg)
-{
-  if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
-
-  if (!muos_stepper_mutable_state(hw))
-    {
-      return muos_error_stepper_state;
-    }
-
-  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
-    {
-      if (muos_steppers[hw].position_match[i].whattodo == action
-          && muos_steppers[hw].position_match[i].position == position
-          && muos_steppers[hw].position_match[i].arg == arg)
-        {
-          muos_steppers[hw].position_match[i].whattodo = 0;
-          return muos_success;
-        }
-    }
-
-  return muos_error_stepper_noslot;
-}
-
-
-
-#ifdef MUOS_STEPPER_DISABLEALL_INOUT_HW
-
-muos_error
-muos_hw_stepper_enableall (void)
-{
-  // nothing needs to be done when already enabled
-  if (MUOS_STEPPER_DISABLEALL_IS_INPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW)
-      && !MUOS_STEPPER_DISABLEALL_CHECK (MUOS_STEPPER_DISABLEALL_INOUT_HW))
-      return muos_success;
-
-  MUOS_STEPPER_DISABLEALL_DDR_INPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
-
-  MUOS_STEPPER_DISABLEALL_ENABLE (MUOS_STEPPER_DISABLEALL_INOUT_HW);
-
-  if (muos_warn_wait_timeout != muos_wait (0, 0, MUOS_CLOCK_NANOSECONDS (MUOS_STEPPER_ENABLE_NS)))
-    {
-      MUOS_STEPPER_DISABLEALL_DDR_OUTPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
-      return muos_warn_sched_depth;
-    }
-
-  if (MUOS_STEPPER_DISABLEALL_CHECK (MUOS_STEPPER_DISABLEALL_INOUT_HW))
-    {
-      return muos_success;
-    }
-
-  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT (MUOS_STEPPER_DISABLEALL_INOUT_HW);
-
-  return muos_error_stepper_state;
-}
-
-
-
-void
-muos_hw_stepper_disableall (void)
-{
-  MUOS_STEPPER_DISABLEALL_SET (MUOS_STEPPER_DISABLEALL_INOUT_HW);
-  MUOS_STEPPER_DISABLEALL_DDR_OUTPUT(MUOS_STEPPER_DISABLEALL_INOUT_HW);
-}
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0 //TODO: needs locked access while running, why does one want the position when running?
-int32_t
-muos_hw_stepper_position (uint8_t hw)
-{
-  switch (hw)
-    {
-#define MUOS_STEPPER_STOP_(timer, output, output_mode, wgm)  \
-      TCCR##timer##B = 0;                                    \
-      TIMSK##timer &= ~_BV(TOIE##timer);
-
-#define MAKE_STEPPER_STOP(index, hw)            \
-      case index:                               \
-        MUOS_STEPPER_STOP_ hw;                  \
+#define STEPDIR(hw, timer, output, output_mode, wgm, dirport, dirpin, dirpol)                   \
+      case hw:                                                                                  \
+        OCR##timer##B =                                                                         \
+          (F_CPU / (1000UL * timerdividers##timer[prescale - 1]))                               \
+          * (uint32_t)MUOS_STEPPER_STEP_NS / 1000000L ;                                         \
+        muos_steppers[hw].speed_flt = 65535;                                                    \
+        TIMER_START(timer, output, output_mode, wgm);                                           \
         break;
 
-      MUOS_PP_CODEGEN(MAKE_STEPPER_STOP, MUOS_STEPPER_HW);  /* generate code */
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
+      case hw:                                          \
+        muos_steppers[hw].speed_flt = 65535;            \
+        TIMER_START(timer, B, 0, wgm);                  \
+        break;
+
+      MUOS_STEPPER_HW;
+
+#undef TIMER_SETUP
+#undef STEPDIR
+#undef UNIPOLAR
 
     default:
       return muos_error_nohw;
     }
+
+  return muos_success;
 }
-#endif
 
 
 
-
-#if 0
-//TODO: next
-//muos_error
-//muos_hw_stepper_stop_isr (uint8_t hw);
-
-muos_error
-muos_hw_stepper_stop_isr (uint8_t hw)
-{
-  
-}
-#endif
-
-
-#if 0 //TODO: implement
 void
-muos_hw_stepper_on (uint8_t hw)
+muos_hw_stepper_stop (uint8_t hw)
 {
-  
-  
-}
-#endif
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
+  case hw:                                                                      \
+  TCCR##timer##A = 0;                                                           \
+  TCCR##timer##B = 0;                                                           \
+  TIMSK##timer &= ~_BV(TOIE##timer);                                            \
+  break;
 
+
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
+  case hw:                                              \
+  TCCR##timer##A = 0;                                   \
+  TCCR##timer##B = 0;                                   \
+  TIMSK##timer &= ~_BV(TOIE##timer);                    \
+  break;
+
+  switch (hw)
+    {
+      MUOS_STEPPER_HW;
+    }
+#undef STEPDIR
+#undef UNIPOLAR
+}
 
 
 #endif
