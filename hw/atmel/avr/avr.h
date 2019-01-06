@@ -60,7 +60,6 @@ muos_hw_stepper_init (void);
 
 #define MUOS_HW_INIT  CLKPR = _BV(CLKPCE); CLKPR = 0
 
-//FIXME: use HW() macros other way around
 #define MUOS_GPIO_SET(port, pin) PORT##port |= _BV(PORT##port##pin)
 #define MUOS_GPIO_SET_(hw) MUOS_GPIO_SET hw
 

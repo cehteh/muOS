@@ -53,6 +53,7 @@ void muos_die (void);
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT
 
 // stash some status bits together
+//TODO: use GPIO register
 extern volatile struct muos_status_flags
 {
   uint8_t schedule:1;
@@ -70,6 +71,8 @@ extern volatile struct muos_status_flags
 //muos_api:
 //: .Wait for some condition come true
 //: ----
+//: typedef bool (*muos_wait_fn)(intptr_t)
+//:
 //: muos_error muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 //: ----
 //: +fn+::
@@ -113,7 +116,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout);
 //: 'count' limit got reached or the scheduler depth limit got reached. Same precautions
 //: as on 'muos_wait()' apply.
 //:
-//: Yielding id applicable when one has code which loops for some extended time but shall
+//: Yielding is applicable when one has code which loops for some extended time but shall
 //: not stall the work to be done *and* this code will never be called recursively.
 //:
 //: 'muos_yield()' is only available when MUOS_SCHED_DEPTH is defined.
@@ -126,5 +129,7 @@ muos_error
 muos_yield (uint8_t count);
 #endif // MUOS_SCHED_DEPTH
 
+//TODO: document me
+#define MUOS_ATOMIC_READ(dest, source) do {dest = source;} while (dest != source)
 
 #endif

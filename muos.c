@@ -31,8 +31,8 @@
 //PLANNED: stash muos_now_ away on recursive mainloops
 //PLANNED: make ERRORFN optional
 //PLANNED: ignoremask for ERRORFN for errors handled elsewhere
-//PLANNED: fast-track interrupts which signal the scheduling loop that no scheduling should be done after wake
 //PLANNED: instead disabling interrupts have a mutex and temp buffer for work queues
+//PLANNED: finer locking in mainloop instead interrupt disable, per queue
 
 volatile struct muos_status_flags muos_status;
 
@@ -154,7 +154,6 @@ muos_yield (uint8_t count)
         {
           do
             {
-              --count;
               if (muos_error_pending ())
                 {
                   MUOS_ERRORFN ();
@@ -163,7 +162,7 @@ muos_yield (uint8_t count)
               MUOS_DEBUG_SWITCH_TOGGLE;
               muos_now_ = muos_clock_now_isr ();
             }
-          while (count && muos_clpq_schedule (muos_now_));
+          while (count-- && muos_clpq_schedule (muos_now_));
         }
       while (count && muos_hpq_schedule ());
     }
