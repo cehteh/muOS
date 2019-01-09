@@ -427,7 +427,7 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 #undef UNIPOLAR
 
     default:
-      return muos_error_nohw;
+      return muos_error_nodev;
     }
 
   //PLANNED: busy loop for very short delays, eventually we need muos function for this
@@ -491,7 +491,7 @@ muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
 #undef UNIPOLAR
 
     default:
-      return muos_error_nohw;
+      return muos_error_nodev;
     }
 
   return muos_success;

@@ -169,7 +169,7 @@ muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD)
     return muos_error_stepper_state;
@@ -209,7 +209,7 @@ muos_stepper_move_raw (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ON)
     return muos_error_stepper_state;
@@ -240,7 +240,7 @@ muos_stepper_move_cal (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD
       || !muos_steppers_config_lock)
@@ -276,7 +276,7 @@ muos_stepper_move_rel (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
       || !muos_steppers_config_lock)
@@ -390,7 +390,7 @@ muos_stepper_slope_prep (uint8_t hw,
                          uint16_t out_steps)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (!slope)
     return muos_error_stepper_state;
@@ -449,7 +449,7 @@ muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 {
  if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
       || !muos_steppers_config_lock
@@ -497,7 +497,7 @@ muos_stepper_register_action (uint8_t hw,
                               uintptr_t arg)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
@@ -521,7 +521,7 @@ muos_stepper_remove_action (uint8_t hw,
                             uintptr_t arg)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
@@ -545,7 +545,7 @@ bool
 muos_stepper_not_moving (intptr_t hw)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nohw;
+    return muos_error_nodev;
 
   return muos_steppers[hw].state < MUOS_STEPPER_RAW;
 }
