@@ -82,26 +82,26 @@ muos_error
 muos_hpq_pushback (muos_queue_function f);
 
 muos_error
-muos_hpq_pushback_arg (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushback_arg (muos_queue_function f, intptr_t a);
 
 muos_error
 muos_hpq_pushfront (muos_queue_function f);
 
 muos_error
-muos_hpq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
+muos_hpq_pushfront_arg (muos_queue_function f, intptr_t a);
 
 
 muos_error
 muos_hpq_pushback_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_hpq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
+muos_hpq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 muos_error
 muos_hpq_pushfront_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_hpq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
+muos_hpq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 intptr_t
 muos_hpq_pop_isr (void);

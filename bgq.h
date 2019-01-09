@@ -81,25 +81,25 @@ muos_error
 muos_bgq_pushback_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_bgq_pushback_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
+muos_bgq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 muos_error
 muos_bgq_pushfront_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_bgq_pushfront_arg_isr (muos_queue_function_arg f, intptr_t a, bool schedule);
+muos_bgq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 muos_error
 muos_bgq_pushback (muos_queue_function f);
 
 muos_error
-muos_bgq_pushback_arg (muos_queue_function_arg f, intptr_t a);
+muos_bgq_pushback_arg (muos_queue_function f, intptr_t a);
 
 muos_error
 muos_bgq_pushfront (muos_queue_function f);
 
 muos_error
-muos_bgq_pushfront_arg (muos_queue_function_arg f, intptr_t a);
+muos_bgq_pushfront_arg (muos_queue_function f, intptr_t a);
 
 intptr_t
 muos_bgq_pop_isr (void);

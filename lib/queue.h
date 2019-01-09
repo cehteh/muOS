@@ -27,7 +27,6 @@
 #include <stdbool.h>
 
 typedef void (*muos_queue_function)(void);
-typedef void (*muos_queue_function_arg)(intptr_t);
 
 
 #if MUOS_QUEUE_INDEX == 4
@@ -159,13 +158,13 @@ void
 muos_queue_pushback (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushback_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushback_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn, intptr_t arg);
 
 void
 muos_queue_pushfront (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function_arg fn, intptr_t arg);
+muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn, intptr_t arg);
 
 intptr_t
 muos_queue_pop (struct muos_queue* queue, const muos_queue_size size);
