@@ -1,0 +1,104 @@
+=== State Machines
+
+MµOS provides a infrastructure for implementing generic state
+machines. One can For this the user has to define a list of all
+possible states and then define functions for the transistions between
+these states.
+
+While the list of all possible states is global, one can define
+multiple independent state machines. The transition implementation
+will ensure that only valid states appear in each machine.
+
+Each state machine stores a few parameters to queue continutation
+states. This allows the implementation of nested states which return
+to a calling state or sequencing states in some predefined order.
+
+When more than one state machine is defined an user defined 'extra'
+data member is passed around for identifying the actual state machine.
+
+When multiple state machines are defined they are identified by index.
+
+==== Example
+
+
+Prepare the file 'states.def', configure the 'Makefile' with
+-DMUOS_SM_DEF='states.def' and -DMUOS_SM_NUM=1.
+
+.states.def
+[source,c]
+----
+#define MUOS_SM_STATES           \
+        STATE(INIT)              \
+        STATE(ONE)               \
+        STATE(TWO)
+----
+
+provide enter/leave functions (empty bodies for example):
+
+.statemachine.c
+[source,c]
+----
+muos_error
+state_INIT_leave (enum muos_sm_state trans[4])
+\{
+  return muos_success;
+\}
+
+void
+state_INIT_enter (void)
+\{
+\}
+
+muos_error
+state_ONE_leave (enum muos_sm_state trans[4])
+\{
+  return muos_success;
+\}
+
+void
+state_ONE_enter (void)
+\{
+\}
+
+muos_error
+state_TWO_leave (enum muos_sm_state trans[4])
+\{
+  return muos_success;
+\}
+
+void
+state_TWO_enter (void)
+\{
+\}
+----
+
+Then initialize the state machine within the MUOS_INIT function or
+somewhere else within the application and eventually call state
+transitions. Error returns left out in this example:
+[source,c]
+----
+void
+init (void)
+\{
+  muos_interrupt_enable ();
+  MUOS_SM_INIT (INIT);
+
+  ...
+
+  MUOS_SM_CHANGE(ONE);
+\}
+----
+
+
+==== API
+
+PIPADOC:=sm_api
+
+==== configuration
+
+PIPADOC:@sm_config
+
+
+
+
+

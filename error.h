@@ -46,6 +46,7 @@
     MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                           \
     MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */                     \
     MUOS_ERROR(error_nodev) /*: {ERRORDEF} device index out of range */                                 \
+    MUOS_ERROR(error_sm_state) /*: {ERRORDEF} state transition not possible */                          \
     MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                         \
     MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                         \
     MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                         \

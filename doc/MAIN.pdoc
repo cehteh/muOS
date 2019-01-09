@@ -35,6 +35,8 @@ PIPADOC:=muos
 
 == Drivers
 
+PIPADOC:=state_machines
+
 PIPADOC:=serial
 
 PIPADOC:=eeprom
