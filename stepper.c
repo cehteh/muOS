@@ -545,7 +545,7 @@ bool
 muos_stepper_not_moving (intptr_t hw)
 {
   if (hw >= MUOS_STEPPER_COUNT)
-    return muos_error_nodev;
+    return false;
 
   return muos_steppers[hw].state < MUOS_STEPPER_RAW;
 }
