@@ -128,26 +128,63 @@ muos_configstore_get_status (void);
 //TODO: document implicit config_size
 #define CONFIGSTORE_DATA_IMPL                           \
   CONFIGSTORE_ENTRY  (size_t, 0, config_size,           \
+                      none, 0, 0, 0,                    \
                       "configuration structure size")   \
     CONFIGSTORE_DATA
 
 struct muos_configstore_data
 {
-#define CONFIGSTORE_ENTRY(type, ary, name, descr) type name CONFIGSTORE_ARY(ary);
+#define string char
+#define CONFIGSTORE_ENTRY(type, ary, name, validate, min, max, default, descr) type name CONFIGSTORE_ARY(ary);
   CONFIGSTORE_DATA_IMPL
 #undef CONFIGSTORE_ENTRY
+#undef string
 };
 
 
-#if 0
 enum muos_configstore_id
   {
-#define CONFIGSTORE_ENTRY(type, ary, name, descr) MUOS_CONFIGSTORE_ID_##name,
-   CONFIGSTORE_DATA
+#define CONFIGSTORE_ENTRY(type, ary, name, validate, min, max, default, descr) MUOS_CONFIGSTORE_ID_##name,
+   CONFIGSTORE_DATA_IMPL
 #undef CONFIGSTORE_ENTRY
+   MUOS_CONFIGSTORE_MAX_ID
   };
-#endif
 
+
+
+// the types supported by the configstore
+#define MUOS_CONFIGSTORE_TYPES                  \
+  TYPE(int8_t)                                  \
+    TYPE(uint8_t)                               \
+    TYPE(int16_t)                               \
+    TYPE(uint16_t)                              \
+    TYPE(int32_t)                               \
+    TYPE(uint32_t)                              \
+    TYPE(size_t)                                \
+    TYPE(string) /* string as char array */
+
+enum muos_configstore_type
+  {
+#define TYPE(type) MUOS_CONFIGSTORE_TYPE_##type,
+   MUOS_CONFIGSTORE_TYPES
+#undef TYPE
+   MUOS_CONFIGSTORE_MAX_TYPE
+  };
+
+
+
+enum muos_configstore_type
+muos_configstore_type (enum muos_configstore_id id);
+
+
+uint8_t
+muos_configstore_ary (enum muos_configstore_id id);
+
+muos_error
+muos_configstore_output_name (enum muos_configstore_id id);
+
+muos_error
+muos_configstore_output_value (enum muos_configstore_id id, uint8_t index);
 
 
 // API

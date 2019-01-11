@@ -22,6 +22,9 @@
 
 #include <muos/configstore.h>
 #include <muos/eeprom.h>
+#include <muos/io.h>
+
+#include <stddef.h>
 
 #ifdef MUOS_EEPROM_CRC16_INCLUDE
 #include MUOS_EEPROM_CRC16_INCLUDE
@@ -36,6 +39,58 @@
 static
 muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 
+#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) static const char __flash configstore_##name##_str[] = #name;
+CONFIGSTORE_DATA_IMPL
+#undef CONFIGSTORE_ENTRY
+
+const char __flash * const __flash muos_configstore_names[] =
+  {
+#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) configstore_##name##_str,
+   CONFIGSTORE_DATA_IMPL
+#undef CONFIGSTORE_ENTRY
+  };
+
+//PLANNED: do we need an array of type names?
+
+
+static const uint8_t __flash type_size[] =
+  {
+#define string char
+#define TYPE(type) sizeof(type),
+   MUOS_CONFIGSTORE_TYPES
+#undef TYPE
+#undef string
+  };
+
+
+
+struct muos_configstore_schema
+{
+  enum muos_configstore_type type;
+  size_t offset;
+  uint8_t ary;
+};
+
+
+
+
+
+
+static const struct muos_configstore_schema __flash schema[] =
+  {
+#define ARRAY(len) len
+#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) \
+   {                                                                         \
+    MUOS_CONFIGSTORE_TYPE_##type,                                            \
+    offsetof(struct muos_configstore_data, name),                            \
+    ary                                                                      \
+   },
+   CONFIGSTORE_DATA_IMPL
+#undef CONFIGSTORE_ENTRY
+#undef ARRAY
+  };
+
+
 struct muos_configstore_frame
 {
   struct muos_configstore_data userdata;
@@ -48,6 +103,70 @@ struct muos_configstore_frame
 //TODO: calculate type from array capacity
 //static uint16_t pos;
 static struct muos_configstore_frame the_configstore;
+
+
+static void*
+muos_configstore_value (enum muos_configstore_id id, uint8_t index)
+{
+  return (void*) &the_configstore + schema[id].offset + index* type_size[schema[id].type];
+}
+
+
+
+enum muos_configstore_type
+muos_configstore_type (enum muos_configstore_id id)
+{
+  return schema[id].type;
+}
+
+uint8_t
+muos_configstore_ary (enum muos_configstore_id id)
+{
+  return schema[id].ary;
+}
+
+
+muos_error
+muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
+{
+  void* value = muos_configstore_value (id, index);
+
+  switch (schema[id].type)
+    {
+    case MUOS_CONFIGSTORE_TYPE_int8_t:
+      return muos_output_int8 (*(int8_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_uint8_t:
+      return muos_output_uint8 (*(uint8_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_int16_t:
+      return muos_output_int16 (*(int16_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_uint16_t:
+      return muos_output_uint16 (*(uint16_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_int32_t:
+      return muos_output_int32 (*(int32_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_uint32_t:
+      return muos_output_uint32 (*(uint32_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_size_t:
+      return muos_output_uintptr (*(size_t*) value);
+
+    case MUOS_CONFIGSTORE_TYPE_string:
+      return muos_output_cstr ((const char*) value);
+
+    default:
+      return muos_error_error; /*will never happen*/
+    }
+}
+
+muos_error
+muos_configstore_output_name (enum muos_configstore_id id)
+{
+  return muos_output_fstr (muos_configstore_names[id]);
+}
 
 
 muos_configstore_status
@@ -189,6 +308,8 @@ muos_configstore_save (muos_configstore_callback cb)
     return muos_error_configstore_locked;
   else if (status < CONFIGSTORE_VALID)
     return muos_error_configstore_invalid;
+
+  //PLANNED: call user defined verification function, checking the whole config
 
   ++status;
 
