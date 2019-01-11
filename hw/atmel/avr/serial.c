@@ -31,6 +31,9 @@
 void
 muos_hw_serial_init (void)
 {
+#ifndef MUOS_SERIAL_RXSYNC
+  muos_status.serial_rx_sync = true;
+#endif
 #define BAUD (MUOS_SERIAL_BAUD)
 #define BAUD_TOL 3
 #include <util/setbaud.h>
@@ -101,11 +104,15 @@ ISR(USART_RX_vect)
 
   //PLANNED: sync when line is idle
 
+#ifdef MUOS_SERIAL_RXSYNC
   if (!err && !muos_status.serial_rx_sync)
     {
       if (data == MUOS_SERIAL_RXSYNC)
         muos_status.serial_rx_sync = true;
     }
+#else
+  (void) err;
+#endif
 
   if (muos_status.serial_rx_sync)
     {
