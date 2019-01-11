@@ -160,6 +160,12 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
 //:
 //: muos_error
 //: muos_sm_change (uint8_t sm, enum muos_sm_state params[4]);
+//:
+//: #define MUOS_SM_NEXT(sm)
+//: #define MUOS_SM_NEXT
+//:
+//: muos_error
+//: muos_sm_next (uint8_t sm);
 //: ----
 //:
 //: A state transition on a initialized state machine will be initiated by calling
@@ -177,11 +183,15 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
 //: On scheduling before the 'enter' function for the new state gets called the
 //: current state and params will be set to the new state.
 //:
+//: 'MUOS_SM_NEXT' transits into the state given by the existing params.
+//:
 #if MUOS_SM_NUM > 1
 
 #define MUOS_SM_CHANGE(sm, newstate, ...) MUOS_SM_CHANGE_(sm, newstate, ## __VA_ARGS__, NONE, NONE, NONE)
-#define MUOS_SM_CHANGE_(sm, newstate, p0, p1, p2, ...)                                                    \
+#define MUOS_SM_CHANGE_(sm, newstate, p0, p1, p2, ...)                                                  \
   muos_sm_change (sm, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2})
+
+#define MUOS_SM_NEXT(sm) muos_sm_next (sm)
 
 #else
 
@@ -189,10 +199,16 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
 #define MUOS_SM_CHANGE_(newstate, p0, p1, p2, ...)                                                    \
   muos_sm_change (0, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2})
 
+#define MUOS_SM_NEXT muos_sm_next (0)
+
 #endif
 
 muos_error
 muos_sm_change (uint8_t sm, enum muos_sm_state params[4]);
+
+muos_error
+muos_sm_next (uint8_t sm);
+
 
 
 

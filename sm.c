@@ -181,6 +181,46 @@ muos_sm_change (uint8_t sm, enum muos_sm_state params[4])
   return muos_success;
 }
 
+muos_error
+muos_sm_next (uint8_t sm)
+{
+  if (sm >= MUOS_SM_NUM)
+    return muos_error_nodev;
+
+  if (statemachine[sm].current == STATE_NONE
+      || statemachine[sm].current == statemachine[sm].params[0])
+    return muos_error_sm_state;
+
+  // futile because ISR's may push things to the hpq
+  //if (muos_hpq_check (2))
+  //  return muos_error_hpq_overflow;
+  //PLANNED: intptr_t* muos_queue_reserve(num, init) for reserving elements on a queue (hpq)
+
+  if (state_definitions[statemachine[sm].current].leave)
+#if MUOS_SM_NUM > 1
+    MUOS_OK(state_definitions[statemachine[sm].current].leave(statemachine[sm].params), statemachine[sm].extra);
+#else
+    MUOS_OK(state_definitions[statemachine[sm].current].leave(statemachine[sm].params));
+#endif
+
+  if (state_definitions[statemachine[sm].params[0]].enter)
+    {
+      statemachine[sm].current = STATE_NONE;
+      //FIXME: wait for 2 elements free, locked wait
+      MUOS_OK(muos_hpq_pushback_arg (state_enter, sm));
+    }
+  else
+    {
+      statemachine[sm].current = statemachine[sm].params[0];
+      statemachine[sm].params[0] = statemachine[sm].params[1];
+      statemachine[sm].params[1] = statemachine[sm].params[2];
+      statemachine[sm].params[2] = statemachine[sm].params[3];
+      statemachine[sm].params[3] = STATE_NONE;
+    }
+
+  return muos_success;
+}
+
 #if MUOS_SM_NUM > 1
 muos_error
 muos_sm_init (uint8_t sm, enum muos_sm_state params[4], intptr_tr extra)
