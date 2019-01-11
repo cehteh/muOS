@@ -25,7 +25,7 @@
 
 #include <string.h>
 
-extern void MUOS_LINEEDIT_CALLBACK (const char*);
+extern void MUOS_LINEEDIT_CALLBACK (char*);
 
 static uint8_t cursor;
 static uint8_t used;
