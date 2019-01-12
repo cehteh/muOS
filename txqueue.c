@@ -454,7 +454,7 @@ muos_txqueue_output_nl (void)
 muos_error
 muos_txqueue_output_csi_char (const char c)
 {
-  if (!muos_txqueue_free () >= 2)
+  if (muos_txqueue_free () < 2)
     {
       return muos_error_txqueue_overflow;
     }
