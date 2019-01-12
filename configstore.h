@@ -63,7 +63,8 @@
 //: .Configuration Description
 //: ----
 //: #define CONFIGSTORE_DATA             {__BACKSLASH__}
-//:   CONFIGSTORE_ENTRY(type, ary, name) {__BACKSLASH__}
+//FIXME: doc not correct lacks defaults validation
+//:   ENTRY(type, ary, name) {__BACKSLASH__}
 //:   ...
 //: ----
 //:
@@ -81,9 +82,10 @@
 //: Configuration variables are defined by a C-Preprocessor defined DSL in a single included file.
 //: The 'MUOS_CONFIGSTORE_INCLUDE' configuration from the 'Makefile' must point to this file.
 //:
-//: The user defines 'CONFIGSTORE_DATA' to a sequence of 'CONFIGSTORE_ENTRY(type, ary, name)'
+//: The user defines 'CONFIGSTORE_DATA' to a sequence of 'ENTRY(type, ary, name)'
 //: definitions. MµOS uses this to expand the provided data into various datastructures.
 //:
+
 
 typedef void (*muos_configstore_callback)(void);
 
@@ -127,26 +129,26 @@ muos_configstore_get_status (void);
 //TODO: add callback when config gets changed for reinitializeing dependencies
 //TODO: document implicit config_size
 #define CONFIGSTORE_DATA_IMPL                           \
-  CONFIGSTORE_ENTRY  (size_t, 0, config_size,           \
-                      none, 0, 0, 0,                    \
-                      "configuration structure size")   \
+  ENTRY(size_t, 0, config_size, 0,                      \
+        none, 0, 0,                                     \
+        "configuration structure size")                 \
     CONFIGSTORE_DATA
 
 struct muos_configstore_data
 {
 #define string char
-#define CONFIGSTORE_ENTRY(type, ary, name, validate, min, max, default, descr) type name CONFIGSTORE_ARY(ary);
+#define ENTRY(type, ary, name, default, validate, min, max, descr) type name CONFIGSTORE_ARY(ary);
   CONFIGSTORE_DATA_IMPL
-#undef CONFIGSTORE_ENTRY
+#undef ENTRY
 #undef string
 };
 
 
 enum muos_configstore_id
   {
-#define CONFIGSTORE_ENTRY(type, ary, name, validate, min, max, default, descr) MUOS_CONFIGSTORE_ID_##name,
+#define ENTRY(type, ary, name, default, validate, min, max, descr) MUOS_CONFIGSTORE_ID_##name,
    CONFIGSTORE_DATA_IMPL
-#undef CONFIGSTORE_ENTRY
+#undef ENTRY
    MUOS_CONFIGSTORE_MAX_ID
   };
 

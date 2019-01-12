@@ -39,15 +39,15 @@
 static
 muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 
-#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) static const char __flash configstore_##name##_str[] = #name;
+#define ENTRY(type, ary, name, default, verify, min, max, descr) static const char __flash configstore_##name##_str[] = #name;
 CONFIGSTORE_DATA_IMPL
-#undef CONFIGSTORE_ENTRY
+#undef ENTRY
 
 const char __flash * const __flash muos_configstore_names[] =
   {
-#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) configstore_##name##_str,
+#define ENTRY(type, ary, name, default, verify, min, max, descr) configstore_##name##_str,
    CONFIGSTORE_DATA_IMPL
-#undef CONFIGSTORE_ENTRY
+#undef ENTRY
   };
 
 //PLANNED: do we need an array of type names?
@@ -79,16 +79,27 @@ struct muos_configstore_schema
 static const struct muos_configstore_schema __flash schema[] =
   {
 #define ARRAY(len) len
-#define CONFIGSTORE_ENTRY(type, ary, name, verify, min, max, default, descr) \
+#define ENTRY(type, ary, name, default, verify, min, max, descr) \
    {                                                                         \
     MUOS_CONFIGSTORE_TYPE_##type,                                            \
     offsetof(struct muos_configstore_data, name),                            \
     ary                                                                      \
    },
    CONFIGSTORE_DATA_IMPL
-#undef CONFIGSTORE_ENTRY
+#undef ENTRY
 #undef ARRAY
   };
+
+
+#ifdef MUOS_CONFIGSTORE_DEFAULTS
+static const struct muos_configstore_data __flash configstore_defaults =
+  {
+
+#define ENTRY(type, ary, name, default, verify, min, max, descr) default,
+   CONFIGSTORE_DATA_IMPL
+#undef ENTRY
+  };
+#endif
 
 
 struct muos_configstore_frame
@@ -219,7 +230,11 @@ muos_configstore_initial (void)
   if (status == CONFIGSTORE_INVALID)
     {
       status = CONFIGSTORE_WLOCK;
+#ifdef MUOS_CONFIGSTORE_DEFAULTS
+      memcpy_P (&the_configstore.userdata, &configstore_defaults, sizeof(configstore_defaults));
+#endif
       the_configstore.userdata.config_size = sizeof (struct muos_configstore_data);
+
       return &the_configstore.userdata;
     }
   return NULL;
