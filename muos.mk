@@ -101,7 +101,7 @@ depclean:
 	$(CC) $(CFLAGS) $(MUOS_CONFIG) -c $< -o $@
 
 #TODO: document init system
-#PLANNED: make a complete header? not including drivers from muos.c 
+#PLANNED: make a complete header? not including drivers from muos.c
 muos/init.inc: $(filter-out muos/muos.c,$(SOURCES)) $(HEADERS)
 	$(PRINTFMT) $@ INIT_INC
 	sed -e 's/^\(muos_[^_]*_\([0-9]\+\)init\).*[^;]$$/\2 \1/p;d' $(SOURCES) $(HEADERS) |\

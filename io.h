@@ -124,7 +124,7 @@ ctrl
 
 
 //PLANNED: printf compatible sequence parser
-//PLANNED: simpler serquencer MUOS_OUTPUT(cstr("foo"),...)
+//PLANNED: simpler sequencer MUOS_OUTPUT(cstr("foo"),...)
 //#define MUOS_OUTPUT(...) MUOS_OUTPUT_(__VA_ARGS__, END)
 
 
