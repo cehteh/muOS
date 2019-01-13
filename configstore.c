@@ -41,14 +41,14 @@
 static
 muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 
-#define ENTRY(type, ary, name, default, verify, min, max, descr) static const char __flash configstore_##name##_str[] = #name;
+#define ENTRY(type, ary, name, default, min, max, descr) static const char __flash configstore_##name##_str[] = #name;
 CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 
 static
 const char __flash * const __flash muos_configstore_names[] =
   {
-#define ENTRY(type, ary, name, default, verify, min, max, descr) configstore_##name##_str,
+#define ENTRY(type, ary, name, default, min, max, descr) configstore_##name##_str,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
   };
@@ -76,13 +76,10 @@ struct muos_configstore_schema
 
 
 
-
-
-
 static const struct muos_configstore_schema __flash schema[] =
   {
 #define ARRAY(len) len
-#define ENTRY(type, ary, name, default, verify, min, max, descr) \
+#define ENTRY(type, ary, name, default, min, max, descr) \
    {                                                                         \
     MUOS_CONFIGSTORE_TYPE_##type,                                            \
     offsetof(struct muos_configstore_data, name),                            \
@@ -97,11 +94,25 @@ static const struct muos_configstore_schema __flash schema[] =
 #ifdef MUOS_CONFIGSTORE_DEFAULTS
 static const struct muos_configstore_data __flash configstore_defaults =
   {
-
-#define ENTRY(type, ary, name, default, verify, min, max, descr) default,
+#define ENTRY(type, ary, name, default, min, max, descr) default,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
   };
+#endif
+
+
+
+#ifdef MUOS_CONFIGSTORE_LIMITS
+static const struct
+{
+  int32_t min;
+  int32_t max;
+} __flash limits[] =
+{
+#define ENTRY(type, ary, name, default, min, max, descr) {min, max},
+  CONFIGSTORE_DATA_IMPL
+#undef ENTRY
+};
 #endif
 
 
@@ -201,6 +212,14 @@ muos_configstore_set (char* var, uint8_t index, char* val)
   void* dest = muos_configstore_value (id, index);
 
   long number = atol (val);
+
+#ifdef MUOS_CONFIGSTORE_LIMITS
+  if (schema[id].type != MUOS_CONFIGSTORE_TYPE_string)
+    {
+      if (number < limits[id].min || number > limits[id].max)
+        return muos_error_configstore;
+    }
+#endif
 
   switch (schema[id].type)
     {

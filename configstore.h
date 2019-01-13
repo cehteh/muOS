@@ -129,14 +129,14 @@ muos_configstore_get_status (void);
 //TODO: document implicit config_size
 #define CONFIGSTORE_DATA_IMPL                           \
   ENTRY(uint16_t, 0, config_size, 0,                    \
-        none, 0, 0,                                     \
+        2, 65535,                                       \
         "configuration structure size")                 \
     CONFIGSTORE_DATA
 
 struct muos_configstore_data
 {
 #define string char
-#define ENTRY(type, ary, name, default, validate, min, max, descr) type name CONFIGSTORE_ARY(ary);
+#define ENTRY(type, ary, name, default, min, max, descr) type name CONFIGSTORE_ARY(ary);
   CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 #undef string
@@ -145,7 +145,7 @@ struct muos_configstore_data
 
 enum muos_configstore_id
   {
-#define ENTRY(type, ary, name, default, validate, min, max, descr) CONFIGSTORE_ID_##name,
+#define ENTRY(type, ary, name, default, min, max, descr) CONFIGSTORE_ID_##name,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
    CONFIGSTORE_MAX_ID
