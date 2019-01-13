@@ -200,6 +200,8 @@ muos_configstore_set (char* var, uint8_t index, char* val);
 //configstore_api:
 //: .Loading and Saving
 //: ----
+//: typedef void (*muos_configstore_callback)(void)
+//:
 //: muos_error
 //: muos_configstore_load (muos_configstore_callback callback)
 //:
