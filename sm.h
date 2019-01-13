@@ -134,16 +134,16 @@ typedef void (*state_enter_fn)(void);
 #if MUOS_SM_NUM > 1
 #define MUOS_SM_INIT(sm, extra, newstate, ...) MUOS_SM_INIT_(sm, extra, newstate, ## __VA_ARGS__, NONE, NONE, NONE)
 #define MUOS_SM_INIT_(sm, extra, newstate, p0, p1, p2, ...)                                              \
-  muos_sm_init (sm, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2}, extra)
+  muos_sm_init (sm, (enum muos_sm_state [4]) {newstate, p0, p1, p2}, extra)
 
 muos_error
 muos_sm_init (uint8_t sm, enum muos_sm_state params[4], intptr_t extra);
 
 #else
 
-#define MUOS_SM_INIT(newstate, ...) MUOS_SM_INIT_(newstate, ## __VA_ARGS__, NONE, NONE, NONE)
+#define MUOS_SM_INIT(newstate, ...) MUOS_SM_INIT_(newstate, ## __VA_ARGS__, STATE_NONE, STATE_NONE, STATE_NONE)
 #define MUOS_SM_INIT_(newstate, p0, p1, p2, ...)                                                    \
-  muos_sm_init (0, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2})
+  muos_sm_init (0, (enum muos_sm_state [4]) {newstate, p0, p1, p2})
 
 muos_error
 muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
@@ -187,17 +187,17 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
 //:
 #if MUOS_SM_NUM > 1
 
-#define MUOS_SM_CHANGE(sm, newstate, ...) MUOS_SM_CHANGE_(sm, newstate, ## __VA_ARGS__, NONE, NONE, NONE)
+#define MUOS_SM_CHANGE(sm, newstate, ...) MUOS_SM_CHANGE_(sm, newstate, ## __VA_ARGS__, STATE_NONE, STATE_NONE, STATE_NONE)
 #define MUOS_SM_CHANGE_(sm, newstate, p0, p1, p2, ...)                                                  \
-  muos_sm_change (sm, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2})
+  muos_sm_change (sm, (enum muos_sm_state [4]) {newstate, p0, p1, p2})
 
 #define MUOS_SM_NEXT(sm) muos_sm_next (sm)
 
 #else
 
-#define MUOS_SM_CHANGE(newstate, ...) MUOS_SM_CHANGE_(newstate, ## __VA_ARGS__, NONE, NONE, NONE)
+#define MUOS_SM_CHANGE(newstate, ...) MUOS_SM_CHANGE_(newstate, ## __VA_ARGS__, STATE_NONE, STATE_NONE, STATE_NONE)
 #define MUOS_SM_CHANGE_(newstate, p0, p1, p2, ...)                                                    \
-  muos_sm_change (0, (enum muos_sm_state [4]) {STATE_##newstate, STATE_##p0,STATE_##p1,STATE_##p2})
+  muos_sm_change (0, (enum muos_sm_state [4]) {newstate, p0, p1, p2})
 
 #define MUOS_SM_NEXT muos_sm_next (0)
 
