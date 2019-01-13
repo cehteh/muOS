@@ -262,7 +262,7 @@ eeprom_read_done (void)
   else
     {
      status = CONFIGSTORE_INVALID;
-     muos_error_set (muos_error_configstore_invalid);
+     muos_error_set (muos_error_configstore);
     }
 
   if (callback)
@@ -275,7 +275,7 @@ muos_configstore_load (muos_configstore_callback cb)
   if (status < CONFIGSTORE_RLOCK)
     status = CONFIGSTORE_WLOCK;
   else
-    return muos_error_configstore_locked;
+    return muos_error_configstore;
 
   callback = cb;
 
@@ -304,7 +304,7 @@ eeprom_write_done (void)
     {
       //FIXME: DEAD not as state but error, let states only reflect the state in memory
       status = CONFIGSTORE_DEAD;
-      muos_error_set (muos_error_configstore_invalid);
+      muos_error_set (muos_error_configstore);
     }
   else
     {
@@ -319,10 +319,8 @@ eeprom_write_done (void)
 muos_error
 muos_configstore_save (muos_configstore_callback cb)
 {
-  if (status >= CONFIGSTORE_RLOCK_MAX)
-    return muos_error_configstore_locked;
-  else if (status < CONFIGSTORE_VALID)
-    return muos_error_configstore_invalid;
+  if (status >= CONFIGSTORE_RLOCK_MAX || status < CONFIGSTORE_VALID)
+    return muos_error_configstore;
 
   //PLANNED: call user defined verification function, checking the whole config
 

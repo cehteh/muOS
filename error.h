@@ -58,8 +58,7 @@
     MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */                 \
     MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                         \
     MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                        \
-    MUOS_ERROR(error_configstore_locked) /*: {ERRORDEF} configstore operation in process  */            \
-    MUOS_ERROR(error_configstore_invalid) /*: {ERRORDEF} configstore has a problem (check status) */    \
+    MUOS_ERROR(error_configstore) /*: {ERRORDEF} configstore has a problem (check status) */    \
     MUOS_ERROR(error_stepper_noinit) /*: {ERRORDEF} not initialized */                                  \
     MUOS_ERROR(error_stepper_state) /*: {ERRORDEF} action not possible from current state */            \
     MUOS_ERROR(error_stepper_range) /*: {ERRORDEF} some parameter out of range */                       \
@@ -67,7 +66,7 @@
     MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} no position match slot */                           \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
     MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
-  
+
 
 //error_api:
 //: .The type used for error codes

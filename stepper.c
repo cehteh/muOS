@@ -130,7 +130,7 @@ muos_stepper_lock_all (void)
   muos_steppers_config_lock = muos_configstore_lock ();
 
   if (!muos_steppers_config_lock)
-    return muos_error_configstore_locked;
+    return muos_error_configstore;
 
   for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
     {
@@ -175,7 +175,7 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
     return muos_error_stepper_state;
 
   if (!muos_steppers_config_lock)
-    return muos_error_configstore_locked;  //FIXME: refine configstore errors
+    return muos_error_configstore;  //FIXME: refine configstore errors
 
   muos_steppers[hw].position -= offset;
   muos_steppers[hw].ready = false;
@@ -396,7 +396,7 @@ muos_stepper_slope_prep (uint8_t hw,
     return muos_error_stepper_state;
 
   if (!muos_steppers_config_lock)
-    return muos_error_configstore_locked;  //FIXME: refine configstore errors
+    return muos_error_configstore;  //FIXME: refine configstore errors
 
   if (max_speed < muos_steppers_config_lock->stepper_maxspeed[hw])
     max_speed = muos_steppers_config_lock->stepper_maxspeed[hw];
