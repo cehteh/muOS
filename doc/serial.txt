@@ -135,3 +135,30 @@ byte of RAM and little over 100 bytes program space.
 PIPADOC:@lineedit_config
 
 
+==== Command Line Interface
+
+The CLI driver provides the boilerplate for implementing command line interfaces.
+
+One nees to supply a definitions file, configured in 'MUOS_CLI_INCLUDE' which lists
+all commands to be supported.
+
+.Example
+----
+#define CLI_COMMANDS \
+  COMMAND(help)       \
+  COMMAND(version)
+----
+
+To activate it one should enable the lineeditor and then configure
++MUOS_LINEDIT_CALLBACK=muos_cli+. The CLI call will tokenize the first
+word on a line and dispatch it to a user defined function in the form
+'void cli_cmd_NAME (char** tokstate)', where 'NAME' is the command name and
+'tokstate' points to the state from the initial strtok_rP() call.
+
+Any further tokenization should be done by the user supplied implementation.
+
+===== configuration
+
+PIPADOC:@cli_config
+
+
