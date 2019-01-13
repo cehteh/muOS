@@ -31,7 +31,6 @@
 
 #include <muos/muos.h>
 
-
 /*
   Wear leveling and fault tolerant config store.
 
@@ -129,7 +128,7 @@ muos_configstore_get_status (void);
 //TODO: add callback when config gets changed for reinitializeing dependencies
 //TODO: document implicit config_size
 #define CONFIGSTORE_DATA_IMPL                           \
-  ENTRY(size_t, 0, config_size, 0,                      \
+  ENTRY(uint16_t, 0, config_size, 0,                    \
         none, 0, 0,                                     \
         "configuration structure size")                 \
     CONFIGSTORE_DATA
@@ -146,10 +145,10 @@ struct muos_configstore_data
 
 enum muos_configstore_id
   {
-#define ENTRY(type, ary, name, default, validate, min, max, descr) MUOS_CONFIGSTORE_ID_##name,
+#define ENTRY(type, ary, name, default, validate, min, max, descr) CONFIGSTORE_ID_##name,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
-   MUOS_CONFIGSTORE_MAX_ID
+   CONFIGSTORE_MAX_ID
   };
 
 
@@ -161,9 +160,11 @@ enum muos_configstore_id
     TYPE(int16_t)                               \
     TYPE(uint16_t)                              \
     TYPE(int32_t)                               \
-    TYPE(uint32_t)                              \
-    TYPE(size_t)                                \
     TYPE(string) /* string as char array */
+
+// no  TYPE(uint32_t), so we can use strtol when setting
+
+
 
 enum muos_configstore_type
   {
@@ -187,6 +188,9 @@ muos_configstore_output_name (enum muos_configstore_id id);
 
 muos_error
 muos_configstore_output_value (enum muos_configstore_id id, uint8_t index);
+
+muos_error
+muos_configstore_set (char* var, uint8_t index, char* val);
 
 
 // API

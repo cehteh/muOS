@@ -25,6 +25,8 @@
 #include <muos/io.h>
 
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef MUOS_EEPROM_CRC16_INCLUDE
 #include MUOS_EEPROM_CRC16_INCLUDE
@@ -43,6 +45,7 @@ muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 
+static
 const char __flash * const __flash muos_configstore_names[] =
   {
 #define ENTRY(type, ary, name, default, verify, min, max, descr) configstore_##name##_str,
@@ -140,6 +143,9 @@ muos_configstore_ary (enum muos_configstore_id id)
 muos_error
 muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
 {
+  if (status <= CONFIGSTORE_VALID)
+    return muos_error_configstore;
+
   void* value = muos_configstore_value (id, index);
 
   switch (schema[id].type)
@@ -159,12 +165,6 @@ muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
     case MUOS_CONFIGSTORE_TYPE_int32_t:
       return muos_output_int32 (*(int32_t*) value);
 
-    case MUOS_CONFIGSTORE_TYPE_uint32_t:
-      return muos_output_uint32 (*(uint32_t*) value);
-
-    case MUOS_CONFIGSTORE_TYPE_size_t:
-      return muos_output_uintptr (*(size_t*) value);
-
     case MUOS_CONFIGSTORE_TYPE_string:
       return muos_output_cstr ((const char*) value);
 
@@ -178,6 +178,59 @@ muos_configstore_output_name (enum muos_configstore_id id)
 {
   return muos_output_fstr (muos_configstore_names[id]);
 }
+
+muos_error
+muos_configstore_set (char* var, uint8_t index, char* val)
+{
+  if (status != CONFIGSTORE_WLOCK)
+    return muos_error_configstore;
+
+  enum muos_configstore_id id;
+  for (id = 0; id < CONFIGSTORE_MAX_ID; ++id)
+    {
+      if (strcmp_P (var, muos_configstore_names[id]) == 0)
+        break;
+    }
+
+  if (id == CONFIGSTORE_MAX_ID)
+    return muos_error_configstore;
+
+  if (schema[id].ary && index >= schema[id].ary)
+    return muos_error_configstore;
+
+  void* dest = muos_configstore_value (id, index);
+
+  long number = atol (val);
+
+  switch (schema[id].type)
+    {
+    case MUOS_CONFIGSTORE_TYPE_int8_t:
+      ((int8_t*)dest)[index] = number;
+      break;
+    case MUOS_CONFIGSTORE_TYPE_uint8_t:
+      ((uint8_t*)dest)[index] = number;
+      break;
+    case MUOS_CONFIGSTORE_TYPE_int16_t:
+      ((int16_t*)dest)[index] = number;
+      break;
+    case MUOS_CONFIGSTORE_TYPE_uint16_t:
+      ((uint16_t*)dest)[index] = number;
+      break;
+    case MUOS_CONFIGSTORE_TYPE_int32_t:
+      ((int32_t*)dest)[index] = number;
+      break;
+
+    case MUOS_CONFIGSTORE_TYPE_string:
+      if (index != 0 || strlen(val) >= schema[id].ary)
+        return muos_error_configstore;
+      strcpy (dest, val);
+      break;
+    default:
+      return muos_error_error; /*will never happen*/
+    }
+  return muos_success;
+}
+
 
 
 muos_configstore_status
