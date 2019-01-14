@@ -28,6 +28,7 @@
 void
 MUOS_CLI_NOCMD (const char*);
 
+//PLANNED: replace strtok parser with strspn/strcspn based one, not modifying the buffer
 
 void
 muos_cli (char* line)
