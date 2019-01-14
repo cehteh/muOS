@@ -99,7 +99,7 @@ typedef enum
    CONFIGSTORE_RLOCK,         // readlocks start here, count up
    CONFIGSTORE_RLOCK_MAX=254, // end of readlocks
    CONFIGSTORE_WLOCK=255,     // write lock
-} muos_configstore_status;
+  } muos_configstore_status;
 
 muos_configstore_status
 muos_configstore_get_status (void);
@@ -152,6 +152,15 @@ enum muos_configstore_id
   };
 
 
+// simple attributes/access control, only affects output and set commands
+//TODO: implement me
+typedef enum
+  {
+   CONFIGSTORE_PUBLIC = 0,  // all granted
+   CONFIGSTORE_HIDDEN = 1,  // hide from listing
+   CONFIGSTORE_WPROT  = 2,  // needs auth for set
+   CONFIGSTORE_RPROT  = 4,  // needs auth for output
+  } muos_configstore_access;
 
 // the types supported by the configstore
 #define MUOS_CONFIGSTORE_TYPES                  \
@@ -291,6 +300,12 @@ muos_configstore_unwlock (struct muos_configstore_data** lock)
 {
   muos_configstore_unlock ((const struct muos_configstore_data**) lock);
 }
+
+//TODO: docme
+#ifdef MUOS_CONFIGSTORE_DEFAULTS
+muos_error
+muos_configstore_defaults (void);
+#endif
 
 // generic api
 

@@ -296,7 +296,23 @@ muos_configstore_unlock (const struct muos_configstore_data** lock)
 }
 
 
-struct muos_configstore_data*
+#ifdef MUOS_CONFIGSTORE_DEFAULTS
+muos_error
+muos_configstore_defaults (void)
+{
+  if (status == CONFIGSTORE_WLOCK)
+    {
+      memcpy_P (&the_configstore.userdata, &configstore_defaults, sizeof(configstore_defaults));
+      the_configstore.userdata.config_size = sizeof (struct muos_configstore_data);
+
+      return muos_success;
+    }
+  return muos_error_configstore;
+}
+#endif
+
+
+  struct muos_configstore_data*
 muos_configstore_initial (void)
 {
   if (status == CONFIGSTORE_INVALID)
