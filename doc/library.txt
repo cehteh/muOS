@@ -73,6 +73,11 @@ Cyclic byte buffer used for I/O queues. Normally used as queue, but has
 functions to pop functions from the end and peek and poke at arbitrary
 positions.
 
+No bounds check on pushing/popping is done the user should check available
+space with 'muos_cbuffer_free()' first. The rationale here is that often
+one wants to access more than one element in a atomic way.
+
+
 ==== API
 
 PIPADOC:=lib_cbuffer_api

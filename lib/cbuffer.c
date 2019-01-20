@@ -2,7 +2,7 @@
  *      mµOS            - my micro OS
  *
  * Copyright (C)
- *      2015                            Christian Thäter <ct@pipapo.org>
+ *      2015, 2019                     Christian Thäter <ct@pipapo.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +22,23 @@
 
 
 void
-muos_cbuffer_push (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, const uint8_t value)
+muos_cbuffer_push (struct muos_cbuffer* cbuffer, const uint8_t value)
 {
   muos_cbuffer_index index = cbuffer->start + cbuffer->len;
   ++cbuffer->len;
-  if (index >= size)
-    index -= size;
+  if (index >= cbuffer->size)
+    index -= cbuffer->size;
   cbuffer->cbuffer[index] = value;
 }
 
 
 uint8_t
-muos_cbuffer_pop (struct muos_cbuffer* cbuffer, muos_cbuffer_index size)
+muos_cbuffer_pop (struct muos_cbuffer* cbuffer)
 {
   uint8_t ret = cbuffer->cbuffer[cbuffer->start];
   ++cbuffer->start;
-  if (cbuffer->start >= size)
-    cbuffer->start -= size;
+  if (cbuffer->start >= cbuffer->size)
+    cbuffer->start -= cbuffer->size;
 
   --cbuffer->len;
   return ret;
@@ -46,33 +46,33 @@ muos_cbuffer_pop (struct muos_cbuffer* cbuffer, muos_cbuffer_index size)
 
 
 void
-muos_cbuffer_popn (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index n)
+muos_cbuffer_popn (struct muos_cbuffer* cbuffer, muos_cbuffer_index n)
 {
   cbuffer->start += n;
-  if (cbuffer->start >= size)
-    cbuffer->start -= size;
+  if (cbuffer->start >= cbuffer->size)
+    cbuffer->start -= cbuffer->size;
 
   cbuffer->len -= n;
 }
 
 
 uint8_t
-muos_cbuffer_peek (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index)
+muos_cbuffer_peek (struct muos_cbuffer* cbuffer, muos_cbuffer_index index)
 {
   index = cbuffer->start + index;
-  if (index >= size)
-    index -= size;
+  if (index >= cbuffer->size)
+    index -= cbuffer->size;
 
   return cbuffer->cbuffer[index];
 }
 
 
 void
-muos_cbuffer_poke (struct muos_cbuffer* cbuffer, muos_cbuffer_index size, muos_cbuffer_index index, const uint8_t value)
+muos_cbuffer_poke (struct muos_cbuffer* cbuffer, muos_cbuffer_index index, const uint8_t value)
 {
   index = cbuffer->start + index;
-  if (index >= size)
-    index -= size;
+  if (index >= cbuffer->size)
+    index -= cbuffer->size;
 
   cbuffer->cbuffer[index] = value;
 }
