@@ -1,0 +1,127 @@
+=== IO
+
+The IO library provides output routines for many types. MµOS does not
+implement the typical stdio like facilities or printf like format
+strings. This ensures the required flexibility and extensibility which
+wouldn't be possible in a standard approach.
+
+IO is bound to 'channels' which connect to underlying hardware drivers.
+When only one IO channel is defined then the API omits the channel parameter.
+
+One of the most distinct features is the TXQUEUE. This is an additional queue
+which uses a tagged binary representation to save buffer space significantly.
+
+Reading data can be done by lowlevel char by char, with a lineeditor
+or a boilerplate commandline interface.
+
+==== I/O Library
+
+MµOS comes with a library to do formatted text output over serial. This
+library does not use printf alike format strings but provides functions for
+printing each data type. Actually there are 2 implementations with the same
+API but different functionality. The first one pushes data directly to the
+transmission buffer while the second one has its own data queue.
+
+NOTE: While the basic variant and the TXQUEUE have the same API, not all
+functions are implemented for both variants. This will be fixed in future as
+far it makes sense.
+
+.Basic variant
+
+Pushing data directly out makes the code pretty small and the linker will only
+link functions which are actually used. The downside is that the TX buffer
+needs to hold every byte to be printed. When it overruns an error is reported,
+but the output might be truncated. This is suitable for small targets with
+little I/O demands, as long one can provide a big enough TX buffer.
+
+.TXQUEUE
+
+Uses a 'tagged' queue as front-end for the TX buffer. Tagged means that the
+data can be stored in binary form with some tag about the type in front. The
+I/O library then also manages a job on the hpq which does the transfer from
+the txqueue to he txbuffer. When the TXQUEUE is in use the TX buffer can be
+configured to be fairly small (down to a few bytes).
+
+The implementation ensures that the most compact form will be stored. This can
+dramatically reduce the memory footprint for the queue. For example numbers
+are represented in the smallest binary form possible, constant strings can be
+stored in Flash ROM and are only referenced from the TXQUEUE.
+
+This advantage comes with some weight on the flash side, the TXQUEUE
+implementation currently weight over 2k of code, still whenever enough flash
+space is available it should be the considered.
+
+Another advantage is that operations on the TXQUEUE are atomic. Data gets
+never truncated when the queue is full and an error is returned, either the
+whole data gets pushed or nothing in case of an error. Future plans include
+to add some begin/commit transactions support too.
+
+Enabling the TXQUEUE is global for all I/O channels for now. Once the
+TXQUEUE code is pulled in, there is no much penality for using it on
+all interfaces anyway.
+
+===== API
+
+PIPADOC:@outputfn
+
+===== configuration
+
+PIPADOC:@txqueue_config
+
+
+==== Lineedit
+
+For building command line interfaces, mµOS comes with a highly configurable
+line editor. Over time this is planned to become a complete framework for
+controlling the program.
+
+One can enable it by choosing it as callback function of the UART receiver
++MUOS_SERIAL_RXCALLBACK=muos_lineedit+. Then the line editor presents a user
+configurable callback which gets called when a line got terminated.
+
+The Line editor can be configure to handle UTF8 encoded text. This only adds
+moderate size to the code but causes more serial traffic since editing often
+forces a complete line redraw. When UTF8 support is disabled and only 7-bit
+ASCII encoding is supported.
+
+Most common line commands are supported. The is cursor moved with cursor keys or
+vi keys, other editing keys (Home, End, Backspace, Delete, Overwrite) are
+supported.
+
+There is a very simple line recall handler which lets one restore the previous
+line when no edits happened yet (Cursor up) or clear the current line (cursor
+down). This recall feature is very lightweight and needs only one additional
+byte of RAM and little over 100 bytes program space.
+
+===== configuration
+
+PIPADOC:@lineedit_config
+
+
+==== Command Line Interface
+
+The CLI driver provides the boilerplate for implementing command line interfaces.
+
+One nees to supply a definitions file, configured in 'MUOS_CLI_INCLUDE' which lists
+all commands to be supported.
+
+.Example
+----
+#define CLI_COMMANDS  \
+  COMMAND(help)       \
+  COMMAND(version)
+----
+
+To activate it one should enable the lineeditor and then configure
++MUOS_LINEDIT_CALLBACK=muos_cli+. The CLI call will tokenize the first
+word on a line and dispatch it to a user defined function in the form
+'void cli_cmd_NAME (char** tokstate)', where 'NAME' is the command name and
+'tokstate' points to the state from the initial strtok_rP() call.
+
+Any further tokenization should be done by the user supplied implementation.
+
+===== configuration
+
+PIPADOC:@cli_config
+
+

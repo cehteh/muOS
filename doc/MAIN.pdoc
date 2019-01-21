@@ -37,6 +37,8 @@ PIPADOC:=muos
 
 PIPADOC:=state_machines
 
+PIPADOC:=io
+
 PIPADOC:=serial
 
 PIPADOC:=eeprom
