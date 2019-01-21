@@ -18,117 +18,253 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef MUOS_SERIAL
+
 #include <muos/muos.h>
 #include <muos/serial.h>
 #include <muos/hpq.h>
 
+#include <stdlib.h>
+#include <stdint.h>
 
 
-#ifdef __AVR_ATmega328P__
-
-
-#if MUOS_SERIAL_TXBUFFER > 1 || MUOS_SERIAL_RXBUFFER > 1
-void
-muos_hw_serial_init (void)
+//avr_uart_api:
+//: .Calculating baudrate
+//: ----
+//: uint16_t
+//: muos_avr_baudcalc (uint32_t baud, uint8_t tol)
+//: ----
+//:
+//: Calculates the value for the UBRR frequency divider.
+//: +baud+:: is the baudrate
+//: +tol+:: is the acceptable tolerance in %*10
+//:
+//: *return*;;
+//:   - 0xffff when the baudrate can not be reached within tolerance
+//:   - the UBRR value OR'ed with 0x8000 when the U2X doublespeed bit should be set
+//:
+//PLANNED: Hardcode again for minimal builds, return fixed results then
+static uint16_t
+muos_avr_baudcalc (uint32_t baud, uint8_t tol)
 {
-#ifndef MUOS_SERIAL_RXSYNC
-  muos_status.serial_rx_sync = true;
-#endif
-#define BAUD (MUOS_SERIAL_BAUD)
-#define BAUD_TOL 3
-#include <util/setbaud.h>
-  UBRR0H = UBRRH_VALUE;
-  UBRR0L = UBRRL_VALUE;
-#if USE_2X
-  UCSR0A |= _BV(U2X0);
-#else
-  UCSR0A &= ~_BV(U2X0);
-#endif
 
-  UCSR0C = _BV(UCSZ01)| _BV(UCSZ00);
-  UCSR0B = _BV(TXEN0) | _BV(RXEN0) | _BV(RXCIE0);
-}
-#endif
+#define MUOS_BAUD2UBRR(baud, samples) ((F_CPU+baud*samples/2)/((samples)*(baud))-1)
+#define MUOS_UBRR2BAUD(ubrr, samples) (F_CPU/((samples)*((ubrr)+1)))
 
-#if MUOS_SERIAL_TXBUFFER > 1
-ISR(USART_UDRE_vect)
-{
-  MUOS_DEBUG_INTR_ON;
+  uint16_t ubrr = MUOS_BAUD2UBRR (baud, 16);
+  uint8_t err = labs (1000L - MUOS_UBRR2BAUD (ubrr, 16) * 1000L / baud);
 
-  if (muos_txbuffer.descriptor.len)
+  if (err <= tol)
     {
-      MUOS_SERIAL_TX_REGISTER = MUOS_CBUFFER_POP (muos_txbuffer);
-      if (!muos_txbuffer.descriptor.len)
-        muos_hw_serial_tx_stop ();
+      return ubrr;
     }
-
-  //  MUOS_DEBUG_INTR_OFF;
-}
-#endif
-
-
-#if MUOS_SERIAL_RXBUFFER > 1
-ISR(USART_RX_vect)
-{
-  MUOS_DEBUG_INTR_ON;
-  //TODO: disable error checks depending on config (no parity etc)
-
-  bool err = false;
-
-  if (UCSR0A & _BV(DOR0))
+  else
     {
-      muos_error_set_isr (muos_error_rx_overrun);
-      err = true;
-    }
-
-  if (UCSR0A & _BV(UPE0))
-    {
-      muos_error_set_isr (muos_error_rx_parity);
-      err = true;
-    }
-
-  if (UCSR0A & _BV(FE0))
-    {
-      muos_error_set_isr (muos_error_rx_frame);
-      err = true;
-      muos_status.serial_rx_sync = false;
-    }
-
-  if (!MUOS_CBUFFER_FREE(muos_rxbuffer))
-    {
-      muos_error_set_isr (muos_error_rx_buffer_overflow);
-      err = true;
-    }
-
-  uint8_t data = MUOS_SERIAL_RX_REGISTER;
-
-  //PLANNED: sync when line is idle
-
-#ifdef MUOS_SERIAL_RXSYNC
-  if (!err && !muos_status.serial_rx_sync)
-    {
-      if (data == MUOS_SERIAL_RXSYNC)
-        muos_status.serial_rx_sync = true;
-    }
-#else
-  (void) err;
-#endif
-
-  if (muos_status.serial_rx_sync)
-    {
-      MUOS_CBUFFER_PUSH (muos_rxbuffer, data);
-
-      if (!muos_status.serial_rxhpq_pending)
+      ubrr = MUOS_BAUD2UBRR (baud, 8);
+      err = labs (1000L - MUOS_UBRR2BAUD (ubrr, 8) * 1000L / baud);
+      if (err <= tol)
         {
-          muos_status.serial_rxhpq_pending = true;
-#ifdef MUOS_SERIAL_RXCALLBACK
-          muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
-#endif
+          return 0x8000|ubrr;
         }
     }
-
-  //  MUOS_DEBUG_INTR_OFF;
+  return 0xffff;
 }
+
+
+muos_error
+muos_hw_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync)
+{
+  // first disable/reset the port and clear buffers when it was already active
+  // we want to disable even if the parser later fails with an error
+#define UART(hw, txsize, rxsize)                                                \
+  case hw:                                                                      \
+    UCSR##hw##B &= ~(_BV(TXEN##hw) | _BV(RXEN##hw) | _BV(RXCIE##hw));           \
+    muos_cbuffer_init (&muos_txbuffer##hw.descriptor);                          \
+    muos_cbuffer_init (&muos_rxbuffer##hw.descriptor);                          \
+    if (rxsync >= 0)                                                            \
+      {                                                                         \
+        muos_serial_status[hw].serial_rx_dosync = true;                         \
+        muos_serial_status[hw].serial_rx_insync = false;                        \
+        muos_serial_rxsync[hw] = rxsync;                                        \
+      }                                                                         \
+    else                                                                        \
+      {                                                                         \
+        muos_serial_status[hw].serial_rx_dosync = false;                        \
+        muos_serial_status[hw].serial_rx_insync = true;                         \
+      }                                                                         \
+    break;
+
+  switch(hw)
+    {
+      MUOS_SERIAL_HW;
+    }
+#undef UART
+
+  // parse config
+  uint8_t ucsrb = 0;
+  uint8_t ucsrc = 0;
+
+  switch (config[0])
+    {
+    case '5':
+      break;
+    case '6':
+      ucsrc = _BV(UCSZ00);
+      break;
+    case '7':
+      ucsrc = _BV(UCSZ01);
+      break;
+    case '8':
+      ucsrc = _BV(UCSZ01) | _BV(UCSZ00);
+      break;
+      /*PLANNED: case'9': 9 bit not supported */
+      /* UCSR0B |= _BV(UCSZ02); */
+      /* UCSR0C |= _BV(UCSZ01) | _BV(UCSZ00); */
+    default:
+      return muos_error_serial_config;
+    }
+
+  switch (config[1])
+    {
+    case 'N':
+      break;
+    case 'O':
+      ucsrc |= _BV(UPM01) | _BV(UPM00);
+      break;
+    case 'E':
+      ucsrc |= _BV(UPM01);
+      break;
+    default:
+      return muos_error_serial_config;
+    }
+
+  switch (config[2])
+    {
+    case '1':
+      break;
+    case '2':
+      ucsrc = _BV(USBS0);
+      break;
+    default:
+      return muos_error_serial_config;
+    }
+
+  uint16_t ubrr = muos_avr_baudcalc (baud, MUOS_SERIAL_BAUDTOL);
+  if (ubrr == 0xffff)
+    return muos_error_serial_config;
+
+#define UART(hw, txsize, rxsize)                                        \
+  case hw:                                                              \
+    UBRR##hw = ubrr & ~0x8000;                                          \
+    if (ubrr & 0x8000)                                                  \
+      UCSR##hw##A |= _BV(U2X##hw);                                      \
+    else                                                                \
+      UCSR##hw##A &= ~_BV(U2X##hw);                                     \
+    UCSR##hw##B = ucsrb;                                                \
+    UCSR##hw##C = ucsrc;                                                \
+    UCSR##hw##B = _BV(TXEN##hw) | _BV(RXEN##hw) | _BV(RXCIE##hw);       \
+    break;
+
+  switch(hw)
+    {
+      MUOS_SERIAL_HW;
+    }
+#undef UART
+  return muos_success;
+}
+
+
+
+// TX ISR
+#ifdef USART_UDRE_vect
+#define ISRNAME(hw) USART_UDRE_vect
+#else
+#define ISRNAME(hw) USART##hw##_UDRE_vect
 #endif
+
+#define UART(hw, txsize, rxsize)                                        \
+  ISR(ISRNAME(hw))                                                      \
+  {                                                                     \
+    MUOS_DEBUG_INTR_ON;                                                 \
+    if (muos_txbuffer##hw.descriptor.len)                               \
+    {                                                                   \
+      UDR##hw = muos_cbuffer_pop (&muos_txbuffer##hw.descriptor);       \
+      if (!muos_txbuffer##hw.descriptor.len)                            \
+        UCSR##hw##B &= ~_BV(UDRIE##hw);                                 \
+    }                                                                   \
+}
+
+MUOS_SERIAL_HW;
+#undef UART
+#undef ISRNAME
+
+
+
+// RX ISR
+#ifdef USART_RX_vect
+#define ISRNAME(hw) USART_RX_vect
+#else
+#define ISRNAME(hw) USART##hw##_RX_vect
+#endif
+
+//PLANNED: sync when line is idle
+
+
+#define UART(hw, txsize, rxsize)                                                                \
+  ISR(ISRNAME(hw))                                                                              \
+  {                                                                                             \
+    MUOS_DEBUG_INTR_ON;                                                                         \
+    bool err = false;                                                                           \
+    if (UCSR##hw##A & _BV(DOR##hw))                                                             \
+      {                                                                                         \
+        muos_serial_status[hw].error_rx_overrun;                                                \
+        err = true;                                                                             \
+      }                                                                                         \
+    if (UCSR##hw##A & _BV(UPE##hw))                                                             \
+      {                                                                                         \
+        muos_serial_status[hw].error_rx_parity;                                                 \
+        err = true;                                                                             \
+      }                                                                                         \
+    if (UCSR##hw##A & _BV(FE##hw))                                                              \
+      {                                                                                         \
+        muos_serial_status[hw].error_rx_frame;                                                  \
+        err = true;                                                                             \
+        muos_serial_status[hw].serial_rx_insync = false;                                        \
+      }                                                                                         \
+    if (!muos_cbuffer_free (&muos_rxbuffer##hw.descriptor))                                     \
+      {                                                                                         \
+        muos_serial_status[hw].error_rx_overflow;                                               \
+        err = true;                                                                             \
+      }                                                                                         \
+    if (err)                                                                                    \
+      {                                                                                         \
+        muos_error_set (muos_error_serial_status);                                              \
+      }                                                                                         \
+    else                                                                                        \
+      {                                                                                         \
+        uint8_t data = UDR##hw;                                                                 \
+        if (muos_serial_status[hw].serial_rx_dosync                                             \
+            && !muos_serial_status[hw].serial_rx_insync)                                        \
+          {                                                                                     \
+            if (data == muos_serial_rxsync[hw])                                                 \
+              muos_serial_status[hw].serial_rx_insync = true;                                   \
+          }                                                                                     \
+        if (muos_serial_status[hw].serial_rx_insync)                                            \
+          {                                                                                     \
+            muos_cbuffer_push (&muos_rxbuffer##hw.descriptor, data);                            \
+            if (!muos_serial_status[hw].serial_rxhpq_pending && muos_serial_rxcallback[hw])     \
+              {                                                                                 \
+                muos_serial_status[hw].serial_rxhpq_pending = true;                             \
+                muos_error_set (muos_hpq_pushback_arg_isr (muos_serial_rxhpq_call, hw, true));  \
+              }                                                                                 \
+          }                                                                                     \
+      }                                                                                         \
+  }
+
+
+MUOS_SERIAL_HW;
+#undef UART
+#undef ISRNAME
+
 
 #endif

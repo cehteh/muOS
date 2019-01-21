@@ -24,43 +24,97 @@
 
 #ifdef MUOS_SERIAL
 
-#if MUOS_SERIAL_TXBUFFER > 1
-muos_txbuffer_type muos_txbuffer;
+volatile struct muos_serial_flags muos_serial_status[MUOS_SERIAL_NUM];
+char muos_serial_rxsync[MUOS_SERIAL_NUM];
+muos_serial_rxcallback_type muos_serial_rxcallback[MUOS_SERIAL_NUM];
+
+/*
+  TX/RX buffers
+*/
+
+#define UART(hw, txsize, rxsize)                \
+  MUOS_CBUFFERDEF(muos_txbuffer##hw, txsize);   \
+  MUOS_CBUFFERDEF(muos_rxbuffer##hw, rxsize);
+MUOS_SERIAL_HW
+#undef UART
+
+// indexed descriptor arrays are only used when there is more than one serial
+#if MUOS_SERIAL_NUM > 1
+struct muos_cbuffer* const muos_txbuffer[]  =
+  {
+#define UART(hw, txsize, rxsize)                \
+   &muos_txbuffer##hw.descriptor,
+
+   MUOS_SERIAL_HW
+#undef UART
+  };
+
+struct muos_cbuffer* const muos_rxbuffer[] =
+  {
+#define UART(hw, txsize, rxsize)                \
+   &muos_rxbuffer##hw.descriptor,
+
+   MUOS_SERIAL_HW
+#undef UART
+  };
 #endif
 
-#if MUOS_SERIAL_RXBUFFER > 1
-muos_rxbuffer_type muos_rxbuffer;
-#endif
 
-#if MUOS_SERIAL_TXBUFFER > 1 || MUOS_SERIAL_RXBUFFER > 1
-void
-muos_serial_30init (void)
+/*
+  init/startup
+*/
+
+#if MUOS_SERIAL_NUM > 1
+muos_error
+muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback)
 {
-  muos_hw_serial_init ();
+  if (hw >= MUOS_SERIAL_NUM)
+    return muos_error_nodev;
+
+  MUOS_OK (muos_hw_serial_start (hw, baud, config, rxsync));
+  muos_serial_rxcallback[hw] = callback;
+  return muos_success;
+}
+#else
+muos_error
+muos_serial_start (uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback)
+{
+  MUOS_OK (muos_hw_serial_start (0, baud, config, rxsync));
+  muos_serial_rxcallback[hw] = callback;
+  return muos_success;
 }
 #endif
 
 
-#if MUOS_SERIAL_TXBUFFER > 1
+
+/*
+  Sending
+*/
+
+#if MUOS_SERIAL_NUM > 1
+
 muos_error
-muos_serial_tx_nonblocking_byte (uint8_t b)
+muos_serial_tx_byte (uint8_t hw, uint8_t b)
 {
+  if (hw >= MUOS_SERIAL_NUM)
+    return muos_error_nodev;
+
   muos_error ret = muos_success;
 
-  if (!muos_status.serial_tx_blocked)
+  if (!muos_serial_status[hw].serial_tx_waiting)
     {
-      muos_hw_serial_tx_stop ();
+      muos_serial_tx_stop (hw);
 
-      if (MUOS_CBUFFER_FREE (muos_txbuffer) > 0)
+      if (muos_cbuffer_free (muos_txbuffer[hw]) > 0)
         {
-          MUOS_CBUFFER_PUSH (muos_txbuffer, b);
+          muos_cbuffer_push (muos_txbuffer[hw], b);
         }
       else
         {
-          ret = muos_error_tx_buffer_overflow;
+          ret = muos_error_tx_overflow;
         }
 
-      muos_hw_serial_tx_run ();
+      muos_serial_tx_run (hw);
     }
   else
     {
@@ -70,9 +124,169 @@ muos_serial_tx_nonblocking_byte (uint8_t b)
   return ret;
 }
 
+void
+muos_serial_tx_flush (uint8_t hw)
+{
+  muos_serial_tx_stop (hw);
+  muos_cbuffer_init (muos_txbuffer[hw]);
+  muos_serial_tx_run (hw);
+}
 
 
-#ifdef MUOS_SCHED_DEPTH
+#else
+
+muos_error
+muos_serial_tx_byte (uint8_t b)
+{
+  muos_error ret = muos_success;
+
+  if (!muos_serial_status[0].serial_tx_waiting)
+    {
+      muos_serial_tx_stop ();
+
+      if (muos_cbuffer_free (&muos_txbuffer0) > 0)
+        {
+          muos_cbuffer_psuh (&muos_txbuffer0, b);
+        }
+      else
+        {
+          ret = muos_error_tx_overflow;
+        }
+
+      muos_serial_tx_run ();
+    }
+  else
+    {
+      ret = muos_error_tx_blocked;
+    }
+
+  return ret;
+}
+
+void
+muos_serial_tx_flush (void)
+{
+  muos_serial_tx_stop ();
+  muos_cbuffer_init (&muos_txbuffer0);
+  muos_serial_tx_run ();
+}
+#endif
+
+
+
+/*
+  Receiving
+*/
+
+#if MUOS_SERIAL_NUM > 1
+
+int16_t
+muos_serial_rx_byte (uint8_t hw)
+{
+  int16_t ret;
+
+  if (!muos_serial_status[hw].serial_rx_waiting)
+    {
+      muos_serial_rx_stop (hw);
+
+      if (muos_cbuffer_used (muos_rxbuffer[hw]))
+        {
+          ret = muos_cbuffer_pop (muos_rxbuffer[hw]);
+        }
+      else
+        {
+          ret = -muos_error_rx_underflow;
+        }
+
+      muos_serial_rx_run (hw);
+    }
+  else
+    {
+      ret = -muos_error_rx_blocked;
+    }
+
+  return ret;
+}
+
+
+void
+muos_serial_rx_flush (uint8_t hw, bool desync)
+{
+  muos_serial_rx_stop (hw);
+  muos_cbuffer_init (muos_rxbuffer[hw]);
+  muos_serial_status[hw].serial_rx_insync = !desync;
+  muos_serial_rx_run (hw);
+}
+
+#else
+
+int16_t
+muos_serial_rx_byte (void)
+{
+  int16_t ret;
+
+  if (!muos_serial_status[0].serial_rx_waiting)
+    {
+      muos_serial_rx_stop ();
+
+      if (muos_cbuffer_used (&muos_rxbuffer0)
+        {
+          ret = muos_cbuffer_pop (&muos_rxbuffer0);
+        }
+      else
+        {
+          ret = -muos_error_rx_underflow;
+        }
+
+      muos_serial_rx_run ();
+    }
+  else
+    {
+      ret = -muos_error_rx_blocked;
+    }
+
+  return ret;
+}
+
+
+void
+muos_serial_rx_flush (bool desync)
+{
+  muos_serial_rx_stop ();
+  muos_cbuffer_init (&muos_rxbuffer0);
+  muos_serial_status[hw].serial_rx_insync = !desync;
+  muos_serial_rx_run ();
+}
+
+#endif
+
+
+/*FIXME: SERIAL_NUM=0*/
+void
+muos_serial_rxhpq_call (void)
+{
+  uint8_t hw = muos_hpq_pop_isr ();
+  muos_interrupt_enable ();
+
+  bool again = false;
+
+  if (muos_serial_rxcallback[MUOS_SERIAL_NUM])
+    again = muos_serial_rxcallback[MUOS_SERIAL_NUM] (hw);
+
+  muos_interrupt_disable (); // no need for enable, mainloop will disable on return
+  if (again && muos_cbuffer_used (muos_rxbuffer[hw]))
+    muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
+  else
+    muos_serial_status[hw].serial_rxhpq_pending = false;
+}
+
+#endif
+
+
+
+
+//ATTIC
+#if 0 //#ifdef MUOS_SCHED_DEPTH  implement later better waiting
 static bool
 txtest (intptr_t n)
 {
@@ -82,83 +296,12 @@ txtest (intptr_t n)
   muos_hw_serial_tx_run ();
   return ret;
 }
-
-muos_error
-muos_serial_tx_blocking_byte (uint8_t b)
-{
-  muos_error ret = muos_success;
-
-  if (!muos_status.serial_tx_blocked)
-    {
-      muos_status.serial_tx_blocked = true;
-      //TODO: calculate timeout baudrate for txbuffer characters
-      ret = muos_wait (txtest, 1, MUOS_CLOCK_MILLISECONDS(10));
-      muos_status.serial_tx_blocked = false;
-
-      if (!ret)
-        {
-          muos_hw_serial_tx_stop ();
-          MUOS_CBUFFER_PUSH (muos_txbuffer, b);
-          muos_hw_serial_tx_run ();
-        }
-    }
-  else
-    {
-      ret = muos_error_tx_blocked;
-    }
-
-  return ret;
-}
-#endif
-
-
-void
-muos_serial_tx_flush (void)
-{
-  muos_hw_serial_tx_stop ();
-  muos_cbuffer_init (&muos_txbuffer.descriptor);
-  muos_hw_serial_tx_run ();
-}
-
-
 //muos_cbuffer_index
 //PLANNED: muos_serial_tx_avail (void)
 //{
 //  return MUOS_CBUFFER_FREE(muos_txbuffer); 
 //}
-#endif
 
-#if MUOS_SERIAL_RXBUFFER > 1
-int16_t
-muos_serial_rx_nonblocking_byte (void)
-{
-  int16_t ret;
-
-  if (!muos_status.serial_rx_blocked)
-    {
-      muos_hw_serial_rx_stop ();
-
-      if (MUOS_CBUFFER_USED (muos_rxbuffer))
-        {
-          ret = MUOS_CBUFFER_POP (muos_rxbuffer);
-        }
-      else
-        {
-          ret = -muos_error_rx_buffer_underflow;
-        }
-
-      muos_hw_serial_rx_run ();
-    }
-  else
-    {
-      ret = -muos_error_rx_blocked;
-    }
-
-  return ret;
-}
-
-
-#ifdef MUOS_SCHED_DEPTH
 static bool
 rxtest (intptr_t n)
 {
@@ -168,69 +311,9 @@ rxtest (intptr_t n)
   muos_hw_serial_rx_run ();
   return ret;
 }
-
-int16_t
-muos_serial_rx_blocking_byte (muos_shortclock timeout)
-{
-  int16_t ret;
-
-  if (!muos_status.serial_rx_blocked)
-    {
-      do
-        {
-          muos_status.serial_rx_blocked = true;
-          ret = -muos_wait (rxtest, 1, timeout?timeout:~0U);
-          muos_status.serial_rx_blocked = false;
-
-          if (!ret)
-            {
-              muos_hw_serial_rx_stop ();
-              ret = MUOS_CBUFFER_POP (muos_rxbuffer);
-              muos_hw_serial_rx_run ();
-            }
-        }
-      while (timeout == 0 && ret == -muos_warn_wait_timeout);
-    }
-  else
-    {
-      ret = -muos_error_rx_blocked;
-    }
-
-  return ret;
-}
-#endif
-
-
-void
-muos_serial_rx_flush (bool desync)
-{
-  muos_hw_serial_rx_stop ();
-  muos_cbuffer_init (&muos_rxbuffer.descriptor);
-  muos_status.serial_rx_sync = !desync;
-  muos_hw_serial_rx_run ();
-}
-
 //muos_cbuffer_index
 //PLANNED: muos_serial_rx_avail (void)
 //{
 //  return muos_atomic_get(MUOS_CBUFFER_USED(muos_rxbuffer));
 //}
-
-
-#ifdef MUOS_SERIAL_RXCALLBACK
-void
-muos_serial_rxhpq_call (void)
-{
-  bool again = MUOS_SERIAL_RXCALLBACK ();
-
-  muos_interrupt_disable (); // no need for enable, mainloop will disable on return
-  if (again && MUOS_CBUFFER_USED (muos_rxbuffer))
-    muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
-  else
-    muos_status.serial_rxhpq_pending = false;
-}
-#endif
-
-#endif
-
 #endif

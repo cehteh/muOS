@@ -24,9 +24,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include MUOS_HW_HEADER
-
-
 //error_api:
 //: .Error Check Macro
 //: ----
@@ -38,6 +35,7 @@
 
 //TODO: conditional error generation depending on what drivers are enabled
 //defined_errors:
+
 #define MUOS_ERRORS                                                                                     \
   MUOS_ERROR(error_error) /*: {ERRORDEF} unspecified error */                                           \
     MUOS_ERROR(warn_sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */                   \
@@ -46,24 +44,22 @@
     MUOS_ERROR(error_hpq_overflow) /*: {ERRORDEF} high priority queue full */                           \
     MUOS_ERROR(error_bgq_overflow) /*: {ERRORDEF} background priority queue full */                     \
     MUOS_ERROR(error_nodev) /*: {ERRORDEF} device index out of range */                                 \
-    MUOS_ERROR(error_sm_state) /*: {ERRORDEF} state transition not possible */                          \
+    MUOS_ERROR(error_serial_status) /*: {ERRORDEF} serial port flagged an async error */                \
+    MUOS_ERROR(error_serial_config) /*: {ERRORDEF} error in serial configuration parameters */          \
+    MUOS_ERROR(error_tx_overflow) /*: {ERRORDEF} To much data to send */                                \
     MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                         \
-    MUOS_ERROR(error_tx_buffer_overflow) /*: {ERRORDEF} To much data to send */                         \
     MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                         \
-    MUOS_ERROR(error_rx_buffer_overflow) /*: {ERRORDEF} dropped received data (user code) */            \
-    MUOS_ERROR(error_rx_buffer_underflow) /*: {ERRORDEF} read while no data available */                \
-    MUOS_ERROR(error_rx_frame) /*: {ERRORDEF} wrong stop bit timing */                                  \
-    MUOS_ERROR(error_rx_overrun) /*: {ERRORDEF} dropped received data (uart driver) */                  \
-    MUOS_ERROR(error_rx_parity) /*: {ERRORDEF} parity error detected */                                 \
+    MUOS_ERROR(error_rx_underflow) /*: {ERRORDEF} read while no data available */                       \
     MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */                 \
+    MUOS_ERROR(error_sm_state) /*: {ERRORDEF} state transition not possible */                          \
     MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                         \
     MUOS_ERROR(error_eeprom_verify) /*: {ERRORDEF} eeprom verification failed */                        \
-    MUOS_ERROR(error_configstore) /*: {ERRORDEF} configstore has a problem (check status) */    \
+    MUOS_ERROR(error_configstore) /*: {ERRORDEF} configstore has a problem (check status) */            \
     MUOS_ERROR(error_stepper_noinit) /*: {ERRORDEF} not initialized */                                  \
     MUOS_ERROR(error_stepper_state) /*: {ERRORDEF} action not possible from current state */            \
     MUOS_ERROR(error_stepper_range) /*: {ERRORDEF} some parameter out of range */                       \
     MUOS_ERROR(error_stepper_noslot) /*: {ERRORDEF} no position match slot */                           \
-    MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} no position match slot */                           \
+    MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} no position match slot */                            \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
     MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
 
@@ -84,6 +80,9 @@ typedef enum
 
 extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 extern volatile uint8_t muos_errors_pending_;
+
+
+#include MUOS_HW_HEADER
 
 
 //error_api:

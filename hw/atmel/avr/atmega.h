@@ -24,6 +24,8 @@
 #include <muos/pp.h>
 #include <muos/hw/atmel/avr/avr.h>
 
+#include <muos/error.h>
+
 #define ISRNAME_OVERFLOW_(hw, _) TIMER##hw##_OVF_vect
 #define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_ hw
 
@@ -82,58 +84,50 @@
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
-/*
-  Serial
-*/
 
+#define UART(hw, txsize, rxsize)                        \
+  static inline void                                    \
+  muos_hw_tx##hw##_enable (void)                        \
+  {                                                     \
+    UCSR##hw##B |= _BV(TXEN##hw);                       \
+  }                                                     \
+                                                        \
+  static inline void                                    \
+  muos_hw_rx##hw##_enable (void)                        \
+  {                                                     \
+    UCSR##hw##B |= _BV(RXEN##hw) | _BV(RXCIE##hw);      \
+  }                                                     \
+                                                        \
+  static inline void                                    \
+  muos_hw_serial_rx##hw##_run (void)                    \
+  {                                                     \
+    UCSR##hw##B |= _BV(RXCIE##hw);                      \
+  }                                                     \
+                                                        \
+  static inline void                                    \
+  muos_hw_serial_rx##hw##_stop (void)                   \
+  {                                                     \
+    UCSR##hw##B &= ~_BV(RXCIE##hw);                     \
+  }                                                     \
+                                                        \
+  static inline void                                    \
+  muos_hw_serial_tx##hw##_run (void)                    \
+  {                                                     \
+    UCSR##hw##B |= _BV(UDRIE##hw);                      \
+}                                                       \
+                                                        \
+  static inline void                                    \
+  muos_hw_serial_tx##hw##_stop (void)                   \
+  {                                                     \
+    UCSR##hw##B &= ~_BV(UDRIE##hw);                     \
+  }
 
-#define MUOS_HW_SERIAL_TX_REGISTER_(hw) UDR##hw
+MUOS_SERIAL_HW
+#undef UART
 
-#define MUOS_HW_SERIAL_TX_REGISTER(hw)                  \
-  MUOS_HW_SERIAL_TX_REGISTER_(hw)
+muos_error
+muos_hw_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync);
 
-
-#define MUOS_HW_SERIAL_RX_REGISTER_(hw) UDR##hw
-
-#define MUOS_HW_SERIAL_RX_REGISTER(hw)                  \
-  MUOS_HW_SERIAL_RX_REGISTER_(hw)
-
-
-static inline void
-muos_hw_tx_enable (void)
-{
-  UCSR0B |= _BV(TXEN0);
-}
-
-static inline void
-muos_hw_rx_enable (void)
-{
-  UCSR0B |= _BV(RXEN0) | _BV(RXCIE0);
-}
-
-static inline void
-muos_hw_serial_rx_run (void)
-{
-  UCSR0B |= _BV(RXCIE0);
-}
-
-static inline void
-muos_hw_serial_rx_stop (void)
-{
-  UCSR0B &= ~_BV(RXCIE0);
-}
-
-static inline void
-muos_hw_serial_tx_run (void)
-{
-  UCSR0B |= _BV(UDRIE0);
-}
-
-static inline void
-muos_hw_serial_tx_stop (void)
-{
-  UCSR0B &= ~_BV(UDRIE0);
-}
 
 
 #endif

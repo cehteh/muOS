@@ -29,77 +29,230 @@
 
 //PLANNED: lowwater/highwater generic
 
-void
-muos_serial_30init (void);
+#if MUOS_SERIAL_NUM > 1
+typedef bool (*muos_serial_rxcallback_type)(uint8_t hw);
+#else
+typedef bool (*muos_serial_rxcallback_type)(void);
+#endif
+
+extern volatile struct muos_serial_flags
+{
+  uint8_t serial_tx_waiting:1;
+  uint8_t serial_rx_waiting:1;
+  uint8_t serial_rx_dosync:1;
+  uint8_t serial_rx_insync:1;
+  uint8_t serial_rxhpq_pending:1;
+  uint8_t lineedit_pending:1;
+  uint8_t lineedit_ovwr:1;
+  uint8_t txqueue_pending:1;
+  //Error flags
+  uint8_t error_tx_blocked:1;
+  uint8_t error_tx_overflow:1;
+  uint8_t error_rx_blocked:1;
+  uint8_t error_rx_underflow:1;
+  uint8_t error_rx_overflow:1;
+  uint8_t error_rx_frame:1;
+  uint8_t error_rx_overrun:1;
+  uint8_t error_rx_parity:1;
+} muos_serial_status[MUOS_SERIAL_NUM];
+
+extern char muos_serial_rxsync[MUOS_SERIAL_NUM];
+extern muos_serial_rxcallback_type muos_serial_rxcallback[MUOS_SERIAL_NUM];
+
+
+#define UART(hw, txsize, rxsize)                                        \
+  MUOS_CBUFFERDEC(muos_txbuffer##hw, txsize);                           \
+  MUOS_CBUFFERDEC(muos_rxbuffer##hw, rxsize);
+
+MUOS_SERIAL_HW
+#undef UART
+
+#if MUOS_SERIAL_NUM > 1
+extern struct muos_cbuffer* const muos_txbuffer[];
+#endif
+
+//uart_api:
+//: .Initializing and Starting
+//: ----
+//: #if MUOS_SERIAL_NUM > 1
+//: muos_error
+//: muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync);
+//: #else
+//: muos_error
+//: muos_serial_start (uint32_t baud, char config[3], int rxsync);
+//: #endif
+//: ----
+//:
+//: +hw+::
+//:   Index of the serial hardware to use (only when more than one)
+//:
+//: +baud+::
+//:   Baudrate to configure.
+//:
+//: +config+::
+//:   3 character C string in the form "<databits><parity><stopbits>"
+//:   defining the Serial configuration. For example "8N1".
+//:   /databits/:::
+//:     5-8 databits are supported.
+//:   /parity/:::
+//:     One of 'N'one, 'E'ven or 'Odd'.
+//:   /stopbits/:::
+//:     1 or 2.
+//:
+//: +rxsync+::
+//:   Character value for a character to synchronize the port with or -1 for
+//    disabling synchronization.
+//:
+//: Initializes and starts a serial port.
+//:
+//: *return*::
+//:   'muos_success' on success or muos_error_serial_config when the baudrate
+//:   could not be generated or the configuration contains some unknown
+//:   characters. A running port will be stopped and flushed unconditionally
+//:   (even in case of error).
+//:
+#if MUOS_SERIAL_NUM > 1
+muos_error
+muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback);
+#else
+muos_error
+muos_serial_start (uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback);
+#endif
+
+
+
+//TODO: DOCME
+#if MUOS_SERIAL_NUM > 1
+static inline void
+muos_serial_tx_run (uint8_t hw)
+{
+  switch (hw)
+    {
+#define UART(hw, txsize, rxsize)                \
+      case hw:                                  \
+        muos_hw_serial_tx##hw##_run ();
+
+      MUOS_SERIAL_HW
+#undef UART
+    }
+}
+
+static inline void
+muos_serial_tx_stop (uint8_t hw)
+{
+  switch (hw)
+    {
+#define UART(hw, txsize, rxsize)                \
+      case hw:                                  \
+        muos_hw_serial_tx##hw##_stop ();
+
+      MUOS_SERIAL_HW
+#undef UART
+    }
+}
+
+static inline void
+muos_serial_rx_run (uint8_t hw)
+{
+  switch (hw)
+    {
+#define UART(hw, txsize, rxsize)                \
+      case hw:                                  \
+        muos_hw_serial_rx##hw##_run ();
+
+      MUOS_SERIAL_HW
+#undef UART
+    }
+}
+
+static inline void
+muos_serial_rx_stop (uint8_t hw)
+{
+  switch (hw)
+    {
+#define UART(hw, txsize, rxsize)                \
+      case hw:                                  \
+        muos_hw_serial_rx##hw##_stop ();
+
+      MUOS_SERIAL_HW
+#undef UART
+    }
+}
+
+
+#else
+
+static inline void
+muos_serial_tx_run (void)
+{
+  muos_hw_serial_tx0_run ();
+}
+
+static inline void
+muos_serial_tx_stop (void)
+{
+  muos_hw_serial_tx0_stop ();
+}
+
+static inline void
+muos_serial_rx_run (void)
+{
+  muos_hw_serial_rx0_run ();
+}
+
+static inline void
+muos_serial_rx_stop (void)
+{
+  muos_hw_serial_rx0_stop ();
+}
+
+#endif
+
 
 
 //uart_api:
 //: .Sending data
 //: ----
-//: muos_error muos_serial_tx_nonblocking_byte (uint8_t b);
-//: muos_error muos_serial_tx_blocking_byte (uint8_t b);
+//: #if MUOS_SERIAL_NUM > 1
+//: muos_error muos_serial_tx_byte (uint8_t hw, uint8_t data)
+//: #else
 //: muos_error muos_serial_tx_byte (uint8_t data)
+//: #endif
 //: ----
+//:
+//: +hw+::
+//:   Index of the serial hardware to use (only when more than one)
 //:
 //: +data+::
 //:   The byte to send
 //:
 //: Pushes a single byte on the TX buffer.
 //:
-//: muos_serial_tx_nonblocking_byte::
-//:   Will not block. In case of error one of the following errors gets returned:
-//:
+//: *return*::
 //:   muos_error_tx_buffer_overflow:::
 //:     Transmission buffer is full
-//:
 //:   muos_error_tx_blocked:::
 //:     There is already a blocking write pending
+//:   muos_success::
+//:     no error.
 //:
-//: muos_serial_tx_blocking_byte::
-//:   Waits until data can be send, entering the scheduler recursively.
-//:   May return one of the following errors:
-//:
-//:   muos_warn_sched_depth:::
-//:     Scheduler depth  exceeded.
-//:
-//:   muos_error_tx_blocked:::
-//:     There is already a blocking write pending
-//:
-//:   muos_warn_wait_timeout:::
-//:     TX got stuck. The timeout is calculated internally depending on baudrate so
-//:     that some chars should been send. When this error happens something got
-//:     seriously wrong and the TX doesn't send any data.
-//:
-//: muos_serial_tx_byte::
-//:   Picks one of the functions above, depending on configuration.
-//:
-//: All calls return 'muos_success' on success or errors as noted above.
-//:
+#if MUOS_SERIAL_NUM > 1
 muos_error
-muos_serial_tx_nonblocking_byte (uint8_t b);
-
-#ifdef MUOS_SCHED_DEPTH
+muos_serial_tx_byte (uint8_t hw, uint8_t b);
+#else
 muos_error
-muos_serial_tx_blocking_byte (uint8_t b);
+muos_serial_tx_byte (uint8_t b);
 #endif
 
-static inline muos_error
-muos_serial_tx_byte (uint8_t b)
-{
-#ifdef MUOS_SERIAL_TX_BLOCKING
-#ifdef MUOS_SCHED_DEPTH
-  return muos_serial_tx_blocking_byte (b);
+
+//TODO: DOCME
+#if MUOS_SERIAL_NUM > 1
+void
+muos_serial_tx_flush (uint8_t hw);
 #else
-# error MUOS_SERIAL_TX_BLOCKING needs MUOS_SCHED_DEPTH
-#endif
-#else
-  return muos_serial_tx_nonblocking_byte (b);
-#endif
-}
-
-
 void
 muos_serial_tx_flush (void);
+#endif
 
 
 //PLANNED: muos_cbuffer_index muos_serial_tx_avail (void);
@@ -108,76 +261,49 @@ muos_serial_tx_flush (void);
 //uart_api:
 //: .Reading data
 //: ----
-//: uint16_t muos_serial_rx_nonblocking_byte (void)
-//: uint16_t muos_serial_rx_blocking_byte (muos_shortclock timeout)
-//: uint16_t muos_serial_rx_byte (void)
+//: int16_t muos_serial_rx_byte (uint8_t hw)
+//: int16_t muos_serial_rx_byte (void)
 //: ----
+//:
+//: +hw+::
+//:   Index of the serial hardware to use (only when more than one)
 //:
 //: +timeout+::
 //:   Time to wait for blocking reads
 //:
 //: Pops and a byte from the receive buffer. Zero or positive return value is
 //: a successful read from the buffer. Negative return indicates an error by the
-//: negated error number. Note that the UART driver may flag asynchronous errors too.
+//: negated error number. Note that the serial driver may flag asynchronous errors too.
 //:
-//: muos_serial_rx_nonblocking_byte::
-//:  Will not block. Following errors can happen:
-//:
-//:   muos_error_rx_buffer_underflow:::
+//:   -muos_error_rx_buffer_underflow:::
 //:     No data available for reading
 //:
-//:   muos_error_rx_blocked:::
-//:     There is already a blocking read pending
+//: *return*::
+//:   a character value or a negated error as noted above.
 //:
-//: muos_serial_rx_blocking_byte::
-//:   Waits until data becomes available, entering the scheduler recursively.
-//:   A timeout of 0 means infinite waits.
-//:
-//:   Following errors can happen:
-//:
-//:   muos_warn_sched_depth:::
-//:     Scheduler depth  exceeded.
-//:
-//:   muos_error_rx_blocked:::
-//:     There is already a blocking read pending
-//:
-//:   muos_warn_wait_timeout:::
-//:     No data received within 'timeout'.
-//:
-//: muos_serial_rx_byte::
-//:   Picks one of the functions above, depending on configuration.
-//:   The timeout for the blocking case defaults to infinite waits.
-//:
-//: Return a character value or a negated error as noted above.
-//:
+#if MUOS_SERIAL_NUM > 1
 int16_t
-muos_serial_rx_nonblocking_byte (void);
-
-#ifdef MUOS_SCHED_DEPTH
+muos_serial_rx_byte (uint8_t hw);
+#else
 int16_t
-muos_serial_rx_blocking_byte (muos_shortclock timeout);
+muos_serial_rx_byte (void);
 #endif
 
-static inline int16_t
-muos_serial_rx_byte (void)
-{
-#ifdef MUOS_SERIAL_RX_BLOCKING
-#ifdef MUOS_SCHED_DEPTH
-  return muos_serial_rx_blocking_byte (0);
+
+
+//TODO: DOCME
+#if MUOS_SERIAL_NUM > 1
+void
+muos_serial_rx_flush (uint8_t hw, bool desync);
 #else
-# error MUOS_SERIAL_RX_BLOCKING needs MUOS_SCHED_DEPTH
-#endif
-#else
-  return muos_serial_rx_nonblocking_byte ();
-#endif
-}
-
-
-
-//PLANNED: muos_cbuffer_index muos_serial_rx_avail (void);
-
 void
 muos_serial_rx_flush (bool desync);
+#endif
+
+
+
+
+
 
 
 //uart_api:
@@ -192,32 +318,18 @@ muos_serial_rx_flush (bool desync);
 //: when it returns 'true'. When it returns 'false' it will only
 //: be called again when *new* data is available on the buffer.
 //:
-typedef bool (*muos_serial_rxcallback)(void);
 
-#ifdef MUOS_SERIAL_RXCALLBACK
-extern bool MUOS_SERIAL_RXCALLBACK (void);
+
+
+
+
+
+#if MUOS_SERIAL_NUM > 1
+#else
 #endif
-
-
-
-#if MUOS_SERIAL_TXBUFFER > 1
-typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXBUFFER) muos_txbuffer_type;
-extern muos_txbuffer_type muos_txbuffer;
-#endif
-
-
-#if MUOS_SERIAL_RXBUFFER > 1
-typedef MUOS_CBUFFERDEF(MUOS_SERIAL_RXBUFFER) muos_rxbuffer_type;
-extern muos_rxbuffer_type muos_rxbuffer;
-
-#ifdef MUOS_SERIAL_RXCALLBACK
 void
 muos_serial_rxhpq_call (void);
-#endif
 
-#endif
 
-#define MUOS_SERIAL_TX_REGISTER MUOS_HW_SERIAL_TX_REGISTER(MUOS_SERIAL_HW)
-#define MUOS_SERIAL_RX_REGISTER MUOS_HW_SERIAL_RX_REGISTER(MUOS_SERIAL_HW)
 
 #endif

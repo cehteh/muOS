@@ -1,164 +1,24 @@
 === Serial
 
-Communication over serial interfaces is split into serveral parts. On the
-lowest level is a UART driver which operates directly on the hardware.
-
-Above that is a library which provides output routines for many types. MµOS
-does not implement the typical stdio like facilities or printf like
-format strings. This ensures the required flexibility and extensibility which
-wouldn't be possible in a standard approach.
-
-One of the most distinct features is the TXQUEUE. This is an additional queue
-which uses a tagged binary representation for the data to be transmitted over
-serial.
-
-==== Hardware UART
+The Serial driver which operates directly on the hardware UART.
 
 The UART runs asynchronously driven by interrupts. Data is transferred byte by
-byte with immediate cyclic buffers. Where supported the transmitter and
-receiver can be disabled independently.
+byte with immediate cyclic buffers.
 
 Access to the UART is always non-blocking, requests which can't be served
 returning or flagging an error.
 
-At startup the receiver is in desynched state and waits for *\r* to appear in
-the stream where it changes into the synchronized state and data can be read.
-This ensures that only complete lines are returned to the program. Details can
-be be configured. In future it will also synchronize when the line is idle.
+At startup the receiver can be configured to be in in desynched state
+and waits for a character to appear in the stream where it changes
+into the synchronized state and data can be read.  This ensures that
+only complete lines are returned to the program. Details can be be
+configured. In future it will also synchronize when the line is idle.
 
-I/O comes in blocking and non-blocking variants each can be called
-independently for TX and RX. Blocking I/O means that the job making the I/O is
-put on hold and the scheduler is called recursively with 'muos_wait()'. There
-can be only one non-blocking (per direction) I/O pending at any time. Further
-attempts to do I/O will result in a 'muos_tx_blocked' or 'muos_rx_blocked'
-error.
-
-Blocking I/O is in some cases more convenient but needs more space on
-the stack and few more errors can happen. It still works very well with small
-buffers which may outweigh the stack costs. Over/under-runs of the buffers can
-never happen.
-
-Non-Blocking I/O is easier to use when it is used exclusively, then only
-errors for buffer over/under-runs need to be handled, but the program logic
-can become more complicated when a lot data needs to be transferred as some
-requests might be larger than the buffers.
-
-There is also support for registering a function which gets pushed onto the
-'hpq' when characters ready for reading. MµOS comes with a line editor which can
-be used in this place.
-
-===== API
+==== API
 
 PIPADOC:=uart_api
 
-===== configuration
+==== configuration
 
 PIPADOC:@uart_config
-
-==== I/O Library
-
-MµOS comes with a library to do formatted text output over serial. This
-library does not use printf alike format strings but provides functions for
-printing each data type. Actually there are 2 implementations with the same
-API but different functionality. The first one pushes data directly to the
-transmission buffer while the second one has its own data queue.
-
-NOTE: While the basic variant and the TXQUEUE have the same API, not all
-functions are implemented for both variants. This will be fixed in future as
-far it makes sense.
-
-.Basic variant
-
-Pushing data directly out makes the code pretty small and the linker will only
-link functions which are actually used. The downside is that the TX buffer
-needs to hold every byte to be printed. When it overruns an error is reported,
-but the output might be truncated. This is suitable for small targets with
-little I/O demands, as long one can provide a big enough TX buffer.
-
-.TXQUEUE
-
-Uses a 'tagged' queue as front-end for the TX buffer. Tagged means that the
-data can be stored in binary form with some tag about the type in front. The
-I/O library then also manages a job on the hpq which does the transfer from
-the txqueue to he txbuffer. When the TXQUEUE is in use the TX buffer can be
-configured to hold only few bytes.
-
-The implementation ensures that the most compact form will be stored. This can
-dramatically reduce the memory footprint for the queue. For example numbers
-are represented in the smallest binary form possible, constant strings can be
-stored in Flash ROM and are only referenced from the TXQUEUE.
-
-This advantage comes with some weight on the flash side, the TXQUEUE
-implementation currently weight over 2k of code, still whenever enough flash
-space is available it should be the considered.
-
-Another advantage is that operations on the TXQUEUE are atomic. Data gets
-never truncated when the queue is full and an error is returned, either the
-whole thing gets pushed or nothing in case of an error. Future plans include
-to add some begin/commit transactions support too.
-
-===== API
-
-PIPADOC:@outputfn
-
-===== configuration
-
-PIPADOC:@txqueue_config
-
-
-==== Lineedit
-
-For building command line interfaces, mµOS comes with a highly configurable
-line editor. Over time this is planned to become a complete framework for
-controlling the program.
-
-One can enable it by choosing it as callback function of the UART receiver
-+MUOS_SERIAL_RXCALLBACK=muos_lineedit+. Then the line editor presents a user
-configurable callback which gets called when a line got terminated.
-
-The Line editor can be configure to handle UTF8 encoded text. This only adds
-moderate size to the code but causes more serial traffic since editing often
-forces a complete line redraw. When UTF8 support is disabled and only 7-bit
-ASCII encoding is supported.
-
-Most common line commands are supported. The is cursor moved with cursor keys or
-vi keys, other editing keys (Home, End, Backspace, Delete, Overwrite) are
-supported.
-
-There is a very simple line recall handler which lets one restore the previous
-line when no edits happened yet (Cursor up) or clear the current line (cursor
-down). This recall feature is very lightweight and needs only one additional
-byte of RAM and little over 100 bytes program space.
-
-===== configuration
-
-PIPADOC:@lineedit_config
-
-
-==== Command Line Interface
-
-The CLI driver provides the boilerplate for implementing command line interfaces.
-
-One nees to supply a definitions file, configured in 'MUOS_CLI_INCLUDE' which lists
-all commands to be supported.
-
-.Example
-----
-#define CLI_COMMANDS \
-  COMMAND(help)       \
-  COMMAND(version)
-----
-
-To activate it one should enable the lineeditor and then configure
-+MUOS_LINEDIT_CALLBACK=muos_cli+. The CLI call will tokenize the first
-word on a line and dispatch it to a user defined function in the form
-'void cli_cmd_NAME (char** tokstate)', where 'NAME' is the command name and
-'tokstate' points to the state from the initial strtok_rP() call.
-
-Any further tokenization should be done by the user supplied implementation.
-
-===== configuration
-
-PIPADOC:@cli_config
-
 
