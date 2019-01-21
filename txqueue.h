@@ -21,13 +21,16 @@
 #ifndef MUOS_TXQUEUE_H
 #define MUOS_TXQUEUE_H
 
-#include <stdint.h>
+#include <muos/io.h>
 #include <muos/lib/cbuffer.h>
 
-#if MUOS_SERIAL_TXQUEUE > 1
-typedef MUOS_CBUFFERDEF(MUOS_SERIAL_TXQUEUE)
-muos_txqueue_type;
-#endif
+#include <stdint.h>
+
+#define SERIAL(hw, txqsize)                     \
+  MUOS_CBUFFERDEC(muos_txqueue##hw, txqsize);
+MUOS_IO_TXQUEUE_SIZE
+#undef SERIAL
+
 
 #define MUOS_TXQUEUE_TAGS                         \
   TAG(NL)                                         \
@@ -55,19 +58,15 @@ enum muos_txqueue_tags
 #define TAG(name)  MUOS_TXTAG_##name,
   MUOS_TXQUEUE_TAGS
 #undef TAG
-
 };
 
 muos_cbuffer_index
-muos_txqueue_free (void);
+muos_txqueue_free MUOS_IO_HWPARAM();
 
 void
-muos_txqueue_push (const uint8_t value);
+muos_txqueue_push MUOS_IO_HWPARAM(const uint8_t value);
 
 uint8_t
-muos_txqueue_pop (void);
-
-void
-muos_txqueue_run (void);
+muos_txqueue_pop MUOS_IO_HWPARAM();
 
 #endif
