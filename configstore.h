@@ -30,6 +30,7 @@
 #endif
 
 #include <muos/muos.h>
+#include <muos/io.h>
 
 /*
   Wear leveling and fault tolerant config store.
@@ -193,10 +194,10 @@ uint8_t
 muos_configstore_ary (enum muos_configstore_id id);
 
 muos_error
-muos_configstore_output_name (enum muos_configstore_id id);
+muos_configstore_output_name MUOS_IO_HWPARAM(enum muos_configstore_id id);
 
 muos_error
-muos_configstore_output_value (enum muos_configstore_id id, uint8_t index);
+muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8_t index);
 
 muos_error
 muos_configstore_set (char* var, uint8_t index, char* val);

@@ -152,7 +152,7 @@ muos_configstore_ary (enum muos_configstore_id id)
 
 
 muos_error
-muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
+muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8_t index)
 {
   if (status <= CONFIGSTORE_VALID)
     return muos_error_configstore;
@@ -162,22 +162,22 @@ muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
   switch (schema[id].type)
     {
     case MUOS_CONFIGSTORE_TYPE_int8_t:
-      return muos_output_int8 (*(int8_t*) value);
+      return muos_output_int8 MUOS_IO_HWARG(*(int8_t*) value);
 
     case MUOS_CONFIGSTORE_TYPE_uint8_t:
-      return muos_output_uint8 (*(uint8_t*) value);
+      return muos_output_uint8 MUOS_IO_HWARG(*(uint8_t*) value);
 
     case MUOS_CONFIGSTORE_TYPE_int16_t:
-      return muos_output_int16 (*(int16_t*) value);
+      return muos_output_int16 MUOS_IO_HWARG(*(int16_t*) value);
 
     case MUOS_CONFIGSTORE_TYPE_uint16_t:
-      return muos_output_uint16 (*(uint16_t*) value);
+      return muos_output_uint16 MUOS_IO_HWARG(*(uint16_t*) value);
 
     case MUOS_CONFIGSTORE_TYPE_int32_t:
-      return muos_output_int32 (*(int32_t*) value);
+      return muos_output_int32 MUOS_IO_HWARG(*(int32_t*) value);
 
     case MUOS_CONFIGSTORE_TYPE_string:
-      return muos_output_cstr ((const char*) value);
+      return muos_output_cstr MUOS_IO_HWARG((const char*) value);
 
     default:
       return muos_error_error; /*will never happen*/
@@ -185,9 +185,9 @@ muos_configstore_output_value (enum muos_configstore_id id, uint8_t index)
 }
 
 muos_error
-muos_configstore_output_name (enum muos_configstore_id id)
+muos_configstore_output_name MUOS_IO_HWPARAM(enum muos_configstore_id id)
 {
-  return muos_output_fstr (muos_configstore_names[id]);
+  return muos_output_fstr MUOS_IO_HWARG(muos_configstore_names[id]);
 }
 
 muos_error
