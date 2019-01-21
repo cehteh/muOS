@@ -67,10 +67,16 @@ void muos_die (void)
   muos_hw_shutdown ();
 }
 
+//TODO: since we autogenerate declarations here, remove them from header files
+#define MUOS_INIT(fn) void fn(void)
+#include <muos/init.inc>
+#undef MUOS_INIT
 void
 muos_init (void)
 {
+#define MUOS_INIT(fn) fn()
 #include <muos/init.inc>
+#undef MUOS_INIT
 }
 
 #ifdef MUOS_SCHED_DEPTH
