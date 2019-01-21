@@ -39,3 +39,7 @@
   correspondending bit in a bit-array which flags its occurence. When any
   errors happened in interrupt handlers are not handled there, then the
   mainloop first calls a user-defined error handling function.
+
+* MµOS does not use dynamic memory allocation, everything is either
+  statically defined or kept on the stack.
+

@@ -63,10 +63,12 @@ struct muos_cbuffer
 //: +size+::
 //:   number of elements
 //:
-//: Macro declaring and defining the type of a cbuffer for the given size.
+//: Macros declaring and defining the type of a cbuffer for the given size
+//: (that is including the data, appended at its end).
 //:
-//: The resulting cbuffer will be named by the given name with '_muos_cbuffer'
-//: appended.
+//: The resulting cbuffer type will be a struct named by the given name with
+//: '_muos_cbuffer' appended. The cbuffer descriptor is available at the
+//: '.descriptor' member.
 //:
 #define MUOS_CBUFFERDEC(name, sz)               \
   extern struct name##_muos_cbuffer             \
