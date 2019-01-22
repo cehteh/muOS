@@ -83,7 +83,7 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
     OUTPUTFN(base, uint8_t) /* set numeric base for the next integer conversion (2-36) */               \
     OUTPUTFN(pupcase, bool) /* set default digit representation */                                      \
     OUTPUTFN(pbase, uint8_t) /* set default numeric base (2-36) */
-
+  ;
 
 // for transaction support
 //PLANNED:  OUTPUTFN(commit) /* */
@@ -110,20 +110,21 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 #define MUOS_IO_HWPARAM(...) (const uint8_t hw, ## __VA_ARGS__)
 #define MUOS_IO_HWARG(...) (hw, ## __VA_ARGS__)
 #define MUOS_IO_HWINDEX  hw
+#define MUOS_IO_HWCHECK  if (hw >= MUOS_SERIAL_NUM) return muos_error_nodev
+//FIXME: insert HWCHECK where approbiate
 #else
 #define MUOS_IO_HWPARAM(...) (__VA_ARGS__)
 #define MUOS_IO_HWARG(...) (__VA_ARGS__)
 #define MUOS_IO_HWINDEX  0
+#define MUOS_IO_HWCHECK
 #endif
 
 
 
 #if MUOS_SERIAL_NUM > 1
 #define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
-#define muos_output_csi_cstr_P(hw, s) muos_output_csi_fstr (hw, MUOS_PSTR(s))
 #else
 #define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
-#define muos_output_csi_cstr_P(s) muos_output_csi_fstr (MUOS_PSTR(s))
 #endif
 
 /*

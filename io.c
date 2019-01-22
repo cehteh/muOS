@@ -57,7 +57,7 @@ muos_io_20init (void)
 muos_error
 muos_output_char MUOS_IO_HWPARAM(char c)
 {
-  //PLANNED: dispatch on hwnel type
+  MUOS_IO_HWCHECK;
   return muos_serial_tx_byte MUOS_IO_HWARG(c);
 }
 
@@ -65,6 +65,7 @@ muos_output_char MUOS_IO_HWPARAM(char c)
 muos_error
 muos_output_cstr MUOS_IO_HWPARAM(const char* str)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_success;
 
   while (*str && !ret)
@@ -77,6 +78,7 @@ muos_output_cstr MUOS_IO_HWPARAM(const char* str)
 muos_error
 muos_output_cstrn MUOS_IO_HWPARAM(const char* str, uint8_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_success;
   while (*str && n-- && !ret)
     ret = muos_serial_tx_byte MUOS_IO_HWARG(*str++);
@@ -88,6 +90,7 @@ muos_output_cstrn MUOS_IO_HWPARAM(const char* str, uint8_t n)
 muos_error
 muos_output_fstr MUOS_IO_HWPARAM(muos_flash_cstr str)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_success;
 
   for (uint8_t b  = pgm_read_byte (str);
@@ -104,6 +107,7 @@ muos_output_fstr MUOS_IO_HWPARAM(muos_flash_cstr str)
 muos_error
 muos_output_mem MUOS_IO_HWPARAM(const uint8_t* mem, uint8_t len)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_success;
 
   while (len-- && !ret)
@@ -117,6 +121,7 @@ muos_output_mem MUOS_IO_HWPARAM(const uint8_t* mem, uint8_t len)
 muos_error
 muos_output_nl MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_serial_tx_byte MUOS_IO_HWARG('\r');
 
   retcont (muos_serial_tx_byte MUOS_IO_HWARG('\n'));
@@ -128,6 +133,7 @@ muos_output_nl MUOS_IO_HWPARAM()
 muos_error
 muos_output_csi_char MUOS_IO_HWPARAM(const char c)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_serial_tx_byte MUOS_IO_HWARG(0x1b);
   retcont (muos_serial_tx_byte MUOS_IO_HWARG('['));
   retcont (muos_serial_tx_byte MUOS_IO_HWARG(c));
@@ -139,6 +145,7 @@ muos_output_csi_char MUOS_IO_HWPARAM(const char c)
 muos_error
 muos_output_csi_cstr MUOS_IO_HWPARAM(const char* str)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_serial_tx_byte MUOS_IO_HWARG(0x1b);
   retcont (muos_serial_tx_byte MUOS_IO_HWARG('['));
   retcont (muos_output_cstr MUOS_IO_HWARG(str));
@@ -150,6 +157,7 @@ muos_output_csi_cstr MUOS_IO_HWPARAM(const char* str)
 muos_error
 muos_output_csi_fstr MUOS_IO_HWPARAM(muos_flash_cstr str)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = muos_serial_tx_byte MUOS_IO_HWARG(0x1b);
   retcont (muos_serial_tx_byte MUOS_IO_HWARG('['));
   retcont (muos_output_fstr MUOS_IO_HWARG(str));
@@ -213,6 +221,7 @@ Xput(64);
 muos_error
 muos_output_intptr MUOS_IO_HWPARAM(intptr_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret;
 
   switch (sizeof(intptr_t))
@@ -235,6 +244,7 @@ muos_output_intptr MUOS_IO_HWPARAM(intptr_t n)
 muos_error
 muos_output_uintptr MUOS_IO_HWPARAM(uintptr_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret;
 
   switch (sizeof(uintptr_t))
@@ -257,6 +267,7 @@ muos_output_uintptr MUOS_IO_HWPARAM(uintptr_t n)
 muos_error
 muos_output_int8 MUOS_IO_HWPARAM(int8_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = i8put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -265,6 +276,7 @@ muos_output_int8 MUOS_IO_HWPARAM(int8_t n)
 muos_error
 muos_output_uint8 MUOS_IO_HWPARAM(uint8_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = u8put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -273,6 +285,7 @@ muos_output_uint8 MUOS_IO_HWPARAM(uint8_t n)
 muos_error
 muos_output_int16 MUOS_IO_HWPARAM(int16_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = i16put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -281,6 +294,7 @@ muos_output_int16 MUOS_IO_HWPARAM(int16_t n)
 muos_error
 muos_output_uint16 MUOS_IO_HWPARAM(uint16_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = u16put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -289,6 +303,7 @@ muos_output_uint16 MUOS_IO_HWPARAM(uint16_t n)
 muos_error
 muos_output_int32 MUOS_IO_HWPARAM(int32_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = i32put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -297,6 +312,7 @@ muos_output_int32 MUOS_IO_HWPARAM(int32_t n)
 muos_error
 muos_output_uint32 MUOS_IO_HWPARAM(uint32_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = u32put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -305,6 +321,7 @@ muos_output_uint32 MUOS_IO_HWPARAM(uint32_t n)
 muos_error
 muos_output_int64 MUOS_IO_HWPARAM(int64_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = i64put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -313,6 +330,7 @@ muos_output_int64 MUOS_IO_HWPARAM(int64_t n)
 muos_error
 muos_output_uint64 MUOS_IO_HWPARAM(uint64_t n)
 {
+  MUOS_IO_HWCHECK;
   muos_error ret = u64put MUOS_IO_HWARG(n, fmtconfig[MUOS_IO_HWINDEX].base, fmtconfig[MUOS_IO_HWINDEX].upcase);
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
   return ret;
@@ -322,6 +340,7 @@ muos_output_uint64 MUOS_IO_HWPARAM(uint64_t n)
 muos_error
 muos_output_float MUOS_IO_HWPARAM(float)
 {
+  MUOS_IO_HWCHECK;
   muos_output_cstr MUOS_IO_HWARG("PLANNED");
 }
 
@@ -329,12 +348,14 @@ muos_output_float MUOS_IO_HWPARAM(float)
 muos_error
 muos_output_cstr_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
   return muos_error_error;
 }
 
 muos_error
 muos_output_mem_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
   return muos_error_error;
 }
 
@@ -342,6 +363,7 @@ muos_error
 muos_output_int16_R MUOS_IO_HWPARAM()
 {
 
+  MUOS_IO_HWCHECK;
   return muos_error_error;
 }
 
@@ -349,12 +371,14 @@ muos_error
 muos_output_uint16_R MUOS_IO_HWPARAM()
 {
 
+  MUOS_IO_HWCHECK;
   return muos_error_error;
 }
 
 muos_error
 muos_output_int32_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -362,6 +386,7 @@ muos_output_int32_R MUOS_IO_HWPARAM()
 muos_error
 muos_output_uint32_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -369,6 +394,7 @@ muos_output_uint32_R MUOS_IO_HWPARAM()
 muos_error
 muos_output_int64_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -376,6 +402,7 @@ muos_output_int64_R MUOS_IO_HWPARAM()
 muos_error
 muos_output_uint64_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -383,6 +410,7 @@ muos_output_uint64_R MUOS_IO_HWPARAM()
 muos_error
 muos_output_float_R MUOS_IO_HWPARAM()
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -391,6 +419,7 @@ muos_output_float_R MUOS_IO_HWPARAM()
 muos_error
 muos_output_upcase MUOS_IO_HWPARAM(bool upcase)
 {
+  MUOS_IO_HWCHECK;
   fmtconfig[MUOS_IO_HWINDEX].upcase = upcase;
   return muos_success;
 }
@@ -399,6 +428,7 @@ muos_output_upcase MUOS_IO_HWPARAM(bool upcase)
 muos_error
 muos_output_base MUOS_IO_HWPARAM(uint8_t base)
 {
+  MUOS_IO_HWCHECK;
   fmtconfig[MUOS_IO_HWINDEX].base = base;
   return muos_success;
 }
@@ -407,6 +437,7 @@ muos_output_base MUOS_IO_HWPARAM(uint8_t base)
 muos_error
 muos_output_pupcase MUOS_IO_HWPARAM(bool upcase)
 {
+  MUOS_IO_HWCHECK;
   pfmtconfig[MUOS_IO_HWINDEX].upcase = fmtconfig[MUOS_IO_HWINDEX].upcase = upcase;
   return muos_success;
 }
@@ -415,6 +446,7 @@ muos_output_pupcase MUOS_IO_HWPARAM(bool upcase)
 muos_error
 muos_output_pbase MUOS_IO_HWPARAM(uint8_t base)
 {
+  MUOS_IO_HWCHECK;
   pfmtconfig[MUOS_IO_HWINDEX].base = fmtconfig[MUOS_IO_HWINDEX].base = base;
   return muos_success;
 }
@@ -431,6 +463,7 @@ muos_output_pbase MUOS_IO_HWPARAM(uint8_t base)
 muos_error
 muos_output_ifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -438,6 +471,7 @@ muos_output_ifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 muos_error
 muos_output_ffmt MUOS_IO_HWPARAM(char)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -445,13 +479,15 @@ muos_output_ffmt MUOS_IO_HWPARAM(char)
 muos_error
 muos_output_pcase MUOS_IO_HWPARAM(char)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
 
-oid
+muos_error
 muos_output_pbase MUOS_IO_HWPARAM(uint8_t)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -460,6 +496,7 @@ muos_output_pbase MUOS_IO_HWPARAM(uint8_t)
 muos_error
 muos_output_pifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -467,6 +504,7 @@ muos_output_pifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 muos_error
 muos_output_pffmt MUOS_IO_HWPARAM(char)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
@@ -475,6 +513,7 @@ muos_output_pffmt MUOS_IO_HWPARAM(char)
 muos_error
 muos_output_ctrl MUOS_IO_HWPARAM(uint8_t, uint8_t, uint8_t)
 {
+  MUOS_IO_HWCHECK;
 
   return muos_error_error;
 }
