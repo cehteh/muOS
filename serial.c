@@ -254,7 +254,7 @@ muos_serial_rx_flush (bool desync)
 {
   muos_serial_rx_stop ();
   muos_cbuffer_init (&muos_rxbuffer0);
-  muos_serial_status[hw].serial_rx_insync = !desync;
+  muos_serial_status[0].serial_rx_insync = !desync;
   muos_serial_rx_run ();
 }
 
@@ -273,6 +273,7 @@ muos_serial_rxhpq_call (void)
   if (muos_serial_rxcallback[MUOS_SERIAL_NUM])
     again = muos_serial_rxcallback[MUOS_SERIAL_NUM] (hw);
 
+  //FIXME: use  muos_serial_rx_stop (hw);
   muos_interrupt_disable (); // no need for enable, mainloop will disable on return
   if (again && muos_cbuffer_used (muos_rxbuffer[hw]))
     muos_error_set (muos_hpq_pushback_isr (muos_serial_rxhpq_call, true));
