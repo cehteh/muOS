@@ -29,7 +29,7 @@
 
 //TODO: API for setting each axis and then start all together
 
-struct muos_stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+struct muos_stepper_state muos_steppers[MUOS_STEPPER_NUM];
 
 const struct muos_configstore_data* muos_steppers_config_lock;
 
@@ -39,7 +39,7 @@ muos_stepper_50init (void)
 {
   muos_hw_stepper_init ();
 
-  for(uint8_t i = 0; i < MUOS_STEPPER_COUNT; ++i)
+  for(uint8_t i = 0; i < MUOS_STEPPER_NUM; ++i)
     muos_steppers[i].state = MUOS_STEPPER_OFF;
 }
 
@@ -54,7 +54,7 @@ muos_stepper_disable_all (void)
   muos_hw_stepper_disable_all ();
   muos_configstore_unlock (&muos_steppers_config_lock);
 
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state > MUOS_STEPPER_OFF)
         muos_steppers[i].state = MUOS_STEPPER_OFF;
@@ -64,7 +64,7 @@ muos_stepper_disable_all (void)
 muos_error
 muos_stepper_enable_all (void)
 {
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state < MUOS_STEPPER_OFF)
         return muos_error_stepper_state;
@@ -72,7 +72,7 @@ muos_stepper_enable_all (void)
 
   MUOS_OK(muos_hw_stepper_enable_all ());
 
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state == MUOS_STEPPER_OFF)
         muos_steppers[i].state = MUOS_STEPPER_ON;
@@ -105,7 +105,7 @@ muos_stepper_stop (uint8_t hw)
 void
 muos_stepper_stop_all (void)
 {
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     muos_stepper_stop (i);
 }
 
@@ -121,7 +121,7 @@ muos_stepper_lock_all (void)
   if (muos_steppers_config_lock)
     return muos_error_stepper_state;
 
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state != MUOS_STEPPER_ON)
         return muos_error_stepper_state;
@@ -132,7 +132,7 @@ muos_stepper_lock_all (void)
   if (!muos_steppers_config_lock)
     return muos_error_configstore;
 
-  for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state == MUOS_STEPPER_ON)
         muos_steppers[i].state = MUOS_STEPPER_HOLD;
@@ -147,7 +147,7 @@ muos_stepper_unlock_all (void)
 {
   if (muos_steppers_config_lock)
     {
-      for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+      for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
         {
           if (muos_steppers[i].state > MUOS_STEPPER_HOLD)
             muos_stepper_stop (i);
@@ -155,7 +155,7 @@ muos_stepper_unlock_all (void)
 
       muos_configstore_unlock (&muos_steppers_config_lock);
 
-      for (uint8_t i=0; i<MUOS_STEPPER_COUNT; ++i)
+      for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
         {
           if (muos_steppers[i].state > MUOS_STEPPER_ON)
             muos_steppers[i].state = MUOS_STEPPER_ON;
@@ -168,7 +168,7 @@ muos_stepper_unlock_all (void)
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD)
@@ -208,7 +208,7 @@ muos_stepper_move_raw (uint8_t hw,
                        uint8_t prescale,
                        muos_queue_function done)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ON)
@@ -239,7 +239,7 @@ muos_stepper_move_cal (uint8_t hw,
                        uint16_t speed,
                        muos_queue_function done)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD
@@ -275,7 +275,7 @@ muos_stepper_move_rel (uint8_t hw,
                        uint16_t speed,
                        muos_queue_function done)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
@@ -389,7 +389,7 @@ muos_stepper_slope_prep (uint8_t hw,
                          uint16_t speed_out,
                          uint16_t out_steps)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (!slope)
@@ -431,7 +431,7 @@ muos_stepper_slope_prep (uint8_t hw,
 struct muos_stepper_slope*
 muos_stepper_slope_get (uint8_t hw)
 {
-  if (hw >= MUOS_STEPPER_COUNT
+  if (hw >= MUOS_STEPPER_NUM
       || muos_steppers[hw].ready
       || muos_steppers[hw].state < MUOS_STEPPER_ARMED)
     return NULL;
@@ -448,7 +448,7 @@ muos_stepper_slope_get (uint8_t hw)
 muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 {
- if (hw >= MUOS_STEPPER_COUNT)
+ if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
@@ -496,7 +496,7 @@ muos_stepper_register_action (uint8_t hw,
                               uint8_t action,
                               uintptr_t arg)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
@@ -520,7 +520,7 @@ muos_stepper_remove_action (uint8_t hw,
                             uint8_t action,
                             uintptr_t arg)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
@@ -544,7 +544,7 @@ muos_stepper_remove_action (uint8_t hw,
 bool
 muos_stepper_not_moving (intptr_t hw)
 {
-  if (hw >= MUOS_STEPPER_COUNT)
+  if (hw >= MUOS_STEPPER_NUM)
     return false;
 
   return muos_steppers[hw].state < MUOS_STEPPER_RAW;

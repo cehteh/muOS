@@ -183,7 +183,7 @@ struct muos_stepper_state
 };
 
 
-extern struct muos_stepper_state muos_steppers[MUOS_STEPPER_COUNT];
+extern struct muos_stepper_state muos_steppers[MUOS_STEPPER_NUM];
 
 
 void

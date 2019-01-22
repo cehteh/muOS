@@ -20,6 +20,10 @@
 
 #ifdef MUOS_STEPPER
 
+#ifndef MUOS_SCHED_DEPTH
+#error steppers need MUOS_SCHED_DEPTH
+#endif
+
 #define MUOS_HW_STEPPER_H
 #include <muos/stepper.h>
 #include <muos/muos.h>
