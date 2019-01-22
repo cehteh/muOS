@@ -270,8 +270,8 @@ muos_serial_rxhpq_call (void)
 
   bool again = false;
 
-  if (muos_serial_rxcallback[MUOS_SERIAL_NUM])
-    again = muos_serial_rxcallback[MUOS_SERIAL_NUM] (hw);
+  if (muos_serial_rxcallback[hw])
+    again = muos_serial_rxcallback[hw] (hw);
 
   //FIXME: use  muos_serial_rx_stop (hw);
   muos_interrupt_disable (); // no need for enable, mainloop will disable on return

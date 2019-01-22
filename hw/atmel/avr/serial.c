@@ -214,56 +214,56 @@ MUOS_SERIAL_HW;
 //PLANNED: sync when line is idle
 
 
-#define UART(hw, txsize, rxsize)                                                                \
-  ISR(ISRNAME(hw))                                                                              \
-  {                                                                                             \
-    MUOS_DEBUG_INTR_ON;                                                                         \
-    bool err = false;                                                                           \
-    if (UCSR##hw##A & _BV(DOR##hw))                                                             \
-      {                                                                                         \
-        muos_serial_status[hw].error_rx_overrun;                                                \
-        err = true;                                                                             \
-      }                                                                                         \
-    if (UCSR##hw##A & _BV(UPE##hw))                                                             \
-      {                                                                                         \
-        muos_serial_status[hw].error_rx_parity;                                                 \
-        err = true;                                                                             \
-      }                                                                                         \
-    if (UCSR##hw##A & _BV(FE##hw))                                                              \
-      {                                                                                         \
-        muos_serial_status[hw].error_rx_frame;                                                  \
-        err = true;                                                                             \
-      }                                                                                         \
-    if (!muos_cbuffer_free (&muos_rxbuffer##hw.descriptor))                                     \
-      {                                                                                         \
-        muos_serial_status[hw].error_rx_overflow;                                               \
-        err = true;                                                                             \
-      }                                                                                         \
-    if (err)                                                                                    \
-      {                                                                                         \
-        if (muos_serial_status[hw].serial_rx_dosync)                                            \
-          muos_serial_status[hw].serial_rx_insync = false;                                      \
-        muos_error_set (muos_error_serial_status);                                              \
-      }                                                                                         \
-    else                                                                                        \
-      {                                                                                         \
-        uint8_t data = UDR##hw;                                                                 \
-        if (muos_serial_status[hw].serial_rx_dosync                                             \
-            && !muos_serial_status[hw].serial_rx_insync)                                        \
-          {                                                                                     \
-            if (data == muos_serial_rxsync[hw])                                                 \
-              muos_serial_status[hw].serial_rx_insync = true;                                   \
-          }                                                                                     \
-        if (muos_serial_status[hw].serial_rx_insync)                                            \
-          {                                                                                     \
-            muos_cbuffer_push (&muos_rxbuffer##hw.descriptor, data);                            \
-            if (!muos_serial_status[hw].serial_rxhpq_pending && muos_serial_rxcallback[hw])     \
-              {                                                                                 \
-                muos_serial_status[hw].serial_rxhpq_pending = true;                             \
-                muos_error_set (muos_hpq_pushback_arg_isr (muos_serial_rxhpq_call, hw, true));  \
-              }                                                                                 \
-          }                                                                                     \
-      }                                                                                         \
+#define UART(hw, txsize, rxsize)                                                                        \
+  ISR(ISRNAME(hw))                                                                                      \
+  {                                                                                                     \
+    MUOS_DEBUG_INTR_ON;                                                                                 \
+    bool err = false;                                                                                   \
+    uint8_t data = UDR##hw;                                                                             \
+    if (UCSR##hw##A & _BV(DOR##hw))                                                                     \
+      {                                                                                                 \
+        muos_serial_status[hw].error_rx_overrun;                                                        \
+        err = true;                                                                                     \
+      }                                                                                                 \
+    if (UCSR##hw##A & _BV(UPE##hw))                                                                     \
+      {                                                                                                 \
+        muos_serial_status[hw].error_rx_parity;                                                         \
+        err = true;                                                                                     \
+      }                                                                                                 \
+    if (UCSR##hw##A & _BV(FE##hw))                                                                      \
+      {                                                                                                 \
+        muos_serial_status[hw].error_rx_frame;                                                          \
+        err = true;                                                                                     \
+      }                                                                                                 \
+    if (!muos_cbuffer_free (&muos_rxbuffer##hw.descriptor))                                             \
+      {                                                                                                 \
+        muos_serial_status[hw].error_rx_overflow;                                                       \
+        err = true;                                                                                     \
+      }                                                                                                 \
+    if (err)                                                                                            \
+      {                                                                                                 \
+        if (muos_serial_status[hw].serial_rx_dosync)                                                    \
+          muos_serial_status[hw].serial_rx_insync = false;                                              \
+        muos_error_set_isr (muos_error_serial_status);                                                  \
+      }                                                                                                 \
+    else                                                                                                \
+      {                                                                                                 \
+        if (muos_serial_status[hw].serial_rx_dosync                                                     \
+            && !muos_serial_status[hw].serial_rx_insync                                                 \
+            && data == muos_serial_rxsync[hw])                                                          \
+          {                                                                                             \
+            muos_serial_status[hw].serial_rx_insync = true;                                             \
+          }                                                                                             \
+        if (muos_serial_status[hw].serial_rx_insync)                                                    \
+          {                                                                                             \
+            muos_cbuffer_push (&muos_rxbuffer##hw.descriptor, data);                                    \
+            if (!muos_serial_status[hw].serial_rxhpq_pending && muos_serial_rxcallback[hw])             \
+              {                                                                                         \
+                muos_serial_status[hw].serial_rxhpq_pending = true;                                     \
+                muos_error_set_isr (muos_hpq_pushback_arg_isr (muos_serial_rxhpq_call, hw, true));      \
+              }                                                                                         \
+          }                                                                                             \
+      }                                                                                                 \
   }
 
 
