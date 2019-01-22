@@ -114,7 +114,7 @@
   muos_hw_serial_tx##hw##_run (void)                    \
   {                                                     \
     UCSR##hw##B |= _BV(UDRIE##hw);                      \
-}                                                       \
+  }                                                     \
                                                         \
   static inline void                                    \
   muos_hw_serial_tx##hw##_stop (void)                   \
