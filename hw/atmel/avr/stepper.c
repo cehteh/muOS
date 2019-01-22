@@ -224,6 +224,8 @@ MUOS_STEPPER_HW;
 #define MUOS_STEPPER_TOP(timer, wgm) MUOS_STEPPER_TOP_##timer##_##wgm
 #define MUOS_STEPPER_TOP_1_14 ICR1
 #define MUOS_STEPPER_TOP_1_15 OCR1A
+#define MUOS_STEPPER_TOP_3_14 ICR1
+#define MUOS_STEPPER_TOP_3_15 OCR1A
 
 
 #define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
@@ -451,9 +453,10 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 // the values for prescalers are irregular, depending on the actual timer/hardware
 // only common is that 0 means off, thus we don't handle that here [prescale-1] below
 #ifdef MUOS_HW_ATMEL_ATMEGA328P_H
-static const uint16_t timerdividers0[] = {1,8,64,256,1024};
-static const uint16_t* const timerdividers1 = timerdividers0;
-static const uint16_t timerdividers2[] = {1,8,32,64,128,256,1024};
+static const uint16_t __flash timerdividers0[] = {1,8,64,256,1024};
+static const uint16_t __flash* __flash const timerdividers1 = timerdividers0;
+static const uint16_t __flash* __flash const timerdividers3 = timerdividers0;
+static const uint16_t __flash timerdividers2[] = {1,8,32,64,128,256,1024};
 #else
 #error "unknown hardware"
 #endif
