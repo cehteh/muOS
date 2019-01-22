@@ -187,11 +187,15 @@ muos_hw_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync)
   {                                                                     \
     MUOS_DEBUG_INTR_ON;                                                 \
     if (muos_txbuffer##hw.descriptor.len)                               \
-    {                                                                   \
-      UDR##hw = muos_cbuffer_pop (&muos_txbuffer##hw.descriptor);       \
-      if (!muos_txbuffer##hw.descriptor.len)                            \
+      {                                                                 \
+        UDR##hw = muos_cbuffer_pop (&muos_txbuffer##hw.descriptor);     \
+        if (!muos_txbuffer##hw.descriptor.len)                          \
+          UCSR##hw##B &= ~_BV(UDRIE##hw);                               \
+      }                                                                 \
+    else                                                                \
+      {                                                                 \
         UCSR##hw##B &= ~_BV(UDRIE##hw);                                 \
-    }                                                                   \
+      }                                                                 \
 }
 
 MUOS_SERIAL_HW;
@@ -229,7 +233,6 @@ MUOS_SERIAL_HW;
       {                                                                                         \
         muos_serial_status[hw].error_rx_frame;                                                  \
         err = true;                                                                             \
-        muos_serial_status[hw].serial_rx_insync = false;                                        \
       }                                                                                         \
     if (!muos_cbuffer_free (&muos_rxbuffer##hw.descriptor))                                     \
       {                                                                                         \
@@ -238,6 +241,8 @@ MUOS_SERIAL_HW;
       }                                                                                         \
     if (err)                                                                                    \
       {                                                                                         \
+        if (muos_serial_status[hw].serial_rx_dosync)                                            \
+          muos_serial_status[hw].serial_rx_insync = false;                                      \
         muos_error_set (muos_error_serial_status);                                              \
       }                                                                                         \
     else                                                                                        \
