@@ -25,7 +25,10 @@
 
 #include <string.h>
 
+#ifdef MUOS_LINEEDIT_CALLBACK
+//FIXME: make it const char* again (allowing recall)
 extern void MUOS_LINEEDIT_CALLBACK (char*);
+#endif
 
 static uint8_t cursor;
 static uint8_t used;
@@ -37,9 +40,9 @@ static char recall;
 
 //PLANNED: strategy on input errors, desync?
 //PLANNED: full line overflow, because lineedit buffer > txqueue, needs some strategy (blocking_io/atomic_io)
-#if MUOS_LINEEDIT_BUFFER >= MUOS_SERIAL_TXQUEUE
-#error MUOS_SERIAL_TXQUEUE must be bigger than MUOS_LINEEDIT_BUFFER
-#endif
+//#if MUOS_LINEEDIT_BUFFER >= MUOS_SERIAL_TXQUEUE
+//#error MUOS_SERIAL_TXQUEUE must be bigger than MUOS_LINEEDIT_BUFFER
+//#endif
 
 static uint8_t pending;
 
@@ -71,24 +74,24 @@ utf8del (void)
 }
 
 static void
-utf8line_redraw (void)
+utf8line_redraw MUOS_IO_HWPARAM()
 {
-  muos_output_csi_cstr_P ("?25l\r");
-  muos_output_cstrn (buffer, cursor);
-  muos_output_csi_cstr_P ("s");
-  muos_output_cstr (buffer+cursor);
-  muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("?25l\r"));
+  muos_output_cstrn MUOS_IO_HWARG(buffer, cursor);
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("s"));
+  muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
 }
 #endif
 
 
 
 bool
-muos_lineedit (void)
+muos_lineedit MUOS_IO_HWPARAM()
 {
-  uint8_t data = muos_serial_rx_byte ();
+  uint8_t data = muos_serial_rx_byte MUOS_IO_HWARG();
 
-  if (!muos_error_check (muos_error_rx_buffer_underflow))
+  if (!muos_error_check (muos_error_rx_underflow))
     {
 #ifdef MUOS_LINEEDIT_UTF8
       if (pending == UTF8DROP)
@@ -103,7 +106,7 @@ muos_lineedit (void)
 #else
       if (data > 127)
         {
-          muos_output_char (7);
+          muos_output_char MUOS_IO_HWARG(7);
           return true;
         }
 #endif
@@ -128,7 +131,7 @@ muos_lineedit (void)
               *buffer = recall;
               recall = 0;
               cursor = used = strlen (buffer);
-              muos_output_cstr (buffer);
+              muos_output_cstr MUOS_IO_HWARG(buffer);
             }
 #endif
 
@@ -147,7 +150,7 @@ muos_lineedit (void)
               used = 0;
               cursor = 0;
               *buffer = 0;
-              muos_output_cstr_P ("\r\x1b[K");
+              muos_output_fstr MUOS_IO_HWARG(MUOS_PSTR("\r\x1b[K"));
             }
 #endif
 
@@ -163,14 +166,14 @@ muos_lineedit (void)
             {
 #ifdef MUOS_LINEEDIT_UTF8
               cursor += muos_utf8size (buffer+cursor);
-              utf8line_redraw ();
+              utf8line_redraw MUOS_IO_HWARG();
 #else
               ++cursor;
-              muos_output_csi_char ('C');
+              muos_output_csi_char MUOS_IO_HWARG('C');
 #endif
             }
           else
-            muos_output_char (7);
+            muos_output_char MUOS_IO_HWARG(7);
 
           pending = 0;
           break;
@@ -182,14 +185,14 @@ muos_lineedit (void)
             {
 #ifdef MUOS_LINEEDIT_UTF8
               cursor -= muos_utf8size (buffer+cursor-1);
-              utf8line_redraw ();
+              utf8line_redraw MUOS_IO_HWARG();
 #else
               --cursor;
-              muos_output_csi_char ('D');
+              muos_output_csi_char MUOS_IO_HWARG('D');
 #endif
             }
           else
-            muos_output_char (7);
+            muos_output_char MUOS_IO_HWARG(7);
 
           pending = 0;
           break;
@@ -205,19 +208,19 @@ muos_lineedit (void)
             {
 #ifdef MUOS_LINEEDIT_UTF8
               utf8del ();
-              utf8line_redraw ();
+              utf8line_redraw MUOS_IO_HWARG();
 #else
               --used;
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-              muos_output_csi_cstr_P ("s\x1b[?25l");
-              muos_output_cstr (buffer+cursor);
-              muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+              muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("s\x1b[?25l"));
+              muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
+              muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
 #endif
 
             }
           else
             {
-              muos_output_char (7);
+              muos_output_char MUOS_IO_HWARG(7);
             }
           pending = 0;
           break;
@@ -255,7 +258,7 @@ muos_lineedit (void)
           // pos1
           pending = 0;
           cursor = 0;
-          muos_output_char ('\r');
+          muos_output_char MUOS_IO_HWARG('\r');
           break;
 
         case CSI<<8 | 0x34:
@@ -269,11 +272,11 @@ muos_lineedit (void)
           cursor = used;
 
 #ifdef MUOS_LINEEDIT_UTF8
-          utf8line_redraw ();
+          utf8line_redraw MUOS_IO_HWARG();
 #else
-          muos_output_csi_cstr (NULL);
-          muos_output_uint16 (cursor+1);
-          muos_output_char ('G');
+          muos_output_csi_cstr MUOS_IO_HWARG(NULL);
+          muos_output_uint16 MUOS_IO_HWARG(cursor+1);
+          muos_output_char MUOS_IO_HWARG('G');
 #endif
           break;
 
@@ -284,7 +287,7 @@ muos_lineedit (void)
 
         case OVWR<<8 | 0x7e:
           // ovwr
-          muos_status.lineedit_ovwr ^= 1;
+          muos_serial_status[MUOS_IO_HWINDEX].lineedit_ovwr ^= 1;
           pending = 0;
           break;
 
@@ -296,9 +299,11 @@ muos_lineedit (void)
 
         case 0x0d:
           // return
-          //TODO: suspend lineedit until the callback is finished (w/ wraper)
           //TODO: push callback on bgq
+          //TODO: and suspend lineedit until the callback is finished (w/ wraper)
+#ifdef MUOS_LINEEDIT_CALLBACK
           MUOS_LINEEDIT_CALLBACK (buffer);
+#endif
 #ifdef MUOS_LINEEDIT_RECALL
           if (*buffer)
             recall = *buffer;
@@ -319,19 +324,19 @@ muos_lineedit (void)
               used -= len;
               cursor -= len;
               memmove (buffer+cursor, buffer+cursor+len, used-cursor+1);
-              utf8line_redraw ();
+              utf8line_redraw MUOS_IO_HWARG();
 #else
               --used;
               --cursor;
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
-              muos_output_csi_cstr_P ("D\x1b[s\x1b[?25l");
-              muos_output_cstr (buffer+cursor);
-              muos_output_csi_cstr_P ("K\x1b[u\x1b[?25h");
+              muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("D\x1b[s\x1b[?25l"));
+              muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
+              muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
 #endif
             }
           else
             {
-              muos_output_char (7);
+              muos_output_char MUOS_IO_HWARG(7);
             }
           break;
 
@@ -340,7 +345,7 @@ muos_lineedit (void)
           //nonprintable
           if (data < 32)
             {
-              muos_output_char (7);
+              muos_output_char MUOS_IO_HWARG(7);
               pending = 0;
               return true;
             }
@@ -357,7 +362,7 @@ muos_lineedit (void)
               pending = UTF8_1;
             }
 
-          uint8_t ovwr_len = cursor < used && muos_status.lineedit_ovwr?muos_utf8size (buffer+cursor):0;
+          uint8_t ovwr_len = cursor < used && muos_serial_status[MUOS_IO_HWINDEX].lineedit_ovwr?muos_utf8size (buffer+cursor):0;
 
           if (used+pending - ovwr_len >= MUOS_LINEEDIT_BUFFER)
             {
@@ -366,7 +371,7 @@ muos_lineedit (void)
               else
                 pending = 0;
 
-              muos_output_char (7);
+              muos_output_char MUOS_IO_HWARG(7);
               break;
             }
 
@@ -382,29 +387,29 @@ muos_lineedit (void)
           ++used;
           ++cursor;
           if (pending == UTF8_1)
-            utf8line_redraw ();
+            utf8line_redraw MUOS_IO_HWARG();
           --pending;
 
 #else
           pending = 0;
-          if (cursor < used && muos_status.lineedit_ovwr)
+          if (cursor < used && muos_serial_status[MUOS_IO_HWINDEX].lineedit_ovwr)
             {
               buffer[cursor] = data;
-              muos_output_char (buffer[cursor]);
+              muos_output_char MUOS_IO_HWARG(buffer[cursor]);
               ++cursor;
             }
           else if (used < MUOS_LINEEDIT_BUFFER-1)
             {
               memmove (buffer+cursor+1, buffer+cursor, used-cursor+1);
               buffer[cursor] = data;
-              muos_output_cstr (buffer+cursor);
+              muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
               ++used;
               ++cursor;
               if (cursor != used)
                 {
-                  muos_output_csi_char ('0');
-                  muos_output_uint8 (used-cursor);
-                  muos_output_char ('D');
+                  muos_output_csi_char MUOS_IO_HWARG('0');
+                  muos_output_uint8 MUOS_IO_HWARG(used-cursor);
+                  muos_output_char MUOS_IO_HWARG('D');
                 }
             }
 #endif
@@ -413,11 +418,11 @@ muos_lineedit (void)
 
   if (used)
     {
-      muos_status.lineedit_pending = true;
+      muos_serial_status[MUOS_IO_HWINDEX].lineedit_pending = true;
     }
   else
     {
-      muos_status.lineedit_pending = false;
+      muos_serial_status[MUOS_IO_HWINDEX].lineedit_pending = false;
     }
 
   return true;
