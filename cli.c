@@ -33,7 +33,7 @@ MUOS_CLI_NOCMD (const char*);
 void
 muos_cli (char* line)
 {
-  muos_output_nl ();
+  muos_output_nl (0); //FIXME: linedit should support prompt/newline
   line += strspn_P (line, PSTR(MUOS_CLI_DELIM));
   char* tokstate;
   const char* tok = strtok_rP (line, PSTR(MUOS_CLI_DELIM), &tokstate);
