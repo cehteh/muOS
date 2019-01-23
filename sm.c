@@ -188,7 +188,8 @@ muos_sm_next (uint8_t sm)
     return muos_error_nodev;
 
   if (statemachine[sm].current == STATE_NONE
-      || statemachine[sm].current == statemachine[sm].params[0])
+      || statemachine[sm].current == statemachine[sm].params[0]
+      || !statemachine[sm].params[0])
     return muos_error_sm_state;
 
   // futile because ISR's may push things to the hpq
