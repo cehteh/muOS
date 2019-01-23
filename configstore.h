@@ -222,8 +222,10 @@ muos_configstore_set (char* var, uint8_t index, char* val);
 //: +callback+::
 //:   function called on completion.
 //:
-//: Both functions return 'muos_error_configstore_locked' in case
-//: of an error. Other errors should be handled in 'callback'.
+//: These functions locking the configstore when their own operation is
+//: in progress. The store must not be locked on entering.
+//: Both functions return 'muos_error_configstore' in case
+//: the store was already locked. Other errors should be handled in 'callback'.
 muos_error
 muos_configstore_load (muos_configstore_callback callback);
 

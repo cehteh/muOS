@@ -396,7 +396,7 @@ eeprom_write_done (void)
     }
   else
     {
-      --status;
+      status = CONFIGSTORE_VALID;
     }
 
   if (callback)
@@ -407,12 +407,13 @@ eeprom_write_done (void)
 muos_error
 muos_configstore_save (muos_configstore_callback cb)
 {
-  if (status >= CONFIGSTORE_RLOCK_MAX || status < CONFIGSTORE_VALID)
+  if (status != CONFIGSTORE_VALID)
     return muos_error_configstore;
+
 
   //PLANNED: call user defined verification function, checking the whole config
 
-  ++status;
+  status = CONFIGSTORE_WLOCK; // needs wlock because the eeprom may turn out DEAD
 
   callback = cb;
 
