@@ -54,6 +54,45 @@ muos_io_20init (void)
 #ifndef MUOS_IO_TXQUEUE
 //PLANNED: fixed point for integers and mille delimiters
 
+#if MUOS_SERIAL_NUM > 1
+
+struct txwait
+{
+  uint8_t hw;
+  muos_cbuffer_index space;
+};
+
+static bool
+tx_wait (intptr_t data)
+{
+  return muos_serial_tx_free (((struct txwait*)data)->hw) > ((struct txwait*)data)->space;
+}
+
+muos_error
+muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
+{
+  struct txwait waitdata = {hw, space};
+  return muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
+}
+
+#else
+
+static bool
+tx_wait (intptr_t space)
+{
+  return muos_serial_tx_free () > space;
+}
+
+muos_error
+muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
+{
+  return muos_wait (tx_wait, space, timeout);
+}
+
+#endif
+
+
+
 muos_error
 muos_output_char MUOS_IO_HWPARAM(char c)
 {

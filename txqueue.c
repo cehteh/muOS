@@ -361,6 +361,44 @@ void txqueue_CSI MUOS_IO_HWPARAM()
 
 */
 
+
+#if MUOS_SERIAL_NUM > 1
+struct txwait
+{
+  uint8_t hw;
+  muos_cbuffer_index space;
+};
+
+static bool
+tx_wait (intptr_t data)
+{
+  return muos_txqueue_free (((struct txwait*)data)->hw) > ((struct txwait*)data)->space;
+}
+
+muos_error
+muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
+{
+  struct txwait waitdata = {hw, space};
+  return muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
+}
+
+#else
+
+static bool
+tx_wait (intptr_t space)
+{
+  return muos_serial_tx_free () > space;
+}
+
+muos_error
+muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
+{
+  return muos_wait (tx_wait, space, timeout);
+}
+
+#endif
+
+
 muos_error
 muos_txqueue_output_char MUOS_IO_HWPARAM(char c)
 {

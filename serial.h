@@ -69,6 +69,18 @@ MUOS_SERIAL_HW
 
 #if MUOS_SERIAL_NUM > 1
 extern struct muos_cbuffer* const muos_txbuffer[];
+
+static inline muos_cbuffer_index
+muos_serial_tx_free (uint8_t hw)
+{
+  return muos_cbuffer_free (muos_txbuffer[hw]);
+}
+#else
+static inline muos_cbuffer_index
+muos_serial_tx_free (void)
+{
+  return muos_cbuffer_free (&muos_txbuffer0);
+}
 #endif
 
 //uart_api:

@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <muos/lib/cbuffer.h>
 #include <muos/error.h>
 
 
@@ -123,8 +124,16 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
 #if MUOS_SERIAL_NUM > 1
 #define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
+
+muos_error
+muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout);
+
 #else
 #define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
+
+muos_error
+muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout);
+
 #endif
 
 /*
@@ -154,15 +163,7 @@ ctrl
 MUOS_OUTPUTFNS
 #undef OUTPUTFN
 
-#endif
-
-
-/*
-  OR
-*/
-
-
-#ifdef MUOS_IO_TXQUEUE
+#else /*  OR  */
 
 #define OUTPUTFN(name, ...) muos_error muos_txqueue_output_##name MUOS_IO_HWPARAM(__VA_ARGS__);
 MUOS_OUTPUTFNS
