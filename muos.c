@@ -122,12 +122,13 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                       return muos_warn_wait_timeout;
                     }
 
+#ifdef MUOS_ERRORFN
                   if (muos_error_pending ())
                     {
                       MUOS_ERRORFN ();
                       muos_interrupt_disable ();
                     }
-
+#endif
                   MUOS_DEBUG_SWITCH_TOGGLE;
                   muos_now_ = muos_clock_now_isr ();
                 }
@@ -160,11 +161,13 @@ muos_yield (uint8_t count)
         {
           do
             {
+#ifdef MUOS_ERRORFN
               if (muos_error_pending ())
                 {
                   MUOS_ERRORFN ();
                   muos_interrupt_disable ();
                 }
+#endif
               MUOS_DEBUG_SWITCH_TOGGLE;
               muos_now_ = muos_clock_now_isr ();
             }
@@ -213,11 +216,13 @@ main()
             {
               do
                 {
+#ifdef MUOS_ERRORFN
                   if (muos_error_pending ())
                     {
                       MUOS_ERRORFN ();
                       muos_interrupt_disable ();
                     }
+#endif
                   MUOS_DEBUG_SWITCH_TOGGLE;
                   muos_now_ = muos_clock_now_isr ();
                 }
