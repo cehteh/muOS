@@ -71,8 +71,18 @@ tx_wait (intptr_t data)
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
 {
+  if (!muos_serial_status[hw].serial_tx_waiting)
+    return muos_error_serial_status;
+
+  muos_serial_status[hw].serial_tx_waiting = true;
+
   struct txwait waitdata = {hw, space};
-  return muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
+
+  muos_error ret = muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
+
+  muos_serial_status[hw].serial_tx_waiting = false;
+
+  return ret;
 }
 
 #else
@@ -86,7 +96,16 @@ tx_wait (intptr_t space)
 muos_error
 muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
 {
-  return muos_wait (tx_wait, space, timeout);
+  if (!muos_serial_status[0].serial_tx_waiting)
+    return muos_error_serial_status;
+
+  muos_serial_status[0].serial_tx_waiting = true;
+
+  muos_error ret = muos_wait (tx_wait, space, timeout);
+
+  muos_serial_status[hw].serial_tx_waiting = false;
+
+  return ret;
 }
 
 #endif

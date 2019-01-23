@@ -101,25 +101,18 @@ muos_serial_tx_byte (uint8_t hw, uint8_t b)
 
   muos_error ret = muos_success;
 
-  if (!muos_serial_status[hw].serial_tx_waiting)
+  muos_serial_tx_stop (hw);
+
+  if (muos_cbuffer_free (muos_txbuffer[hw]) > 0)
     {
-      muos_serial_tx_stop (hw);
-
-      if (muos_cbuffer_free (muos_txbuffer[hw]) > 0)
-        {
-          muos_cbuffer_push (muos_txbuffer[hw], b);
-        }
-      else
-        {
-          ret = muos_error_tx_overflow;
-        }
-
-      muos_serial_tx_run (hw);
+      muos_cbuffer_push (muos_txbuffer[hw], b);
     }
   else
     {
-      ret = muos_error_tx_blocked;
+      ret = muos_error_tx_overflow;
     }
+
+  muos_serial_tx_run (hw);
 
   return ret;
 }
@@ -140,25 +133,18 @@ muos_serial_tx_byte (uint8_t b)
 {
   muos_error ret = muos_success;
 
-  if (!muos_serial_status[0].serial_tx_waiting)
+  muos_serial_tx_stop ();
+
+  if (muos_cbuffer_free (&muos_txbuffer0) > 0)
     {
-      muos_serial_tx_stop ();
-
-      if (muos_cbuffer_free (&muos_txbuffer0) > 0)
-        {
-          muos_cbuffer_psuh (&muos_txbuffer0, b);
-        }
-      else
-        {
-          ret = muos_error_tx_overflow;
-        }
-
-      muos_serial_tx_run ();
+      muos_cbuffer_psuh (&muos_txbuffer0, b);
     }
   else
     {
-      ret = muos_error_tx_blocked;
+      ret = muos_error_tx_overflow;
     }
+
+  muos_serial_tx_run ();
 
   return ret;
 }
@@ -185,25 +171,18 @@ muos_serial_rx_byte (uint8_t hw)
 {
   int16_t ret;
 
-  if (!muos_serial_status[hw].serial_rx_waiting)
+  muos_serial_rx_stop (hw);
+
+  if (muos_cbuffer_used (muos_rxbuffer[hw]))
     {
-      muos_serial_rx_stop (hw);
-
-      if (muos_cbuffer_used (muos_rxbuffer[hw]))
-        {
-          ret = muos_cbuffer_pop (muos_rxbuffer[hw]);
-        }
-      else
-        {
-          ret = -muos_error_rx_underflow;
-        }
-
-      muos_serial_rx_run (hw);
+      ret = muos_cbuffer_pop (muos_rxbuffer[hw]);
     }
   else
     {
-      ret = -muos_error_rx_blocked;
+      ret = -muos_error_rx_underflow;
     }
+
+  muos_serial_rx_run (hw);
 
   return ret;
 }
@@ -225,25 +204,18 @@ muos_serial_rx_byte (void)
 {
   int16_t ret;
 
-  if (!muos_serial_status[0].serial_rx_waiting)
+  muos_serial_rx_stop ();
+
+  if (muos_cbuffer_used (&muos_rxbuffer0))
     {
-      muos_serial_rx_stop ();
-
-      if (muos_cbuffer_used (&muos_rxbuffer0)
-        {
-          ret = muos_cbuffer_pop (&muos_rxbuffer0);
-        }
-      else
-        {
-          ret = -muos_error_rx_underflow;
-        }
-
-      muos_serial_rx_run ();
+      ret = muos_cbuffer_pop (&muos_rxbuffer0);
     }
   else
     {
-      ret = -muos_error_rx_blocked;
+      ret = -muos_error_rx_underflow;
     }
+
+  muos_serial_rx_run ();
 
   return ret;
 }
