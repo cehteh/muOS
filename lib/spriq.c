@@ -39,6 +39,7 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 void
 muos_spriq_pop (struct muos_spriq* spriq)
 {
+  //PLANNED: is it worth to call remove to save code space?
   muos_spriq_priority base = spriq->spriq[0].when;
   muos_spriq_index i;
 
@@ -57,4 +58,48 @@ muos_spriq_pop (struct muos_spriq* spriq)
   spriq->spriq[(i-1)/2] = spriq->spriq[spriq->used];
 }
 
+
+void
+muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
+{
+  muos_spriq_index element = 0;
+
+  // find element
+  for (; element < spriq->used; ++element)
+    {
+      if (spriq->spriq[element].fn == fn && spriq->spriq[element].when == base+when)
+        break;
+    }
+  if (element == spriq->used)
+    return; // not found
+
+  if (spriq->spriq[spriq->used].when-base < spriq->spriq[element/2].when-base)
+    {
+      //upheap
+      for (; element && spriq->spriq[spriq->used].when-base < (muos_spriq_priority)(spriq->spriq[element/2].when - base);
+           element = element/2)
+        {
+          spriq->spriq[element] = spriq->spriq[element/2];
+        }
+
+      spriq->spriq[element] = spriq->spriq[spriq->used];
+    }
+  else
+    {
+      //downheap
+      for (; element < spriq->used-1; element=element*2+1)
+        {
+          if ((muos_spriq_priority)(spriq->spriq[element].when - base) > (muos_spriq_priority)(spriq->spriq[element+1].when - base))
+            ++element;
+
+          if ((muos_spriq_priority)(spriq->spriq[element].when - base) > (muos_spriq_priority)(spriq->spriq[spriq->used].when - base) )
+            break;
+
+          spriq->spriq[(element-1)/2] = spriq->spriq[element];
+        }
+      spriq->spriq[(element-1)/2] = spriq->spriq[spriq->used];
+    }
+
+  --spriq->used;
+}
 

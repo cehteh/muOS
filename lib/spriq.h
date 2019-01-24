@@ -129,4 +129,26 @@ muos_spriq_pop (struct muos_spriq* spriq);
 
 
 
+//lib_spriq_api:
+//: .Remove an element
+//: ----
+//: void muos_spriq_remove (
+//:        struct muos_spriq* spriq,
+//:        muos_spriq_priority time,
+//:        muos_spriq_function fn)
+//: ----
+//:
+//: +spriq+::
+//:   Pointer to the spriq
+//: +time+::
+//:   time at when it was scheduled (base+when)
+//: +fn+::
+//:   Function to remove
+//:
+//: Removes one element inserted with the same parameters at push.
+//: No error reported when the element does not exist.
+//:
+void
+muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
+
 #endif

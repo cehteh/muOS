@@ -41,6 +41,12 @@ muos_clpq_schedule (muos_spriq_priority when);
 void
 muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
+static inline void
+muos_clpq_remove_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
+{
+  muos_spriq_remove (&muos_clpq.descriptor, base, when, what);
+}
+
 
 //clpq_api:
 //: .Schedule a function at the given time
