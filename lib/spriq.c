@@ -20,18 +20,39 @@
 
 #include <muos/lib/spriq.h>
 
-//FIXME: schedule with when = 1 doesn't work
+/*
+
+Heap data structure zero indexed based
+
+          0
+    1           2
+ 3     4     5     6
+7 8   9 ...
+
+keys are wraparound (when-base) thus giving a sliding window with the
+smallest key being base.
+
+*/
+
+// parent calculates the parent from a given index,
+// 0 has no parent and calling it would be an error
+#define parent(index) (((index)+1)/2-1)
+#define lchild(index) (((index)+1)*2-1)
+
+//FIXME: cehck that schedule with = 1 works
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
   muos_spriq_index i = spriq->used;
 
-  for (; i && when < (muos_spriq_priority)(spriq->spriq[i/2].when - base); i=i/2)
-    {
-      spriq->spriq[i] = spriq->spriq[i/2];
-    }
+  if (i && when-base < (spriq->spriq[parent(i)].when - base))
+    while (i && when-base < (spriq->spriq[parent(i)].when - base))
+      {
+        spriq->spriq[i] = spriq->spriq[parent(i)];
+        i /= 2;
+      }
 
-  spriq->spriq[i] = (struct muos_spriq_entry){(muos_spriq_priority)(when + base), fn};
+  spriq->spriq[i] = (struct muos_spriq_entry){when + base, fn};
   ++spriq->used;
 }
 
@@ -39,24 +60,28 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 void
 muos_spriq_pop (struct muos_spriq* spriq)
 {
-  //PLANNED: is it worth to call remove to save code space?
   muos_spriq_priority base = spriq->spriq[0].when;
-  muos_spriq_index i;
+  muos_spriq_index i=0;
 
   --spriq->used;
 
-  for (i = 1; i < spriq->used; i=i*2+1)
+  for (i = 1; i <= spriq->used/2; i = lchild(i))
     {
-      if ((muos_spriq_priority)(spriq->spriq[i].when - base) > (muos_spriq_priority)(spriq->spriq[i+1].when - base))
-         ++i;
+      if ((spriq->spriq[i].when - base) > (spriq->spriq[i+1].when - base))
+        ++i;
 
-      if ((muos_spriq_priority)(spriq->spriq[i].when - base) > (muos_spriq_priority)(spriq->spriq[spriq->used].when - base) )
+      if ((spriq->spriq[i].when - base) > (spriq->spriq[spriq->used].when - base))
         break;
 
-      spriq->spriq[(i-1)/2] = spriq->spriq[i];
+      spriq->spriq[parent(i)] = spriq->spriq[i];
     }
-  spriq->spriq[(i-1)/2] = spriq->spriq[spriq->used];
+
+  spriq->spriq[parent(i)] = spriq->spriq[spriq->used];
 }
+
+
+
+
 
 
 void
@@ -73,33 +98,35 @@ muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spri
   if (element == spriq->used)
     return; // not found
 
-  if (spriq->spriq[spriq->used].when-base < spriq->spriq[element/2].when-base)
+  --spriq->used;
+
+  if (spriq->spriq[spriq->used].when-base > spriq->spriq[parent(element)].when-base)
     {
       //upheap
-      for (; element && spriq->spriq[spriq->used].when-base < (muos_spriq_priority)(spriq->spriq[element/2].when - base);
-           element = element/2)
-        {
-          spriq->spriq[element] = spriq->spriq[element/2];
-        }
+      if (element && when-base < (spriq->spriq[parent(element)].when - base))
+        while (element && when-base < (spriq->spriq[parent(element)].when - base))
+          {
+            spriq->spriq[element] = spriq->spriq[parent(element)];
+            element /= 2;
+          }
 
       spriq->spriq[element] = spriq->spriq[spriq->used];
     }
   else
     {
       //downheap
-      for (; element < spriq->used-1; element=element*2+1)
+      for (element = lchild(element); element <= spriq->used/2; element = lchild(element))
         {
-          if ((muos_spriq_priority)(spriq->spriq[element].when - base) > (muos_spriq_priority)(spriq->spriq[element+1].when - base))
+          if ((spriq->spriq[element].when - base) > (spriq->spriq[element+1].when - base))
             ++element;
 
-          if ((muos_spriq_priority)(spriq->spriq[element].when - base) > (muos_spriq_priority)(spriq->spriq[spriq->used].when - base) )
+          if ((spriq->spriq[element].when - base) > (spriq->spriq[spriq->used].when - base))
             break;
 
-          spriq->spriq[(element-1)/2] = spriq->spriq[element];
+          spriq->spriq[parent(element)] = spriq->spriq[element];
         }
-      spriq->spriq[(element-1)/2] = spriq->spriq[spriq->used];
-    }
 
-  --spriq->used;
+      spriq->spriq[parent(element)] = spriq->spriq[spriq->used];
+    }
 }
 
