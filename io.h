@@ -125,6 +125,12 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 #if MUOS_SERIAL_NUM > 1
 #define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
 
+struct muos_txwait
+{
+  uint8_t hw;
+  muos_cbuffer_index space;
+};
+
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout);
 

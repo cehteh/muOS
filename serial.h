@@ -37,14 +37,14 @@ typedef bool (*muos_serial_rxcallback_type)(void);
 
 extern volatile struct muos_serial_flags
 {
-  uint8_t serial_tx_waiting:1;
-  uint8_t serial_rx_waiting:1;
   uint8_t serial_rx_dosync:1;
   uint8_t serial_rx_insync:1;
   uint8_t serial_rxhpq_pending:1;
   uint8_t lineedit_pending:1;
   uint8_t lineedit_ovwr:1;
   uint8_t txqueue_pending:1;
+  uint8_t serial_tx_blocked:1;
+  uint8_t serial_rx_blocked:1;
   //Error flags
   uint8_t error_tx_overflow:1;
   uint8_t error_rx_underflow:1;

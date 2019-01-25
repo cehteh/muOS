@@ -28,7 +28,6 @@
 #include <muos/bgq.h>
 #include <muos/txqueue.h>
 
-//FIXME: disable when txqueue is in use?
 struct fmtconfig_type pfmtconfig[MUOS_SERIAL_NUM];
 struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
@@ -51,59 +50,41 @@ muos_io_20init (void)
 }
 
 
-#ifndef MUOS_IO_TXQUEUE
-//PLANNED: fixed point for integers and mille delimiters
+/*
+  Blocking io
+ */
+bool
+muos_tx_wait (intptr_t data);
+
 
 #if MUOS_SERIAL_NUM > 1
-
-struct txwait
-{
-  uint8_t hw;
-  muos_cbuffer_index space;
-};
-
-static bool
-tx_wait (intptr_t data)
-{
-  return muos_serial_tx_free (((struct txwait*)data)->hw) > ((struct txwait*)data)->space;
-}
 
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
 {
-  if (!muos_serial_status[hw].serial_tx_waiting)
+  if (muos_serial_status[hw].serial_tx_blocked)
     return muos_error_serial_status;
 
-  muos_serial_status[hw].serial_tx_waiting = true;
+  struct muos_txwait waitdata = {hw, space};
 
-  struct txwait waitdata = {hw, space};
-
-  muos_error ret = muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
-
-  muos_serial_status[hw].serial_tx_waiting = false;
+  muos_serial_status[hw].serial_tx_blocked = true;
+  muos_error ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
+  muos_serial_status[hw].serial_tx_blocked = false;
 
   return ret;
 }
 
 #else
 
-static bool
-tx_wait (intptr_t space)
-{
-  return muos_serial_tx_free () > space;
-}
-
 muos_error
 muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
 {
-  if (!muos_serial_status[0].serial_tx_waiting)
+  if (muos_serial_status[0].serial_tx_blocked)
     return muos_error_serial_status;
 
-  muos_serial_status[0].serial_tx_waiting = true;
-
-  muos_error ret = muos_wait (tx_wait, space, timeout);
-
-  muos_serial_status[hw].serial_tx_waiting = false;
+  muos_serial_status[0].serial_tx_blocked = true;
+  muos_error ret = muos_wait (muos_tx_wait, space, timeout);
+  muos_serial_status[hw].serial_tx_blocked = false;
 
   return ret;
 }
@@ -111,6 +92,26 @@ muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
 #endif
 
 
+
+#ifndef MUOS_IO_TXQUEUE
+//PLANNED: fixed point for integers and mille delimiters
+
+#if MUOS_SERIAL_NUM > 1
+bool
+muos_tx_wait (intptr_t data)
+{
+  return muos_serial_tx_free (((struct muos_txwait*)data)->hw) > ((struct muos_txwait*)data)->space;
+}
+
+#else
+
+bool
+muos tx_wait (intptr_t space)
+{
+  return muos_serial_tx_free () > space;
+}
+
+#endif
 
 muos_error
 muos_output_char MUOS_IO_HWPARAM(char c)
@@ -223,51 +224,47 @@ muos_output_csi_fstr MUOS_IO_HWPARAM(muos_flash_cstr str)
   return ret;
 }
 
-
-#define Xput(bits)                                                              \
-  static uint##bits##_t                                                         \
+#define Xput(bits)                                                                      \
+  static uint##bits##_t                                                                 \
   u##bits##put MUOS_IO_HWPARAM(uint##bits##_t v, uint8_t base, bool upcase)             \
-  {                                                                             \
-    uint8_t digits = 0;                                                         \
-                                                                                \
-    for (uint##bits##_t tmp=v; tmp; tmp /= base)                                \
-      ++digits;                                                                 \
-                                                                                \
-    uint##bits##_t start = 1;                                                   \
-                                                                                \
-    for (uint##bits##_t i = digits-1; i; --i)                                   \
-      {                                                                         \
-        start *= base;                                                          \
-      }                                                                         \
-                                                                                \
-    muos_error ret = muos_success;                                              \
-                                                                                \
-    while (start && !ret)                                                       \
-      {                                                                         \
-        uint##bits##_t r = v/start;                                             \
+  {                                                                                     \
+    uint8_t digits = 0;                                                                 \
+                                                                                        \
+    for (uint##bits##_t tmp=v; tmp; tmp /= base)                                        \
+      ++digits;                                                                         \
+                                                                                        \
+    uint##bits##_t start = 1;                                                           \
+                                                                                        \
+    for (uint##bits##_t i = digits?digits-1:0; i; --i)                                  \
+      {                                                                                 \
+        start *= base;                                                                  \
+      }                                                                                 \
+                                                                                        \
+    muos_error ret = muos_success;                                                      \
+                                                                                        \
+    while (start && !ret)                                                               \
+      {                                                                                 \
+        uint##bits##_t r = v/start;                                                     \
         ret = muos_serial_tx_byte MUOS_IO_HWARG((r<10?'0':upcase?'A'-10:'a'-10)+r);     \
-        v -= r*start;                                                           \
-        start /= base;                                                          \
-      }                                                                         \
-    return ret;                                                                 \
-    }                                                                           \
-                                                                                \
-  static muos_error                                                             \
+        v -= r*start;                                                                   \
+        start /= base;                                                                  \
+      }                                                                                 \
+    return ret;                                                                         \
+  }                                                                                     \
+                                                                                        \
+  static muos_error                                                                     \
   i##bits##put MUOS_IO_HWPARAM(int##bits##_t v, uint8_t base, uint8_t upcase)           \
-  {                                                                             \
-    muos_error ret = muos_success;                                              \
-                                                                                \
-    if (v<0)                                                                    \
-      ret =  muos_serial_tx_byte MUOS_IO_HWARG('-');                                    \
-                                                                                \
-    if (ret)                                                                    \
+  {                                                                                     \
+    muos_error ret = muos_success;                                                      \
+                                                                                        \
+    if (v<0)                                                                            \
+      ret = muos_serial_tx_byte MUOS_IO_HWARG('-');                                     \
+                                                                                        \
+    if (!ret)                                                                           \
       ret = u##bits##put MUOS_IO_HWARG((uint##bits##_t) (v<0?-v:v), base, upcase);      \
-                                                                                \
-    return ret;                                                                 \
+                                                                                        \
+    return ret;                                                                         \
   }
-
-
-
 
 Xput(8);
 Xput(16);

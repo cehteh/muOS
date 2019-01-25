@@ -103,6 +103,7 @@ muos_txqueue_run (void)
   //PLANNED: optimize hw out when there is only one serial (no arg on bgq)
   uint8_t hw = muos_bgq_pop_isr ();
   muos_interrupt_enable ();
+
   while (muos_cbuffer_used (muos_txqueue[hw]) && muos_cbuffer_free (muos_txbuffer[hw]))
     {
       uint8_t tag = muos_cbuffer_peek (muos_txqueue[hw], 0);
@@ -152,6 +153,12 @@ muos_txqueue_start MUOS_IO_HWPARAM()
       muos_bgq_pushback_arg (muos_txqueue_run, (intptr_t)MUOS_IO_HWINDEX);
     }
 }
+
+
+/*
+  TAGGED data handling
+*/
+
 
 void txqueue_FSTR MUOS_IO_HWPARAM()
 {
@@ -220,7 +227,6 @@ Xput(32);
 void
 txqueue_UINT8 MUOS_IO_HWPARAM()
 {
-  //FIXME: config index
   uint8_t value =
     u8put MUOS_IO_HWARG(muos_cbuffer_peek (muos_txqueue[MUOS_IO_HWINDEX], 1),
                         txq_fmtconfig[MUOS_IO_HWINDEX].base,
@@ -363,37 +369,19 @@ void txqueue_CSI MUOS_IO_HWPARAM()
 
 
 #if MUOS_SERIAL_NUM > 1
-struct txwait
-{
-  uint8_t hw;
-  muos_cbuffer_index space;
-};
 
-static bool
-tx_wait (intptr_t data)
+bool
+muos_tx_wait (intptr_t data)
 {
-  return muos_txqueue_free (((struct txwait*)data)->hw) > ((struct txwait*)data)->space;
-}
-
-muos_error
-muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
-{
-  struct txwait waitdata = {hw, space};
-  return muos_wait (tx_wait, (intptr_t)&waitdata, timeout);
+  return muos_txqueue_free (((struct muos_txwait*)data)->hw) > ((struct muos_txwait*)data)->space;
 }
 
 #else
 
-static bool
-tx_wait (intptr_t space)
+bool
+muos_tx_wait (intptr_t space)
 {
   return muos_serial_tx_free () > space;
-}
-
-muos_error
-muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
-{
-  return muos_wait (tx_wait, space, timeout);
 }
 
 #endif
