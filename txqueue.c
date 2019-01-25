@@ -51,7 +51,7 @@ static struct fmtconfig_type txq_pfmtconfig[MUOS_SERIAL_NUM];
 static struct fmtconfig_type txq_fmtconfig[MUOS_SERIAL_NUM];
 
 void
-muos_txqueue_20init (void)
+muos_io_txqueue_20init (void)
 {
   for (uint8_t i = 0; i < MUOS_SERIAL_NUM; ++i)
     {

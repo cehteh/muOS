@@ -33,6 +33,7 @@
 //PLANNED: ignoremask for ERRORFN for errors handled elsewhere
 //PLANNED: instead disabling interrupts have a mutex and temp buffer for work queues
 //PLANNED: finer locking in mainloop instead interrupt disable, per queue
+//PLANNED: error_set hook for debugging
 
 volatile struct muos_status_flags muos_status;
 
@@ -67,17 +68,6 @@ void muos_die (void)
   muos_hw_shutdown ();
 }
 
-//TODO: since we autogenerate declarations here, remove them from header files
-#define MUOS_INIT(fn) void fn(void)
-#include <muos/init.inc>
-#undef MUOS_INIT
-void
-muos_init (void)
-{
-#define MUOS_INIT(fn) fn()
-#include <muos/init.inc>
-#undef MUOS_INIT
-}
 
 #ifdef MUOS_SCHED_DEPTH
 static uint8_t sched_depth_;
@@ -185,6 +175,23 @@ muos_yield (uint8_t count)
   return muos_success;
 }
 #endif // MUOS_SCHED_DEPTH
+
+
+
+
+
+//TODO: since we autogenerate declarations here, remove them from header files
+#define MUOS_INIT(fn) void fn(void)
+#include <muos/init.inc>
+#undef MUOS_INIT
+void
+muos_init (void)
+{
+#define MUOS_INIT(fn) fn()
+#include <muos/init.inc>
+#undef MUOS_INIT
+}
+
 
 
 

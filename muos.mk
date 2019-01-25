@@ -104,9 +104,9 @@ depclean:
 #PLANNED: make a complete header? not including drivers from muos.c
 muos/init.inc: $(filter-out muos/muos.c,$(SOURCES)) $(HEADERS)
 	$(PRINTFMT) $@ INIT_INC
-	sed -e 's/^\(muos_[^_]*_\([0-9]\+\)init\).*[^;]$$/\2 \1/p;d' $(SOURCES) $(HEADERS) |\
+	sed -e 's/^\(muos_.*_\([0-9]\+\)init\).*[^;]$$/\2 \1/p;d' $(SOURCES) $(HEADERS) |\
 	sort -u |\
-	sed -e 's/^[0-9]* \(\(muos_[^_]*\).*\)/#ifdef \U\2\n\tMUOS_INIT\L(\1);\n#endif/p;d' > $@
+	sed -e 's/^[0-9]* \(\(muos_.*\)_[0-9]*.*\)/#ifdef \U\2\n\tMUOS_INIT\L(\1);\n#endif/p;d' > $@
 
 muos/muos.c: muos/init.inc
 
