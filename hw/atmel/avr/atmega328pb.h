@@ -54,7 +54,7 @@
 #define OC2B_DDR   DDRD
 #define OC2B_PORT  PORTD
 #define OC2B_PIN   PIND
-#define OC12_BIT   3
+#define OC2B_BIT   3
 
 #define OC3A_DDR   DDRD
 #define OC3A_PORT  PORTD
@@ -65,6 +65,16 @@
 #define OC3B_PORT  PORTD
 #define OC3B_PIN   PIND
 #define OC3B_BIT   2
+
+#define OC4A_DDR   DDRD
+#define OC4A_PORT  PORTD
+#define OC4A_PIN   PIND
+#define OC4A_BIT   1
+
+#define OC4B_DDR   DDRD
+#define OC4B_PORT  PORTD
+#define OC4B_PIN   PIND
+#define OC4B_BIT   2
 
 
 // values guessed from datasheet
@@ -86,6 +96,13 @@
 #define MUOS_HW_CLOCK1_DIV64    _BV(CS11) | _BV(CS10)
 #define MUOS_HW_CLOCK1_DIV256   _BV(CS12)
 #define MUOS_HW_CLOCK1_DIV1024  _BV(CS12) | _BV(CS10)
+
+#define MUOS_HW_CLOCK4_OFF      0
+#define MUOS_HW_CLOCK4_DIV1     _BV(CS40)
+#define MUOS_HW_CLOCK4_DIV8     _BV(CS41)
+#define MUOS_HW_CLOCK4_DIV64    _BV(CS41) | _BV(CS40)
+#define MUOS_HW_CLOCK4_DIV256   _BV(CS42)
+#define MUOS_HW_CLOCK4_DIV1024  _BV(CS42) | _BV(CS40)
 
 #define ISRNAME_CAPTURE_(hw) TIMER##hw##_CAPT_vect
 #define ISRNAME_CAPTURE(hw) ISRNAME_CAPTURE_ hw

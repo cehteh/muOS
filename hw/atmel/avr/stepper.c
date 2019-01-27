@@ -224,8 +224,10 @@ MUOS_STEPPER_HW;
 #define MUOS_STEPPER_TOP(timer, wgm) MUOS_STEPPER_TOP_##timer##_##wgm
 #define MUOS_STEPPER_TOP_1_14 ICR1
 #define MUOS_STEPPER_TOP_1_15 OCR1A
-#define MUOS_STEPPER_TOP_3_14 ICR1
-#define MUOS_STEPPER_TOP_3_15 OCR1A
+#define MUOS_STEPPER_TOP_3_14 ICR3
+#define MUOS_STEPPER_TOP_3_15 OCR3A
+#define MUOS_STEPPER_TOP_4_14 ICR4
+#define MUOS_STEPPER_TOP_4_15 OCR4A
 
 
 #define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
@@ -277,11 +279,9 @@ MUOS_STEPPER_HW
     _BV(OC##timer##output##_BIT);
 
 
-
 void
 muos_hw_stepper_init (void)
 {
-  //
 #ifdef MUOS_STEPPER_ENABLEALL_INOUT_HW
 #define ENABLEALL(port, pin)                    \
   PORT##port &= ~_BV(PORT##port##pin);          \
@@ -456,6 +456,7 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 static const uint16_t __flash timerdividers0[] = {1,8,64,256,1024};
 static const uint16_t __flash* __flash const timerdividers1 = timerdividers0;
 static const uint16_t __flash* __flash const timerdividers3 = timerdividers0;
+static const uint16_t __flash* __flash const timerdividers4 = timerdividers0;
 static const uint16_t __flash timerdividers2[] = {1,8,32,64,128,256,1024};
 #else
 #error "unknown hardware"
@@ -493,7 +494,7 @@ muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
 
       MUOS_STEPPER_HW;
 
-#undef TIMER_SETUP
+#undef TIMER_START
 #undef STEPDIR
 #undef UNIPOLAR
 
