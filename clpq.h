@@ -38,7 +38,7 @@ bool
 muos_clpq_schedule (muos_spriq_priority when);
 
 
-void
+muos_error
 muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
 static inline void
@@ -69,12 +69,14 @@ muos_clpq_remove_isr (muos_spriq_priority base, muos_spriq_priority when, muos_s
 //: overflows correctly. The 'clpq' handles that, refer to the source
 //: for details.
 //:
-static inline void
+static inline muos_error
 muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
+  muos_error ret;
   muos_interrupt_disable ();
-  muos_clpq_at_isr (base, when, what);
+  ret = muos_clpq_at_isr (base, when, what);
   muos_interrupt_enable ();
+  return ret;
 }
 
 
@@ -97,7 +99,7 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
 static inline void
 muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when)
 {
-  muos_clpq_at (event->when, when, event->fn);
+  muos_error_set (muos_clpq_at (event->when, when, event->fn));
 }
 
 

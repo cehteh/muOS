@@ -37,57 +37,55 @@ muos_clpq_type muos_clpq;
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
-  if (muos_clpq.descriptor.used &&
-      (muos_spriq_priority)(when - muos_clpq.descriptor.spriq[0].when) < (muos_spriq_priority)(((muos_spriq_priority)~0)/2))
-    {
-      if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
-        {
-          // no need for time barrier
-          if (muos_clpq.descriptor.spriq[0].fn)
-            {
-              muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
-            }
-          muos_interrupt_disable ();
-          muos_spriq_pop (&muos_clpq.descriptor);
-        }
-      else
-        {
-          // with time barrier for the sliding window
-          if (muos_clpq.descriptor.spriq[0].fn)
-            {
-              muos_clpq.descriptor.spriq[0].fn ((const struct muos_spriq_entry*)&muos_clpq.descriptor.spriq[0]);
-              muos_interrupt_disable ();
-            }
 
-          if (muos_clpq.descriptor.used > 1)
+  if (muos_clpq.descriptor.used)
+    {
+      muos_spriq_priority last = muos_clpq.descriptor.used - 1;
+      if ((when - muos_clpq.descriptor.spriq[last].when) < ((muos_spriq_priority)~0/2))
+        {
+          const struct muos_spriq_entry tmp = muos_clpq.descriptor.spriq[last];
+
+          if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
             {
+              // no need for time barrier
               muos_spriq_pop (&muos_clpq.descriptor);
             }
           else
             {
-              muos_clpq.descriptor.spriq[0].fn = 0;
-              muos_clpq.descriptor.spriq[0].when += (muos_spriq_priority)-1/2-1;
+              // with time barrier for the sliding window
+              if (muos_clpq.descriptor.used == 1)
+                {
+                  muos_clpq.descriptor.spriq[last].fn = 0;
+                  muos_clpq.descriptor.spriq[last].when += (muos_spriq_priority)-1/2-1;
+                }
+              else
+                muos_spriq_pop (&muos_clpq.descriptor);
             }
+
+          if (muos_clpq.descriptor.spriq[last].fn)
+            {
+              muos_clpq.descriptor.spriq[last].fn (&tmp);
+              muos_interrupt_disable ();
+            }
+
+          return true;  //PLANNED: may shortcut 'return false' when nothing to be done in 'near' future (within hwclock reach)
         }
-      return true;
     }
 
   return false;
 }
 
 
+
 //TODO: return error instead async
-void
+muos_error
 muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
-  if (muos_clpq.descriptor.used < MUOS_SPRIQ_SIZE(muos_clpq))
-    {
-      muos_spriq_push (&muos_clpq.descriptor, base, when, what);
-    }
-  else
-    {
-      muos_error_set_isr (muos_error_clpq_overflow);
-    }
+  if (muos_clpq.descriptor.used == MUOS_SPRIQ_SIZE(muos_clpq))
+    return muos_error_clpq_overflow;
+
+  muos_spriq_push (&muos_clpq.descriptor, base, when, what);
+  return muos_success;
 }
 
 // This is the time between setting compmatch for wakeup and going to sleep
@@ -122,7 +120,7 @@ muos_clpq_set_compmatch (void)
   if (!muos_clpq.descriptor.used)
     return true;
 
-  muos_spriq_priority at = muos_clpq.descriptor.spriq[0].when -
+  muos_spriq_priority at = muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when -
     (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
 
   muos_spriq_priority now = MUOS_CLOCK_REGISTER;

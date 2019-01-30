@@ -100,7 +100,8 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                 {
                   if (fn && fn (param))
                     {
-                      muos_clpq_remove_isr (muos_now_,  timeout, 0);
+                      muos_interrupt_disable ();
+                      muos_clpq_remove_isr (muos_now_, timeout, 0);
                       muos_interrupt_enable ();
                       --sched_depth_;
                       return muos_success;
@@ -108,7 +109,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
                   if (muos_clock_elapsed (muos_now_, start) > timeout)
                     {
-                      muos_clpq_remove_isr (muos_now_,  timeout, 0);
+                      muos_clpq_remove_isr (muos_now_, timeout, 0);
                       muos_interrupt_enable ();
                       --sched_depth_;
                       return muos_warn_wait_timeout;

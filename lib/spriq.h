@@ -22,8 +22,7 @@
 #define MUOS_LIB_SPRIQ_H
 
 #include <stdbool.h>
-
-#include <muos/muos.h>
+#include <stdint.h>
 
 struct muos_spriq_entry;
 
