@@ -34,16 +34,16 @@ muos_clpq_type muos_clpq;
 
 //PLANNNED: wrapper for recurring jobs
 
+
 bool
 muos_clpq_schedule (muos_spriq_priority when)
 {
-
   if (muos_clpq.descriptor.used)
     {
-      muos_spriq_priority last = muos_clpq.descriptor.used - 1;
-      if ((when - muos_clpq.descriptor.spriq[last].when) < ((muos_spriq_priority)~0/2))
+      if ((when - muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when) < ((muos_spriq_priority)~0/2))
         {
-          const struct muos_spriq_entry tmp = muos_clpq.descriptor.spriq[last];
+
+          const struct muos_spriq_entry tmp = muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1];
 
           if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
             {
@@ -55,19 +55,18 @@ muos_clpq_schedule (muos_spriq_priority when)
               // with time barrier for the sliding window
               if (muos_clpq.descriptor.used == 1)
                 {
-                  muos_clpq.descriptor.spriq[last].fn = 0;
-                  muos_clpq.descriptor.spriq[last].when += (muos_spriq_priority)-1/2-1;
+                  muos_clpq.descriptor.spriq[0].fn = 0;
+                  muos_clpq.descriptor.spriq[0].when += (muos_spriq_priority)-1/2-1;
                 }
               else
                 muos_spriq_pop (&muos_clpq.descriptor);
             }
 
-          if (muos_clpq.descriptor.spriq[last].fn)
+          if (tmp.fn)
             {
-              muos_clpq.descriptor.spriq[last].fn (&tmp);
+              tmp.fn (&tmp);
               muos_interrupt_disable ();
             }
-
           return true;  //PLANNED: may shortcut 'return false' when nothing to be done in 'near' future (within hwclock reach)
         }
     }
@@ -136,8 +135,9 @@ muos_clpq_set_compmatch (void)
         return false;
     }
   else
-    MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-
+    {
+      MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+    }
 
   return true;
 }

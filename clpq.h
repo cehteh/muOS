@@ -41,10 +41,10 @@ muos_clpq_schedule (muos_spriq_priority when);
 muos_error
 muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what);
 
-static inline void
+static inline bool
 muos_clpq_remove_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
 {
-  muos_spriq_remove (&muos_clpq.descriptor, base, when, what);
+  return muos_spriq_remove (&muos_clpq.descriptor, base, when, what);
 }
 
 
@@ -76,6 +76,7 @@ muos_clpq_at (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_fun
   muos_interrupt_disable ();
   ret = muos_clpq_at_isr (base, when, what);
   muos_interrupt_enable ();
+
   return ret;
 }
 

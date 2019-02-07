@@ -145,9 +145,9 @@ muos_spriq_pop (struct muos_spriq* spriq);
 //:   Function to remove
 //:
 //: Removes one element inserted with the same parameters at push.
-//: No error reported when the element does not exist.
+//: Returns true when element got removed or false when element was not found.
 //:
-void
+bool
 muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn);
 
 #endif

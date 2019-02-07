@@ -20,10 +20,11 @@
 
 #include <muos/lib/spriq.h>
 
+
 void
 muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
-  muos_spriq_index i;
+  muos_spriq_index i = spriq->used;
   muos_spriq_priority a = when+base;
 
   while (i)
@@ -51,12 +52,13 @@ muos_spriq_push (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_
 void
 muos_spriq_pop (struct muos_spriq* spriq)
 {
-  --spriq->used;
+  if (spriq->used)
+    --spriq->used;
 }
 
 
 
-void
+bool
 muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function fn)
 {
   muos_spriq_index i;
@@ -75,6 +77,9 @@ muos_spriq_remove (struct muos_spriq* spriq, muos_spriq_priority base, muos_spri
         {
           spriq->spriq[i] = spriq->spriq[i+1];
         }
+
+      return true;
     }
+  return false;
 }
 
