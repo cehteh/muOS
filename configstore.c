@@ -133,7 +133,7 @@ static struct muos_configstore_frame the_configstore;
 static void*
 muos_configstore_value (enum muos_configstore_id id, uint8_t index)
 {
-  return (void*) &the_configstore + schema[id].offset + index* type_size[schema[id].type];
+  return (void*) &the_configstore + schema[id].offset + index * type_size[schema[id].type];
 }
 
 
@@ -224,19 +224,19 @@ muos_configstore_set (char* var, uint8_t index, char* val)
   switch (schema[id].type)
     {
     case MUOS_CONFIGSTORE_TYPE_int8_t:
-      ((int8_t*)dest)[index] = number;
+      (*(int8_t*)dest) = number;
       break;
     case MUOS_CONFIGSTORE_TYPE_uint8_t:
-      ((uint8_t*)dest)[index] = number;
+      (*(uint8_t*)dest) = number;
       break;
     case MUOS_CONFIGSTORE_TYPE_int16_t:
-      ((int16_t*)dest)[index] = number;
+      (*(int16_t*)dest) = number;
       break;
     case MUOS_CONFIGSTORE_TYPE_uint16_t:
-      ((uint16_t*)dest)[index] = number;
+      (*(uint16_t*)dest) = number;
       break;
     case MUOS_CONFIGSTORE_TYPE_int32_t:
-      ((int32_t*)dest)[index] = number;
+      (*(int32_t*)dest) = number;
       break;
 
     case MUOS_CONFIGSTORE_TYPE_string:
