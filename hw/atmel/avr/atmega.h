@@ -126,7 +126,7 @@ MUOS_SERIAL_HW
 #undef UART
 
 muos_error
-muos_hw_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync);
+muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync);
 
 
 

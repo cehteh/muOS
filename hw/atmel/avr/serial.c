@@ -72,7 +72,7 @@ muos_avr_baudcalc (uint32_t baud, uint8_t tol)
 
 
 muos_error
-muos_hw_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync)
+muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync)
 {
   // first disable/reset the port and clear buffers when it was already active
   // we want to disable even if the parser later fails with an error

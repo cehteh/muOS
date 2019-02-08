@@ -66,7 +66,7 @@ struct muos_cbuffer* const muos_rxbuffer[] =
 
 #if MUOS_SERIAL_NUM > 1
 muos_error
-muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback)
+muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback)
 {
   if (hw >= MUOS_SERIAL_NUM)
     return muos_error_nodev;
@@ -77,7 +77,7 @@ muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync, muos_s
 }
 #else
 muos_error
-muos_serial_start (uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback)
+muos_serial_start (uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback)
 {
   MUOS_OK (muos_hw_serial_start (0, baud, config, rxsync));
   muos_serial_rxcallback[hw] = callback;

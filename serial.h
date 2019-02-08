@@ -86,10 +86,10 @@ muos_serial_tx_free (void)
 //: ----
 //: #if MUOS_SERIAL_NUM > 1
 //: muos_error
-//: muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync);
+//: muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync);
 //: #else
 //: muos_error
-//: muos_serial_start (uint32_t baud, char config[3], int rxsync);
+//: muos_serial_start (uint32_t baud, const char config[3], int rxsync);
 //: #endif
 //: ----
 //:
@@ -123,10 +123,10 @@ muos_serial_tx_free (void)
 //:
 #if MUOS_SERIAL_NUM > 1
 muos_error
-muos_serial_start (uint8_t hw, uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback);
+muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback);
 #else
 muos_error
-muos_serial_start (uint32_t baud, char config[3], int rxsync, muos_serial_rxcallback_type callback);
+muos_serial_start (uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback);
 #endif
 
 
