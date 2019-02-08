@@ -26,8 +26,7 @@
 #include <string.h>
 
 #ifdef MUOS_LINEEDIT_CALLBACK
-//FIXME: make it const char* again (allowing recall)
-extern void MUOS_LINEEDIT_CALLBACK (char*);
+extern void MUOS_LINEEDIT_CALLBACK (const char*);
 #endif
 
 static uint8_t cursor;

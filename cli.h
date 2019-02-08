@@ -43,7 +43,7 @@ enum muos_cli_cmd_id
 
 
 
-#define COMMAND(name, ...) void cli_cmd_##name(char** tokstate);
+#define COMMAND(name, ...) void cli_cmd_##name(const char* cont);
    CLI_COMMANDS
 #undef COMMAND
 
@@ -60,8 +60,8 @@ const char __flash * const __flash cli_cmd_names[] =
   };
 
 
-typedef void (*muos_cli_cmd)(char** tokstate);
-  
+typedef void (*muos_cli_cmd)(const char* cont);
+
 static
 const muos_cli_cmd __flash command_impl[] =
   {
@@ -72,6 +72,30 @@ const muos_cli_cmd __flash command_impl[] =
 
 
 void
-muos_cli (char* line);
+muos_cli (const char* line);
+
+// argument parsers
+uint8_t
+muos_cli_arg_uint8 (const char** cont);
+
+int8_t
+muos_cli_arg_int8 (const char** cont);
+
+uint16_t
+muos_cli_arg_uint16 (const char** cont);
+
+int16_t
+muos_cli_arg_int16 (const char** cont);
+
+int32_t
+muos_cli_arg_int32 (const char** cont);
+
+void
+muos_cli_arg_strncpy (const char** cont, char* dest, size_t len, const char* delim);
+
+//size_t
+//PLANNED: muos_cli_arg_strlen (const char** cont, const char* delim);
+//void
+//PLANNED: muos_cli_arg_skip (const char** cont, const char* delim);
 
 #endif
