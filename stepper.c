@@ -110,6 +110,37 @@ muos_stepper_stop_all (void)
 }
 
 
+struct waitdata
+{
+  uint8_t hw;
+  enum muos_stepper_arming_state maxstate;
+};
+
+
+static bool
+stepper_wait_pred (intptr_t state)
+{
+  return muos_steppers[((struct waitdata*)state)->hw].state <= ((struct waitdata*)state)->maxstate;
+}
+
+muos_error
+muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
+{
+  struct waitdata wd = {hw, maxstate};
+
+  while (timeout_sec--)
+    {
+      if (muos_wait (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (1000)) == muos_success)
+        return muos_success;
+    }
+
+  return muos_warn_wait_timeout;
+}
+
+
+
+
+
 /*
   non moving state transitions
  */

@@ -24,7 +24,6 @@
 #include <stdint.h>
 #include <muos/muos.h>
 #include <muos/hpq.h>
-//y#include <muos/pp.h>
 
 #ifndef MUOS_STEPPER_HW
 #error need MUOS_STEPPER_HW configuration
@@ -246,6 +245,28 @@ muos_stepper_stop (uint8_t hw);
 
 void
 muos_stepper_stop_all (void);
+
+
+
+
+//stepper_api:
+//: .Waiting on a stepper
+//: ----
+//: muos_error
+//: muos_stepper_wait (uint8_t hw,
+//:                    enum muos_stepper_arming_state maxstate,
+//:                    uint16_t timeout_sec);
+//: ----
+//:
+//: 'muos_stepper_wait ()' waits until a steppers state is equal or less than
+//: 'maxstate' or the timeout (in seconds) expires.
+//:
+//: returns 'muos_success' when the steppers state is reached or 'muos_warn_wait_timeout'
+//: when the state stays above 'maxstate' until 'timeout' expires.
+//:
+muos_error
+muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec);
+
 
 
 //stepper_api:
