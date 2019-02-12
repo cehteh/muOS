@@ -111,6 +111,7 @@
 static inline void
 muos_hw_shutdown (void)
 {
+  //PLANNED: configurable shutdown possibly calling HW_INIT, make HW_INIT configurable then
   MCUCR |= _BV(PUD);
   DDRB = 0;
   DDRC = 0;

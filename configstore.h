@@ -86,6 +86,7 @@
 //: definitions. MµOS uses this to expand the provided data into various datastructures.
 //:
 
+//PLANNED: make the descriptions/strings hierarchical to safe memory 
 
 typedef void (*muos_configstore_callback)(void);
 

@@ -185,6 +185,7 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4]);
 //:
 //: 'MUOS_SM_NEXT' transits into the state given by the existing params.
 //:
+//PLANNED: have some SM_CHANGE SM_NEXT that panics on error when leaving
 #if MUOS_SM_NUM > 1
 
 #define MUOS_SM_CHANGE(sm, newstate, ...) MUOS_SM_CHANGE_(sm, newstate, ## __VA_ARGS__, STATE_NONE, STATE_NONE, STATE_NONE)

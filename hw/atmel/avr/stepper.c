@@ -438,7 +438,8 @@ muos_hw_stepper_set_direction (uint8_t hw, bool dir)
 
   //PLANNED: busy loop for very short delays, eventually we need muos function for this
   //PLANNED: only delay when direction was changed
-  _delay_loop_2 (((MUOS_STEPPER_DIR_NS - 5250) * 70000) / 16000000);
+  //FIXME: measure and adjust timing
+  _delay_loop_2 (((MUOS_STEPPER_DIR_NS - 5250) * 70000) / F_CPU);
   return muos_success;
 }
 

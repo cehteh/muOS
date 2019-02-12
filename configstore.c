@@ -312,7 +312,7 @@ muos_configstore_defaults (void)
 #endif
 
 
-  struct muos_configstore_data*
+struct muos_configstore_data*
 muos_configstore_initial (void)
 {
   if (status == CONFIGSTORE_INVALID)
