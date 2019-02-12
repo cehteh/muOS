@@ -86,6 +86,28 @@ void
 muos_stepper_stop (uint8_t hw)
 {
   muos_hw_stepper_stop (hw);
+
+#if 0 //PLANNED: ACTION_DONE
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
+    {
+      if (muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_ACTION_DONE
+          && muos_steppers[hw].position_match[i].arg)
+        {
+          if (muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_HPQ_FRONT)
+            muos_error_set (muos_hpq_pushfront ((muos_queue_function)
+                                                muos_steppers[hw].position_match[i].arg));
+          else if (muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_HPQ_BACK)
+            muos_error_set (muos_hpq_pushback ((muos_queue_function)
+                                               muos_steppers[hw].position_match[i].arg));
+
+          if (!(muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_ACTION_PERMANENT))
+            {
+              muos_steppers[hw].position_match[i].whattodo = 0;
+            }
+        }
+    }
+#endif
+
   switch  (muos_steppers[hw].state)
     {
     case MUOS_STEPPER_RAW:
@@ -248,7 +270,7 @@ muos_stepper_move_raw (uint8_t hw,
   muos_hw_stepper_set_direction (hw, offset>0?1:0);
   muos_stepper_register_action (hw,
                                 muos_steppers[hw].position + offset,
-                                MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
+                                MUOS_STEPPER_ACTION_STOP|(done?(MUOS_STEPPER_HPQ_BACK/*|MUOS_STEPPER_ACTION_DONE*/):0),
                                 (uintptr_t)done);
 
   muos_steppers[hw].state = MUOS_STEPPER_RAW;
@@ -283,7 +305,7 @@ muos_stepper_move_cal (uint8_t hw,
   muos_hw_stepper_set_direction (hw, offset>0?1:0);
   muos_stepper_register_action (hw,
                                 muos_steppers[hw].position + offset,
-                                MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
+                                MUOS_STEPPER_ACTION_STOP|(done?(MUOS_STEPPER_HPQ_BACK/*|MUOS_STEPPER_ACTION_DONE*/):0),
                                 (uintptr_t)done);
 
   muos_steppers[hw].state = MUOS_STEPPER_SLOW_CAL;
@@ -319,7 +341,7 @@ muos_stepper_move_rel (uint8_t hw,
   muos_hw_stepper_set_direction (hw, offset>0?1:0);
   muos_stepper_register_action (hw,
                                 muos_steppers[hw].position + offset,
-                                MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
+                                MUOS_STEPPER_ACTION_STOP|(done?(MUOS_STEPPER_HPQ_BACK/*|MUOS_STEPPER_ACTION_DONE*/):0),
                                 (uintptr_t)done);
 
   muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
