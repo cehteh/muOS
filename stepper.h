@@ -314,6 +314,23 @@ muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset);
 
 
+// zeros the axis relative to the current position
+//: .Query position
+//: ----
+//: int32_t
+//: muos_stepper_position (uint8_t hw)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to query.
+//:
+//: Returns the current position of the given stepper.
+//: When 'hw' is out of range, 0 is returned.
+//:
+int32_t
+muos_stepper_position (uint8_t hw);
+
+
 
 //stepper_api:
 //: .Raw Movements

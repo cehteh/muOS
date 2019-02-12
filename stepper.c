@@ -246,6 +246,20 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
 }
 
 
+int32_t
+muos_stepper_position (uint8_t hw)
+{
+  if (hw >= MUOS_STEPPER_NUM)
+    return 0;
+
+  muos_interrupt_disable ();
+  int32_t pos = muos_steppers[hw].position;
+  muos_interrupt_enable ();
+
+  return pos;
+}
+
+
 
 
 /*
