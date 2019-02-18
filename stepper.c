@@ -515,7 +515,7 @@ muos_stepper_slope_get (uint8_t hw)
 muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 {
- if (hw >= MUOS_STEPPER_NUM)
+  if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
@@ -547,6 +547,33 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 
   if (slope_gen)
     MUOS_OK (muos_hpq_pushback (slope_gen));
+
+  return muos_success;
+}
+
+
+muos_error
+muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
+{
+  if (hw >= MUOS_STEPPER_NUM)
+    return muos_error_nodev;
+
+  struct muos_stepper_slope* slope = muos_stepper_slope_get (hw);
+
+  uint32_t distance = (position > muos_steppers[hw].position)
+    ? position - muos_steppers[hw].position
+    : muos_steppers[hw].position - position;
+
+  MUOS_OK (muos_stepper_slope_prep (hw,
+                                    slope,
+                                    distance,
+                                    muos_steppers_config_lock->stepper_slowspeed[hw],
+                                    max_speed,
+                                    muos_steppers_config_lock->stepper_slowspeed[hw],
+                                    0));
+
+  muos_stepper_slope_commit (hw, position);
+  MUOS_OK (muos_stepper_move_start (hw, NULL));
 
   return muos_success;
 }
