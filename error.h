@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//PLANNED: error log
+
 //error_api:
 //: .Error Check Macro
 //: ----
