@@ -31,6 +31,8 @@
 
 //PLANNED: make it possible to configure muos w/o a clock
 
+//PLANNED: only stop clock interrupts when querying time
+
 //clock_api:
 //: .Time calculation macros
 //: ----
