@@ -51,7 +51,7 @@ LDFLAGS += -Xlinker --no-fatal-warnings
 # What files must be generated for 'make all'
 IMAGES += $(MAIN).elf
 
-PRINTFMT = printf "%-60s[ %8s ]\n"
+PRINTFMT = printf "%-60s[ %10s ]\n"
 
 GITBRANCH := $(shell git symbolic-ref --short HEAD)
 
@@ -251,6 +251,20 @@ VERSION: FORCE
 	echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" |\
 	cmp - $@ 2>/dev/null >/dev/null ||\
 	{ echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" > $@; $(PRINTFMT) $@ VERSION;}
+
+version.h: FORCE
+	{													\
+		echo "#define VERSION \"$$(git describe --tags --dirty --always)\"";				\
+		echo "#define MUOS_VERSION \"$$(cd muos; git describe --tags --dirty --always)\"";		\
+	} | cmp - $@ 2>/dev/null >/dev/null ||									\
+	{													\
+		{												\
+			echo "#define VERSION \"$$(git describe --tags --dirty --always)\"";			\
+			echo "#define MUOS_VERSION \"$$(cd muos; git describe --tags --dirty --always)\"";	\
+		} > $@;												\
+		$(PRINTFMT) $@ VERSION_H;									\
+	}
+
 
 # maintainer targets
 gitpush: FORCE
