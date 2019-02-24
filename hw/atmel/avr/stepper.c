@@ -103,7 +103,7 @@ MUOS_STEPPER_HW;
 */
 
 //boilerplate
-#define POSITION_MATCH(hw, timer)                                                                       \
+#define POSITION_MATCH(hw, timer, wgm)                                                                  \
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                 \
     {                                                                                                   \
       if (muos_steppers[hw].position == muos_steppers[hw].position_match[i].position                    \
@@ -139,9 +139,12 @@ MUOS_STEPPER_HW;
                 case MUOS_STEPPER_RAW:                                                                  \
                   muos_steppers[hw].state = MUOS_STEPPER_ON; break;                                     \
                 case MUOS_STEPPER_SLOW_CAL:                                                             \
+                  muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;                                   \
                 case MUOS_STEPPER_SLOPE:                                                                \
                 case MUOS_STEPPER_FAST:                                                                 \
-                  muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;                                   \
+                  if (MUOS_STEPPER_TOP(timer, wgm) < muos_steppers_config_lock->stepper_slowspeed[hw])  \
+                    { muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;}                              \
+                  /* else fallthrough */                                                                \
                 case MUOS_STEPPER_SLOW:                                                                 \
                 case MUOS_STEPPER_SLOW_REL:                                                             \
                   muos_steppers[hw].state = MUOS_STEPPER_ARMED; break;                                  \
@@ -236,7 +239,7 @@ MUOS_STEPPER_HW;
     MUOS_DEBUG_INTR_ON;                                                         \
     muos_steppers[hw].position +=                                               \
       (dirpol^!(PORT##dirport & _BV(PORT##dirport##dirpin)))?+1:-1;             \
-    POSITION_MATCH(hw, timer);                                                  \
+    POSITION_MATCH(hw, timer, wgm);                                             \
     SLOPE_CALCULATION(hw);                                                      \
     MUOS_STEPPER_TOP(timer, wgm) = speed;                                       \
   }
@@ -251,7 +254,7 @@ MUOS_STEPPER_HW;
                                                 + stepper_hw_unipolar_state_##hw.phase)         \
                                                %sizeof(muos_stepper_table_##table)] & mask;     \
     PORT##port = (PORT##port & ~mask) | value;                                                  \
-    POSITION_MATCH(hw, timer);                                                                  \
+    POSITION_MATCH(hw, timer, wgm);                                                             \
     SLOPE_CALCULATION(hw);                                                                      \
     MUOS_STEPPER_TOP(timer, wgm) = speed;                                                       \
   }
