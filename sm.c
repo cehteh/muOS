@@ -25,6 +25,7 @@
 
 struct muos_statemachine
 {
+  enum muos_sm_state prev;
   enum muos_sm_state current;
   enum muos_sm_state params[4];
 #if MUOS_SM_NUM > 1
@@ -91,6 +92,7 @@ state_enter (void)
 {
   uint8_t sm = muos_hpq_pop_isr ();
   muos_interrupt_enable ();
+  statemachine[sm].prev = statemachine[sm].current;
   statemachine[sm].current = statemachine[sm].params[0];
   statemachine[sm].params[0] = statemachine[sm].params[1];
   statemachine[sm].params[1] = statemachine[sm].params[2];
@@ -105,6 +107,15 @@ state_enter (void)
 
 
 enum muos_sm_state
+muos_sm_prev (uint8_t sm)
+{
+  if (sm >= MUOS_SM_NUM)
+    return muos_error_nodev;
+
+  return statemachine[sm].prev;
+}
+
+enum muos_sm_state
 muos_sm_get (uint8_t sm)
 {
   if (sm >= MUOS_SM_NUM)
@@ -115,12 +126,12 @@ muos_sm_get (uint8_t sm)
 
 #ifdef MUOS_SM_NAMES
 const char __flash*
-muos_sm_name_get (uint8_t sm)
+muos_sm_name_get (enum muos_sm_state state)
 {
-  if (sm >= MUOS_SM_NUM)
+  if (state >= MUOS_SM_MAXSTATE)
     return NULL;
 
-  return state_definitions[statemachine[sm].current].name;
+  return state_definitions[state].name;
 }
 #endif
 
@@ -237,6 +248,7 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4])
       || params[0] >= MUOS_SM_MAXSTATE)
     return muos_error_sm_state;
 
+  statemachine[sm].prev = STATE_NONE;
   statemachine[sm].current = params[0];
   statemachine[sm].params[0] = params[1];
   statemachine[sm].params[1] = params[2];

@@ -222,9 +222,12 @@ muos_sm_next (uint8_t sm);
 //: enum muos_sm_state
 //: muos_sm_get (uint8_t sm);
 //:
+//: enum muos_sm_state
+//: muos_sm_prev (uint8_t sm);
+//:
 //: #ifdef MUOS_SM_NAMES
 //: const char __flash *
-//: muos_sm_name_get (uint8_t sm);
+//: muos_sm_name_get (enum muos_sm_state state);
 //: #endif
 //:
 //: bool
@@ -235,7 +238,9 @@ muos_sm_next (uint8_t sm);
 //:
 //: 'muos_sm_get()' returns the current state.
 //:
-//: 'muos_sm_name_get()' returns a textual representation of the current state.
+//: 'muos_sm_prev()' returns the previous state.
+//:
+//: 'muos_sm_name_get()' returns a textual representation for state.
 //:
 //: 'muos_sm_ready()' returns true when the state is not 'STATE_NONE'. For use as
 //: predicate to 'muos_wait()'
@@ -246,9 +251,12 @@ muos_sm_params_get (uint8_t sm); //TODO: improper api, needs to be improved
 enum muos_sm_state
 muos_sm_get (uint8_t sm);
 
+enum muos_sm_state
+muos_sm_prev (uint8_t sm);
+
 #ifdef MUOS_SM_NAMES
 const char __flash *
-muos_sm_name_get (uint8_t sm);
+muos_sm_name_get (enum muos_sm_state state);
 #endif
 
 bool
