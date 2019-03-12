@@ -21,6 +21,7 @@
 #include <muos/muos.h>
 #include <muos/error.h>
 #include <muos/clock.h>
+#include <muos/rtq.h>
 #include <muos/hpq.h>
 #include <muos/bgq.h>
 #include <muos/clpq.h>
@@ -98,32 +99,36 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
             {
               do
                 {
-                  if (fn && fn (param))
+                  do
                     {
-                      muos_interrupt_disable ();
-                      muos_clpq_remove_isr (muos_now_, timeout, 0);
-                      muos_interrupt_enable ();
-                      --sched_depth_;
-                      return muos_success;
-                    }
+                      if (fn && fn (param))
+                        {
+                          muos_interrupt_disable ();
+                          muos_clpq_remove_isr (muos_now_, timeout, 0);
+                          muos_interrupt_enable ();
+                          --sched_depth_;
+                          return muos_success;
+                        }
 
-                  if (muos_clock_elapsed (muos_now_, start) > timeout)
-                    {
-                      muos_clpq_remove_isr (muos_now_, timeout, 0);
-                      muos_interrupt_enable ();
-                      --sched_depth_;
-                      return muos_warn_wait_timeout;
-                    }
+                      if (muos_clock_elapsed (muos_now_, start) > timeout)
+                        {
+                          muos_clpq_remove_isr (muos_now_, timeout, 0);
+                          muos_interrupt_enable ();
+                          --sched_depth_;
+                          return muos_warn_wait_timeout;
+                        }
 
 #ifdef MUOS_ERRORFN
-                  if (muos_error_pending ())
-                    {
-                      MUOS_ERRORFN ();
-                      muos_interrupt_disable ();
-                    }
+                      if (muos_error_pending ())
+                        {
+                          MUOS_ERRORFN ();
+                          muos_interrupt_disable ();
+                        }
 #endif
-                  MUOS_DEBUG_SWITCH_TOGGLE;
-                  muos_now_ = muos_clock_now_isr ();
+                      MUOS_DEBUG_SWITCH_TOGGLE;
+                      muos_now_ = muos_clock_now_isr ();
+                    }
+                  while (muos_rtq_schedule ());
                 }
                while (muos_clpq_schedule (muos_now_));
             }
@@ -154,17 +159,22 @@ muos_yield (uint8_t count)
         {
           do
             {
-#ifdef MUOS_ERRORFN
-              if (muos_error_pending ())
+              do
                 {
-                  MUOS_ERRORFN ();
-                  muos_interrupt_disable ();
-                }
+#ifdef MUOS_ERRORFN
+                  if (muos_error_pending ())
+                    {
+                      MUOS_ERRORFN ();
+                      muos_interrupt_disable ();
+                    }
 #endif
-              MUOS_DEBUG_SWITCH_TOGGLE;
-              muos_now_ = muos_clock_now_isr ();
+                  MUOS_DEBUG_SWITCH_TOGGLE;
+                  muos_now_ = muos_clock_now_isr ();
+                  --count;
+                }
+              while (count && muos_rtq_schedule ());
             }
-          while (count-- && muos_clpq_schedule (muos_now_));
+          while (count && muos_clpq_schedule (muos_now_));
         }
       while (count && muos_hpq_schedule ());
     }
@@ -226,15 +236,19 @@ main()
             {
               do
                 {
-#ifdef MUOS_ERRORFN
-                  if (muos_error_pending ())
+                  do
                     {
-                      MUOS_ERRORFN ();
-                      muos_interrupt_disable ();
-                    }
+#ifdef MUOS_ERRORFN
+                      if (muos_error_pending ())
+                        {
+                          MUOS_ERRORFN ();
+                          muos_interrupt_disable ();
+                        }
 #endif
-                  MUOS_DEBUG_SWITCH_TOGGLE;
-                  muos_now_ = muos_clock_now_isr ();
+                      MUOS_DEBUG_SWITCH_TOGGLE;
+                      muos_now_ = muos_clock_now_isr ();
+                    }
+                  while (muos_rtq_schedule ());
                 }
               while (muos_clpq_schedule (muos_now_));
             }

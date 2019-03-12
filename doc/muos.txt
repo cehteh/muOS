@@ -25,7 +25,7 @@ api's because it is faster to access and provides the necessary stability as
 time tag for this iteration.
 
 If there are any pending errors left from asynchronous calls (Interrupts and
-Drivers) it calls a user defined error handler. This is done at highest
+Drivers) it may call a user defined error handler. This is done at highest
 priority with interrupts still disabled. The error-handler is called only once
 per mainloop iteration, even if it leaves errors pending.
 
@@ -36,7 +36,7 @@ ensure exact timing.
 
 === Scheduler Queues
 
-By default there are 3 queues served by the mainloop. Each of them can be
+There are few queues served by the mainloop. Each of them can be
 configured in some details and disabled if not required.
 
 ==== clock priority queue
@@ -47,17 +47,14 @@ Uses the clock to wake the mainloop for scheduling events in 'near future'.
 timers prescaler, the faster the clock runs, the shorter are the time spans it
 can handle. Common ranges are from few milliseconds to many hours.
 
-Events scheduled by the clpq have the highest priority, but are still
+Events scheduled by the clpq have the second highest priority, but are still
 called synchronously within the mainloop and interrupts enabled.
+
 
 ===== clpq API
 
-The priority queue uses a sliding-window implementation, this allows to add
+The clpq uses a sliding-window implementation, this allows to add
 times covering the while range of the 'muos_shortclock' datatype.
-
-The 'clpq' uses the priority-queue implementation (and thus the types) from
-
-<<lib_spriq,lib/spriq>>.
 
 
 PIPADOC:=clpq_api
@@ -76,19 +73,36 @@ The mainloop will schedule work on the Workqueues until nothing left to be
 done. Work is always popped from the front of these queues. There are API's to
 push work on the back (preferred case) and on the front of this queues.
 Pushing something on the front of a queue means that it will be scheduled
-immediately before anything else pending. Thus one get 4 priority levels for
-work from this queues.
+immediately before anything else pending.
 
-One can push an optional 'intptr_t' argument together with each scheduled
-function to give a limited ability to pass data around. If this argument is
-used it will use additional memory in the queue.
+One can push an optional 'intptr_t' arguments together with each
+scheduled function to pass data. When this is used, functions *must*
+pop this arguments from the queue before enabling interrupts.
+
+All functions function are entered with interrupts globally disabled
+so that they can gather some data atomically or pop arguments from the
+queue. Functions should enable interrupts as soon as possible.
 
 The underlying queue implementation in <<lib_queue>> can be configured in
 several ways.
 
+==== realtime priority queue
+
+Scheduled with highest priority. Use for offloading tasks from
+interrupts for example.
+
+===== rtq API
+
+PIPADOC:=rtq_api
+
+===== rtq configuration
+
+PIPADOC:@rtq_config
+
 ==== high priority queue
 
-Scheduled with a priority below the clpq and above bgq.
+Scheduled with a priority below the clpq and above bgq. Usually most
+work will be done in this queue.
 
 ===== hpq API
 
@@ -100,7 +114,8 @@ PIPADOC:@hpq_config
 
 ==== background queue
 
-Scheduled with the lowest priority.
+Scheduled with the lowest priority. Used for things which have no
+timing hard constraints.
 
 ===== bgq API
 
