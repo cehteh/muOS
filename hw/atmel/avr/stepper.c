@@ -236,40 +236,47 @@ MUOS_STEPPER_HW;
 #define MUOS_STEPPER_TOP_4_15 OCR4A
 
 
-static inline void
+static inline bool
 isr_load_check (void)
 {
+  uint8_t steppers_active = 0;
 #define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
   if (stepper_backoff_cnt < UINT8_MAX)                                          \
-    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);
+    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);                        \
+  if (muos_steppers[hw].state >= MUOS_STEPPER_RAW)                              \
+    ++steppers_active;
 
 #define UNIPOLAR(hw, timer, port, table, mask, wgm)                             \
   if (stepper_backoff_cnt < UINT8_MAX)                                          \
-    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);
+    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);                        \
+  if (muos_steppers[hw].state >= MUOS_STEPPER_RAW)                              \
+    ++steppers_active;
 
-  MUOS_STEPPER_HW
+  MUOS_STEPPER_HW;
 
 #undef STEPDIR
 #undef UNIPOLAR
+
+  return stepper_backoff_cnt >= steppers_active;
 }
 
 
 // set speed backoff when same or more then STEPPER_NUM interrupts are pending
 // clear backoff when speed falls again
-
 #define SET_SPEED(timer, wgm)                                                   \
   if (stepper_backoff)                                                          \
     {                                                                           \
       if (speed > MUOS_STEPPER_TOP(timer, wgm))                                 \
         {                                                                       \
+          muos_error_check_isr (muos_warn_stepper_backoff);                     \
           stepper_backoff = false;                                              \
         }                                                                       \
     }                                                                           \
   else                                                                          \
     {                                                                           \
-      isr_load_check ();                                                        \
-      if (stepper_backoff_cnt >= MUOS_STEPPER_NUM)                              \
+      if (isr_load_check ())                                                    \
         {                                                                       \
+          muos_error_set_isr (muos_warn_stepper_backoff);                       \
           stepper_backoff = true;                                               \
         }                                                                       \
     }                                                                           \
@@ -403,6 +410,9 @@ muos_hw_stepper_disable_all (void)
 #undef DISABLE_TIMER
 #undef STEPDIR
 #undef UNIPOLAR
+
+  /* clear backkoff warning */
+  muos_error_check (muos_warn_stepper_backoff);
 }
 
 
