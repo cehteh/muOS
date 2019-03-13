@@ -475,6 +475,10 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen);
 muos_error
 muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed);
 
+//TODO: docme
+uint32_t
+muos_stepper_distance (uint8_t hw, int32_t position);
+
 
 //stepper_api:
 //: .Slope Calculations
