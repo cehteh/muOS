@@ -273,7 +273,7 @@ isr_load_check (void)
           stepper_backoff = true;                                               \
         }                                                                       \
     }                                                                           \
-  if (!stepper_backoff)                                                         \
+  if (!stepper_backoff || speed >= slope->speed_out)                            \
     {                                                                           \
       MUOS_STEPPER_TOP(timer, wgm) = speed;                                     \
     }                                                                           \
