@@ -36,6 +36,9 @@
 
 extern const struct muos_configstore_data* muos_steppers_config_lock;
 
+static bool stepper_backoff;                     // speed backoff in effect
+static uint8_t stepper_backoff_cnt;              // delayed isr counter
+
 
 //PLANNED: dynamic prescaler change to increase range and resolution
 
@@ -233,6 +236,54 @@ MUOS_STEPPER_HW;
 #define MUOS_STEPPER_TOP_4_15 OCR4A
 
 
+static inline void
+isr_load_check (void)
+{
+#define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
+  if (stepper_backoff_cnt < UINT8_MAX)                                          \
+    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);
+
+#define UNIPOLAR(hw, timer, port, table, mask, wgm)                             \
+  if (stepper_backoff_cnt < UINT8_MAX)                                          \
+    stepper_backoff_cnt += !!(TIFR##timer & TOV##timer);
+
+  MUOS_STEPPER_HW
+
+#undef STEPDIR
+#undef UNIPOLAR
+}
+
+
+// set speed backoff when same or more then STEPPER_NUM interrupts are pending
+// clear backoff when speed falls again
+
+#define SET_SPEED(timer, wgm)                                                   \
+  if (stepper_backoff)                                                          \
+    {                                                                           \
+      if (speed > MUOS_STEPPER_TOP(timer, wgm))                                 \
+        {                                                                       \
+          stepper_backoff = false;                                              \
+        }                                                                       \
+    }                                                                           \
+  else                                                                          \
+    {                                                                           \
+      isr_load_check ();                                                        \
+      if (stepper_backoff_cnt >= MUOS_STEPPER_NUM)                              \
+        {                                                                       \
+          stepper_backoff = true;                                               \
+        }                                                                       \
+    }                                                                           \
+  if (!stepper_backoff)                                                         \
+    {                                                                           \
+      MUOS_STEPPER_TOP(timer, wgm) = speed;                                     \
+    }                                                                           \
+  if (stepper_backoff_cnt)                                                      \
+    --stepper_backoff_cnt;                                                      \
+
+
+
+
+
 #define STEPDIR(hw, timer, output, out_mode, wgm, dirport, dirpin, dirpol)      \
   ISR(TIMER##timer##_OVF_vect)                                                  \
   {                                                                             \
@@ -241,7 +292,7 @@ MUOS_STEPPER_HW;
       (dirpol^!(PORT##dirport & _BV(PORT##dirport##dirpin)))?+1:-1;             \
     POSITION_MATCH(hw, timer, wgm);                                             \
     SLOPE_CALCULATION(hw);                                                      \
-    MUOS_STEPPER_TOP(timer, wgm) = speed;                                       \
+    SET_SPEED(timer, wgm);                                                      \
   }
 
 
@@ -256,7 +307,7 @@ MUOS_STEPPER_HW;
     PORT##port = (PORT##port & ~mask) | value;                                                  \
     POSITION_MATCH(hw, timer, wgm);                                                             \
     SLOPE_CALCULATION(hw);                                                                      \
-    MUOS_STEPPER_TOP(timer, wgm) = speed;                                                       \
+    SET_SPEED(timer, wgm);                                                                      \
   }
 
 
