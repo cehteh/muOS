@@ -32,7 +32,6 @@
 
 //TODO: startall()
 //TODO: sync moves
-//PLANNED: budget/cost for each movement
 
 /*
   configstore:
@@ -161,7 +160,7 @@ struct muos_stepper_slope
   uint16_t pos;                    // slope position
   uint16_t end;                    // only slope part
   uint16_t len;                    // only slope part
-  uint16_t max_speed;              //TODO: calculate for maxslope
+  uint16_t max_speed;              //PLANNED: calculate correction for maxslope
   uint16_t speed_out;
 };
 
