@@ -36,9 +36,11 @@
 
 extern const struct muos_configstore_data* muos_steppers_config_lock;
 
+
+#ifdef MUOS_STEPPER_SPEED_BACKOFF
 static bool stepper_backoff;                     // speed backoff in effect
 static uint8_t stepper_backoff_cnt;              // delayed isr counter
-
+#endif
 
 //PLANNED: dynamic prescaler change to increase range and resolution
 
@@ -236,6 +238,7 @@ MUOS_STEPPER_HW;
 #define MUOS_STEPPER_TOP_4_15 OCR4A
 
 
+#ifdef MUOS_STEPPER_SPEED_BACKOFF
 static inline bool
 isr_load_check (void)
 {
@@ -285,8 +288,14 @@ isr_load_check (void)
       MUOS_STEPPER_TOP(timer, wgm) = speed;                                     \
     }                                                                           \
   if (stepper_backoff_cnt)                                                      \
-    --stepper_backoff_cnt;                                                      \
+    --stepper_backoff_cnt
 
+#else
+
+#define SET_SPEED(timer, wgm)                                                   \
+  MUOS_STEPPER_TOP(timer, wgm) = speed
+
+#endif
 
 
 
