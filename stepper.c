@@ -27,6 +27,9 @@
 #define MUOS_HW_STEPPER_H
 #include <muos/stepper.h>
 
+
+//FIXME: 1 step didn't stop
+
 //TODO: API for setting each axis and then start all together
 
 struct muos_stepper_state muos_steppers[MUOS_STEPPER_NUM];
