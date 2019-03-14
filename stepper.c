@@ -464,7 +464,7 @@ slope_bisect (uint16_t speed, uint16_t slope_len, uint16_t fact_a, uint16_t fact
 }
 
 
-
+//FIXME: off by one error at end of slope, last step is too fast
 muos_error
 muos_stepper_slope_prep (uint8_t hw,
                          struct muos_stepper_slope* slope,
@@ -506,7 +506,7 @@ muos_stepper_slope_prep (uint8_t hw,
                                            muos_steppers_config_lock->stepper_accel[hw]));
 
   slope->speed_out = speed_out;
-  slope->constant = distance - (slope->end - slope->pos) - out_steps - 2;
+  slope->constant = distance - (slope->end - slope->pos) - out_steps;
   slope->max_speed = max_speed;
 
   return muos_success;
