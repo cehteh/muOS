@@ -140,6 +140,19 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
     }
 }
 
+muos_error
+muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_shortclock timeout, uint32_t rep)
+{
+  while (rep--)
+    {
+      muos_error err = muos_wait (fn, param, timeout);
+      if (err != muos_warn_wait_timeout)
+        return err;
+    }
+  return muos_warn_wait_timeout;
+}
+
+
 
 muos_error
 muos_yield (uint8_t count)

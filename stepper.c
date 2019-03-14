@@ -153,13 +153,7 @@ muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t
 {
   struct waitdata wd = {hw, maxstate};
 
-  while (timeout_sec--)
-    {
-      if (muos_wait (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (1000)) == muos_success)
-        return muos_success;
-    }
-
-  return muos_warn_wait_timeout;
+  return muos_wait_poll (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (1), timeout_sec*1000UL);
 }
 
 
