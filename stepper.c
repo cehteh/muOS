@@ -598,6 +598,9 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
 
   struct muos_stepper_slope* slope = muos_stepper_slope_get (hw);
 
+  if (!slope)
+    return muos_error_stepper_slope;
+
   uint32_t distance = muos_stepper_distance(hw, position);
 
   MUOS_OK (muos_stepper_slope_prep (hw,
