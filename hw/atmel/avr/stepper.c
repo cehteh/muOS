@@ -412,7 +412,7 @@ muos_hw_stepper_disable_all (void)
   DISABLE_TIMER(timer);
 
 #define UNIPOLAR(hw, timer, port, table, mask, wgm)     \
-  DISABLE_TIMER(timer)                                  \
+  DISABLE_TIMER(timer);                                 \
   PORT##port = (PORT##port & ~mask);
 
   MUOS_STEPPER_HW;
@@ -547,6 +547,7 @@ muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
         TCCR##timer##A = (output_mode << COM##timer##output##0) | ((wgm&0x3)<<WGM##timer##0);   \
         TCCR##timer##B = ((wgm&~0x3)<<(WGM##timer##2 -2));                                      \
         MUOS_STEPPER_TOP(timer, wgm) = speed_in;                                                \
+        TCNT##timer = 0;                                                                        \
         TIFR##timer = _BV(TOV##timer);                                                          \
         TIMSK##timer = _BV(TOIE##timer);                                                        \
         TCCR##timer##B |= prescale                                                              \
@@ -603,6 +604,7 @@ muos_hw_stepper_stop (uint8_t hw)
     {
       MUOS_STEPPER_HW;
     }
+
 #undef STEPDIR
 #undef UNIPOLAR
 }
