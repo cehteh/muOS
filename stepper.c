@@ -151,9 +151,32 @@ stepper_wait_pred (intptr_t state)
 muos_error
 muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
 {
+  if (hw >= MUOS_STEPPER_NUM)
+    return muos_error_nodev;
+
   struct waitdata wd = {hw, maxstate};
 
   return muos_wait_poll (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (1), timeout_sec*1000UL);
+}
+
+
+static bool
+stepper_waitall_pred (intptr_t state)
+{
+  for (uint8_t hw = 0; hw < MUOS_STEPPER_NUM; ++hw)
+    {
+      if (muos_steppers[hw].state > (enum muos_stepper_arming_state)state)
+        return false;
+    }
+
+  return true;
+}
+
+
+muos_error
+muos_stepper_waitall (enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
+{
+  return muos_wait_poll (stepper_waitall_pred, (intptr_t)maxstate, MUOS_CLOCK_MILLISECONDS (1), timeout_sec*1000UL);
 }
 
 

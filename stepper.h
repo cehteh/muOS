@@ -255,9 +255,15 @@ muos_stepper_stop_all (void);
 //: muos_stepper_wait (uint8_t hw,
 //:                    enum muos_stepper_arming_state maxstate,
 //:                    uint16_t timeout_sec);
+//:
+//: muos_error
+//: muos_stepper_waitall (enum muos_stepper_arming_state maxstate, uint16_t timeout_sec);
 //: ----
 //:
 //: 'muos_stepper_wait ()' waits until a steppers state is equal or less than
+//: 'maxstate' or the timeout (in seconds) expires.
+//:
+//: 'muos_stepper_waitall ()' waits until all steppers state is equal or less than
 //: 'maxstate' or the timeout (in seconds) expires.
 //:
 //: returns 'muos_success' when the steppers state is reached or 'muos_warn_wait_timeout'
@@ -266,6 +272,8 @@ muos_stepper_stop_all (void);
 muos_error
 muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec);
 
+muos_error
+muos_stepper_waitall (enum muos_stepper_arming_state maxstate, uint16_t timeout_sec);
 
 
 //stepper_api:
