@@ -395,8 +395,8 @@ muos_stepper_move_raw (uint8_t hw,
 //: ----
 //: muos_error
 //: muos_stepper_move_cal (uint8_t hw,
-//:                        uint16_t speed,
 //:                        int32_t offset,
+//:                        uint16_t speed,
 //:                        muos_queue_function done)
 //:
 //: ----
@@ -614,9 +614,8 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position)
 //:   highest possible priority.
 //: MUOS_STEPPER_HPQ_BACK;;
 //:   Use the provided argument as function to push it to the back of the hpq.
-//PLANNED: untested, thus ACTION_DONE is disabled for now
-// : MUOS_STEPPER_ACTION_DONE;;
-// :   Provided arg is the 'done' function which gets unconditionally (of position) called when the stepper gets stopped.
+//: MUOS_STEPPER_ACTION_DONE;;
+//:   Provided arg is the 'done' function which gets unconditionally (of position) called when the stepper gets stopped.
 //:
 enum muos_stepper_actions
   {
@@ -627,7 +626,7 @@ enum muos_stepper_actions
    MUOS_STEPPER_ACTION_SYNC = (1<<4),//TODO: implement me
    MUOS_STEPPER_HPQ_FRONT = (1<<5),
    MUOS_STEPPER_HPQ_BACK = (1<<6),
-   //MUOS_STEPPER_ACTION_DONE = (1<<7),
+   MUOS_STEPPER_ACTION_DONE = (1<<7),
 
    //PLANNED:   MUOS_STEPPER_MERGE = (1<<7),
   };
@@ -675,7 +674,6 @@ enum muos_stepper_actions
 //:   'register_action':: no more slots free to register an action.
 //:   'remove_action':: no action found with the given parameters.
 //:
-//PLANNED: muos_stepper_remove_all_actions(hw)
 muos_error
 muos_stepper_register_action (uint8_t hw,
                               int32_t position,
@@ -688,6 +686,34 @@ muos_stepper_remove_action (uint8_t hw,
                             uint8_t action,
                             uintptr_t arg);
 
+
+//stepper_api:
+//: ----
+//: void
+//: muos_stepper_remove_actions (uint8_t hw,
+//:                              bool permanent)
+//:
+//: void
+//: muos_stepper_remove_actions_all (bool permanent)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to address.
+//: +permanent+;;
+//:   Remove 'MUOS_STEPPER_ACTION_PERMANENT' actions as well
+//:
+//: Removes registered actions from one stepper or all steppers.
+//: When +permanent+ is 'false' then only actions which are non permanent
+//: are removed. When it is true all actions are removed.
+//:
+//: Will do nothing when the stepper is moving.
+//:
+void
+muos_stepper_remove_actions (uint8_t hw,
+                             bool permanent);
+
+void
+muos_stepper_remove_actions_all (bool permanent);
 
 
 // functions suitable for muos_wait()
