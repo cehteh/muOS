@@ -57,6 +57,8 @@ muos_stepper_disable_all (void)
   muos_hw_stepper_disable_all ();
   muos_configstore_unlock (&muos_steppers_config_lock);
 
+  muos_stepper_remove_actions_all (true);
+
   for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
       if (muos_steppers[i].state > MUOS_STEPPER_OFF)
@@ -89,6 +91,8 @@ void
 muos_stepper_stop (uint8_t hw)
 {
   muos_hw_stepper_stop (hw);
+
+  muos_stepper_remove_actions (hw, false);
 
   switch  (muos_steppers[hw].state)
     {
