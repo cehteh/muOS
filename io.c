@@ -84,7 +84,7 @@ muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
 
   muos_serial_status[0].serial_tx_blocked = true;
   muos_error ret = muos_wait (muos_tx_wait, space, timeout);
-  muos_serial_status[hw].serial_tx_blocked = false;
+  muos_serial_status[0].serial_tx_blocked = false;
 
   return ret;
 }
