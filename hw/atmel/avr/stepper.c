@@ -264,6 +264,7 @@ isr_load_check (void)
 }
 
 
+//FIXME: only backoff on accel
 // set speed backoff when same or more then STEPPER_NUM interrupts are pending
 // clear backoff when speed falls again
 #define SET_SPEED(timer, wgm)                                                   \

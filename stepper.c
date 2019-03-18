@@ -131,6 +131,7 @@ stepper_wait_pred (intptr_t state)
   return muos_steppers[((struct waitdata*)state)->hw].state <= ((struct waitdata*)state)->maxstate;
 }
 
+//PLANNED: make poll timeout configureable
 muos_error
 muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
 {
@@ -139,7 +140,7 @@ muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t
 
   struct waitdata wd = {hw, maxstate};
 
-  return muos_wait_poll (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (1), timeout_sec*1000UL);
+  return muos_wait_poll (stepper_wait_pred, (intptr_t)&wd, MUOS_CLOCK_MILLISECONDS (10), timeout_sec*100UL);
 }
 
 
@@ -159,7 +160,7 @@ stepper_waitall_pred (intptr_t state)
 muos_error
 muos_stepper_waitall (enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
 {
-  return muos_wait_poll (stepper_waitall_pred, (intptr_t)maxstate, MUOS_CLOCK_MILLISECONDS (1), timeout_sec*1000UL);
+  return muos_wait_poll (stepper_waitall_pred, (intptr_t)maxstate, MUOS_CLOCK_MILLISECONDS (10), timeout_sec*100UL);
 }
 
 
