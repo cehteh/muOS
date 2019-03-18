@@ -495,6 +495,9 @@ muos_stepper_slope_prep (uint8_t hw,
   if (max_speed < muos_steppers_config_lock->stepper_maxspeed[hw])
     max_speed = muos_steppers_config_lock->stepper_maxspeed[hw];
 
+  // correct exact timing for the last steps
+  out_steps += 2;
+
   if (out_steps > distance)
     out_steps = distance;  //TODO: fast return only out_steps w/o fast or slope
 
@@ -509,13 +512,14 @@ muos_stepper_slope_prep (uint8_t hw,
                              muos_steppers_config_lock->stepper_accel[hw],
                              muos_steppers_config_lock->stepper_decel[hw]);
 
-  slope->end = slope->len - (slope_bisect (speed_out - max_speed,
-                                           slope->len,
-                                           muos_steppers_config_lock->stepper_decel[hw],
-                                           muos_steppers_config_lock->stepper_accel[hw]));
+  slope->end = slope->len + 1
+    - slope_bisect (speed_out - max_speed,
+                    slope->len,
+                    muos_steppers_config_lock->stepper_decel[hw],
+                    muos_steppers_config_lock->stepper_accel[hw]);
 
   slope->speed_out = speed_out;
-  slope->constant = distance - (slope->end - slope->pos) - out_steps;
+  slope->constant = distance - ((slope->end - slope->pos) + out_steps);
   slope->max_speed = max_speed;
 
   return muos_success;
