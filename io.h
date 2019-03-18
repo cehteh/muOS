@@ -134,11 +134,23 @@ struct muos_txwait
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout);
 
+muos_error
+muos_output_lock (uint8_t hw);
+
+muos_error
+muos_output_unlock (uint8_t hw);
+
 #else
 #define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
 
 muos_error
 muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout);
+
+muos_error
+muos_output_lock (void);
+
+muos_error
+muos_output_unlock (void);
 
 #endif
 

@@ -62,6 +62,8 @@ muos_tx_wait (intptr_t data);
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
 {
+  MUOS_IO_HWCHECK;
+
   if (muos_serial_status[hw].serial_tx_blocked)
     return muos_error_serial_status;
 
@@ -72,6 +74,30 @@ muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
   muos_serial_status[hw].serial_tx_blocked = false;
 
   return ret;
+}
+
+muos_error
+muos_output_lock (uint8_t hw)
+{
+  MUOS_IO_HWCHECK;
+
+  if (muos_serial_status[hw].serial_tx_blocked)
+    return muos_error_serial_status;
+
+  muos_serial_status[hw].serial_tx_blocked = true;
+  return muos_success;
+}
+
+muos_error
+muos_output_unlock (uint8_t hw)
+{
+  MUOS_IO_HWCHECK;
+
+  if (!muos_serial_status[hw].serial_tx_blocked)
+    return muos_error_serial_status;
+
+  muos_serial_status[hw].serial_tx_blocked = false;
+  return muos_success;
 }
 
 #else
@@ -87,6 +113,26 @@ muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
   muos_serial_status[0].serial_tx_blocked = false;
 
   return ret;
+}
+
+muos_error
+muos_output_lock (void)
+{
+  if (muos_serial_status[0].serial_tx_blocked)
+    return muos_error_serial_status;
+
+  muos_serial_status[0].serial_tx_blocked = true;
+  return muos_success;
+}
+
+muos_error
+muos_output_unlock (void)
+{
+  if (!muos_serial_status[0].serial_tx_blocked)
+    return muos_error_serial_status;
+
+  muos_serial_status[0].serial_tx_blocked = false;
+  return muos_success;
 }
 
 #endif
