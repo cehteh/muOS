@@ -234,7 +234,7 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
   if (!muos_steppers_config_lock)
     return muos_error_configstore;  //FIXME: refine configstore errors
 
-  muos_steppers[hw].position -= offset;
+  muos_steppers[hw].position = offset;
   muos_steppers[hw].ready = false;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
