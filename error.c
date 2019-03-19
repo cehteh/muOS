@@ -76,5 +76,6 @@ muos_error_clearall_isr (void)
     muos_errors_[i] = 0;
 
   muos_errors_pending_ = 0;
+  MUOS_DEBUG_ERROR_OFF;
 }
 
