@@ -224,4 +224,10 @@ muos_error_clearall (void)
 }
 
 
+//TODO: docme
+#ifdef MUOS_ERROR_STR
+const char __flash*
+muos_error_str (muos_error err);
+#endif
+
 #endif

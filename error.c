@@ -22,10 +22,35 @@
 #include <muos/muos.h>
 #include <muos/error.h>
 
+#include <stddef.h>
+
 volatile uint8_t muos_errors_pending_;
 //TODO: no need to store muos_error_success, array one bit smaller, fix indexing
 volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 
+#ifdef MUOS_ERROR_STR
+#define MUOS_ERROR(name, ...) static const char __flash muos_error_##name##_str[] = #name;
+MUOS_ERRORS
+#undef MUOS_ERROR
+
+static
+const char __flash * const __flash muos_error_names[] =
+  {
+#define MUOS_ERROR(name, ...) muos_error_##name##_str,
+   MUOS_ERRORS
+#undef MUOS_ERROR
+  };
+
+
+const char __flash*
+muos_error_str (muos_error err)
+{
+  if (err >= muos_errors_end)
+    return NULL;
+
+  return muos_error_names[err];
+}
+#endif
 
 muos_error
 muos_error_set_isr (muos_error err)
