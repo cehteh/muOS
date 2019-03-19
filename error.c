@@ -69,4 +69,12 @@ muos_error_check_isr (muos_error err)
 }
 
 
+void
+muos_error_clearall_isr (void)
+{
+  for (uint8_t i = 0; i < (muos_errors_end+7)/8; ++i)
+    muos_errors_[i] = 0;
+
+  muos_errors_pending_ = 0;
+}
 

@@ -24,6 +24,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef MUOS_ERROR_DEF
+#include MUOS_ERROR_DEF
+#endif
+
+#ifndef MUOS_APP_ERRORS
+#define MUOS_APP_ERRORS
+#endif
+
 //PLANNED: error log
 
 //error_api:
@@ -65,8 +73,8 @@
     MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} no position match slot */                            \
     MUOS_ERROR(warn_stepper_backoff) /*: {ERRORDEF} stepper speed backoff active */                     \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
-    MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */
-
+    MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */        \
+    MUOS_APP_ERRORS
 
 //error_api:
 //: .The type used for error codes
@@ -164,9 +172,6 @@ muos_error_peek (muos_error err)
 
 
 
-bool
-muos_error_check_isr (muos_error err);
-
 //error_api:
 //: .Check for errors
 //: ----
@@ -181,6 +186,9 @@ muos_error_check_isr (muos_error err);
 //:
 //: The '*_isr' function is for contexts where interrupts are disabled.
 //:
+bool
+muos_error_check_isr (muos_error err);
+
 static inline bool
 muos_error_check (muos_error err)
 {
@@ -193,6 +201,27 @@ muos_error_check (muos_error err)
   return ret;
 }
 
+//error_api:
+//: .Clear all pending errors
+//: ----
+//: void muos_error_clearall (void)
+//: void muos_error_clearall_isr (void)
+//: ----
+//:
+//: Clears all pending async errors.
+//:
+//: The '*_isr' function is for contexts where interrupts are disabled.
+//:
+void
+muos_error_clearall_isr (void);
+
+static inline void
+muos_error_clearall (void)
+{
+  muos_interrupt_disable ();
+  muos_error_clearall_isr ();
+  muos_interrupt_enable ();
+}
 
 
 #endif
