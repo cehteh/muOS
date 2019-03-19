@@ -26,6 +26,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+#define COMMAND(name, ...) static const char __flash cli_cmd_##name##_str[] = #name;
+CLI_COMMANDS
+#undef COMMAND
+
+static
+const char __flash * const __flash cli_cmd_names[] =
+  {
+#define COMMAND(name, ...) cli_cmd_##name##_str,
+   CLI_COMMANDS
+#undef COMMAND
+  };
+
+
 //PLANNED: prompt
 //PLANNED: parameter/prototype description for automatic parsing
 void

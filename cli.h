@@ -47,18 +47,6 @@ enum muos_cli_cmd_id
    CLI_COMMANDS
 #undef COMMAND
 
-#define COMMAND(name, ...) static const char __flash cli_cmd_##name##_str[] = #name;
-CLI_COMMANDS
-#undef COMMAND
-
-static
-const char __flash * const __flash cli_cmd_names[] =
-  {
-#define COMMAND(name, ...) cli_cmd_##name##_str,
-   CLI_COMMANDS
-#undef COMMAND
-  };
-
 
 typedef void (*muos_cli_cmd)(const char* cont);
 
