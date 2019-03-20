@@ -117,12 +117,26 @@ muos_lineedit MUOS_IO_HWPARAM()
           pending = ESCAPE;
           break;
 
+        case 0x0b:
+          // clear to end of line
+          if (used && cursor < used)
+            {
+#ifdef MUOS_LINEEDIT_UTF8
+              //FIXME: delete from utfstart
+              utf8line_redraw MUOS_IO_HWARG();
+#else
+              used = cursor;
+              muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K"));
+#endif
+            }
+          pending = 0;
+          break;
+
         case ESCAPE<<8 | 0x5b:
           pending = CSI;
           break;
 
         case CSI<<8 | 0x41:
-        case 0x0b:
           // up
 #ifdef MUOS_LINEEDIT_RECALL
           if (recall)
@@ -300,6 +314,7 @@ muos_lineedit MUOS_IO_HWPARAM()
           // return
           //TODO: push callback on bgq
           //TODO: and suspend lineedit until the callback is finished (w/ wraper)
+          buffer[used] = 0;
 #ifdef MUOS_LINEEDIT_CALLBACK
           MUOS_LINEEDIT_CALLBACK (buffer);
 #endif
