@@ -42,7 +42,6 @@ enum muos_cli_cmd_id
   };
 
 
-
 #define COMMAND(name, ...) void cli_cmd_##name(const char* cont);
    CLI_COMMANDS
 #undef COMMAND
@@ -58,6 +57,10 @@ const muos_cli_cmd __flash command_impl[] =
 #undef COMMAND
   };
 
+extern const char __flash * const __flash muos_cli_cmd_names[];
+
+//TODO: docme
+#define MUOS_CLI_STR(name) muos_cli_cmd_names[CLI_CMD_##name]
 
 void
 muos_cli (const char* line);

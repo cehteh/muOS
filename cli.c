@@ -31,8 +31,7 @@
 CLI_COMMANDS
 #undef COMMAND
 
-static
-const char __flash * const __flash cli_cmd_names[] =
+const char __flash * const __flash muos_cli_cmd_names[] =
   {
 #define COMMAND(name, ...) cli_cmd_##name##_str,
    CLI_COMMANDS
@@ -61,7 +60,7 @@ muos_cli (const char* line)
       enum muos_cli_cmd_id id;
       for (id = 0; id < CLI_CMD_MAX_ID; ++id)
         {
-          if (strncmp_P (line, cli_cmd_names[id], len) == 0)
+          if (strncmp_P (line, muos_cli_cmd_names[id], len) == 0)
             break;
         }
 
