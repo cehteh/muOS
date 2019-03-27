@@ -156,12 +156,12 @@ struct muos_stepper_action
 struct muos_stepper_slope
 {
   int32_t position;
-  uint32_t constant;               // constant speed steps at the top of the slope
-  uint16_t pos;                    // slope position
-  uint16_t end;                    // only slope part
-  uint16_t len;                    // only slope part
-  uint16_t max_speed;              //PLANNED: calculate correction for maxslope
+
+  int32_t decel_start;      // -countdown for starting decel
+  uint16_t max_speed;
+  uint16_t speed_in;
   uint16_t speed_out;
+  uint8_t decel_steps;
 };
 
 struct muos_stepper_state
@@ -169,12 +169,12 @@ struct muos_stepper_state
   volatile enum muos_stepper_arming_state state;
   volatile int32_t position;
 
-  uint16_t speed_flt;               // filtered speed to mitigate rounding errors
+  uint16_t slope_soffset;
 
   muos_queue_function slope_gen;
 
-  volatile uint8_t active:1;         // which one is the active from the buffer
-  volatile uint8_t ready:1;          // set when the next slope is prepared
+  volatile uint8_t active:1;              // which one is the active from the buffer
+  volatile uint8_t ready:1;               // set when the next slope is prepared
   struct muos_stepper_slope slope[2];     // double buffered
 
   struct muos_stepper_action position_match[MUOS_STEPPER_POSITION_SLOTS];

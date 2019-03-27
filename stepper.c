@@ -400,81 +400,28 @@ muos_stepper_move_rel (uint8_t hw,
   Slope calculations
 */
 
-static uint32_t
-slope_speed (uint16_t position,
-             uint16_t slope_len,
-             uint16_t accel,
-             uint16_t decel)
+static uint8_t
+ilogs (uint16_t i, uint8_t s)
 {
-  return
-    (accel * MUOS_STEPPER_SLOPE_MULTIPLIER / position)
-    +
-    (decel * MUOS_STEPPER_SLOPE_MULTIPLIER / (slope_len-position));
-}
-
-/* finds the position which is just equal or faster than speed */
-static uint16_t
-slope_bisect (uint16_t speed, uint16_t slope_len, uint16_t fact_a, uint16_t fact_b)
-{
-  uint16_t mid;
-  uint32_t tmp_speed;
-  uint16_t low;
-  uint16_t high;
-
-  for (high = 1; high < slope_len; high = high < slope_len/2? high*2:slope_len)
+  uint8_t ret = 0;
+  for (; i > (1U<<s)-1U && ret < 255U; ++ret)
     {
-      tmp_speed = slope_speed (high, slope_len,fact_a, fact_b);
-      if (tmp_speed < speed)
-        break;
-
-#if defined(MUOS_SCHED_DEPTH)               \
-  && defined(MUOS_STEPPER_SLOPE_YIELD_ITER) \
-  && MUOS_STEPPER_SLOPE_YIELDS > 0
-      muos_yield (MUOS_STEPPER_SLOPE_YIELDS);
-#endif
+      i -= i>>s;
     }
-
-#if defined(MUOS_SCHED_DEPTH)                   \
-  && !defined(MUOS_STEPPER_SLOPE_YIELD_ITER)    \
-  && MUOS_STEPPER_SLOPE_YIELDS > 0
-  muos_yield (MUOS_STEPPER_SLOPE_YIELDS);
-#endif
-
-  low = high/2;
-
-  while (high > low+1)
-    {
-      mid = (high-low)/2+low;
-      tmp_speed = slope_speed (mid, slope_len, fact_a, fact_b);
-
-      if (tmp_speed < speed)
-        {
-          high = mid;
-        }
-      else if (tmp_speed > speed)
-        {
-          low = mid;
-        }
-      else
-        break;
-
-#if defined(MUOS_SCHED_DEPTH)               \
-  && defined(MUOS_STEPPER_SLOPE_YIELD_ITER) \
-  && MUOS_STEPPER_SLOPE_YIELDS > 0
-      muos_yield (MUOS_STEPPER_SLOPE_YIELDS);
-#endif
-    }
-#if defined(MUOS_SCHED_DEPTH)                   \
-  && !defined(MUOS_STEPPER_SLOPE_YIELD_ITER)    \
-  && MUOS_STEPPER_SLOPE_YIELDS > 0
-  muos_yield (MUOS_STEPPER_SLOPE_YIELDS);
-#endif
-
-  return high;
+  return ret;
 }
 
 
-//FIXME: off by one error at end of slope, last step is too fast
+static const uint16_t __flash slope_shift[MUOS_STEPPER_NUM] =
+  {
+#define STEPDIR(hw, timer, slope, output, out_mode, wgm, dirport, dirpin, dirpol) slope,
+#define UNIPOLAR(hw, timer, slope,port, table, mask, wgm) slope,
+
+      MUOS_STEPPER_HW
+#undef STEPDIR
+#undef UNIPOLAR
+  };
+
 muos_error
 muos_stepper_slope_prep (uint8_t hw,
                          struct muos_stepper_slope* slope,
@@ -482,7 +429,7 @@ muos_stepper_slope_prep (uint8_t hw,
                          uint16_t speed_in,
                          uint16_t max_speed,
                          uint16_t speed_out,
-                         uint16_t out_steps)
+                         uint16_t steps_out)
 {
   if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
@@ -493,35 +440,37 @@ muos_stepper_slope_prep (uint8_t hw,
   if (!muos_steppers_config_lock)
     return muos_error_configstore;  //FIXME: refine configstore errors
 
+  if (steps_out > distance)
+    return muos_error_stepper_range;
+
+  if (!steps_out)
+    steps_out = 1;
+
   if (max_speed < muos_steppers_config_lock->stepper_maxspeed[hw])
     max_speed = muos_steppers_config_lock->stepper_maxspeed[hw];
 
-  // correct exact timing for the last steps
-  out_steps += 3;
-
-  if (out_steps > distance)
-    out_steps = distance;  //TODO: fast return only out_steps w/o fast or slope
-
-  slope->len =
-    (distance - out_steps) < muos_steppers_config_lock->stepper_maxslope[hw]
-    ? distance-out_steps
-    : muos_steppers_config_lock->stepper_maxslope[hw];
-
-  // find start and end offset, that is where speed_in/out is on the slope_len
-  slope->pos = slope_bisect (speed_in - max_speed,
-                             slope->len,
-                             muos_steppers_config_lock->stepper_accel[hw],
-                             muos_steppers_config_lock->stepper_decel[hw]);
-
-  slope->end = slope->len + 1
-    - slope_bisect (speed_out - max_speed,
-                    slope->len,
-                    muos_steppers_config_lock->stepper_decel[hw],
-                    muos_steppers_config_lock->stepper_accel[hw]);
-
-  slope->speed_out = speed_out;
-  slope->constant = distance - ((slope->end - slope->pos) + out_steps);
   slope->max_speed = max_speed;
+  slope->speed_in = speed_in;
+  slope->speed_out = speed_out;
+
+  muos_steppers[hw].slope_soffset = muos_steppers_config_lock->stepper_maxspeed[hw]>>slope_shift[hw];
+
+  uint32_t slope_len = distance - steps_out;
+  uint8_t accel_steps = ilogs (speed_in - max_speed, slope_shift[hw]);
+
+  slope->decel_steps = ilogs (speed_out - max_speed, slope_shift[hw]) + (4 - slope_shift[hw]);
+  slope->decel_start = -(slope_len - slope->decel_steps - 1);
+
+  if (accel_steps + slope->decel_steps > slope_len)
+    {
+      uint8_t xover = accel_steps + slope->decel_steps - slope_len;
+      slope->decel_steps -= (xover)/2+1;
+      slope->decel_start -= (xover+1)/2;
+
+      //FIXME: Error when accel to speed_out isnt possible
+    }
+
+  //PLANNED: add back slope->steps_out .. , compute decel_start based on steps out
 
   return muos_success;
 }
