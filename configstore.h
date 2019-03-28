@@ -103,6 +103,18 @@ typedef enum
    CONFIGSTORE_WLOCK=255,     // write lock
   } muos_configstore_status;
 
+// simple attributes/access control, only affects output and set commands
+//TODO: implement me
+typedef enum
+  {
+   CONFIGSTORE_DEFAULT  = 0,   // no attrs
+   CONFIGSTORE_WPROT    = 1,   // needs auth for set
+   CONFIGSTORE_RPROT    = 2,   // needs auth for output
+   CONFIGSTORE_HIDDEN   = 4,   // hide from listing
+   CONFIGSTORE_VOLATILE = 8,   // can be set even even when readonly locked
+  } muos_configstore_attr;
+
+
 muos_configstore_status
 muos_configstore_get_status (void);
 
@@ -129,16 +141,17 @@ muos_configstore_get_status (void);
 
 //TODO: add callback when config gets changed for reinitializeing dependencies
 //TODO: document implicit config_size
-#define CONFIGSTORE_DATA_IMPL                           \
-  ENTRY(uint16_t, 0, config_size, 0,                    \
-        2, 65535,                                       \
-        "configuration structure size")                 \
+#define CONFIGSTORE_DATA_IMPL                   \
+  ENTRY(uint16_t, 0, config_size, 0,            \
+        2, 65535,                               \
+        CONFIGSTORE_HIDDEN,                     \
+        "configuration structure size")         \
     CONFIGSTORE_DATA
 
 struct muos_configstore_data
 {
 #define string char
-#define ENTRY(type, ary, name, default, min, max, descr) type name CONFIGSTORE_ARY(ary);
+#define ENTRY(type, ary, name, default, min, max, attr, descr) type name CONFIGSTORE_ARY(ary);
   CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 #undef string
@@ -147,22 +160,13 @@ struct muos_configstore_data
 
 enum muos_configstore_id
   {
-#define ENTRY(type, ary, name, default, min, max, descr) CONFIGSTORE_ID_##name,
+#define ENTRY(type, ary, name, default, min, max, attr, descr) CONFIGSTORE_ID_##name,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
    CONFIGSTORE_MAX_ID
   };
 
 
-// simple attributes/access control, only affects output and set commands
-//TODO: implement me
-typedef enum
-  {
-   CONFIGSTORE_PUBLIC = 0,  // all granted
-   CONFIGSTORE_HIDDEN = 1,  // hide from listing
-   CONFIGSTORE_WPROT  = 2,  // needs auth for set
-   CONFIGSTORE_RPROT  = 4,  // needs auth for output
-  } muos_configstore_access;
 
 // the types supported by the configstore
 #define MUOS_CONFIGSTORE_TYPES                  \

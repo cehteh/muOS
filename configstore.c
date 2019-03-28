@@ -41,14 +41,14 @@
 static
 muos_configstore_status status = CONFIGSTORE_UNKNOWN;
 
-#define ENTRY(type, ary, name, default, min, max, descr) static const char __flash configstore_##name##_str[] = #name;
+#define ENTRY(type, ary, name, default, min, max, attr, descr) static const char __flash configstore_##name##_str[] = #name;
 CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 
 static
 const char __flash * const __flash muos_configstore_names[] =
   {
-#define ENTRY(type, ary, name, default, min, max, descr) configstore_##name##_str,
+#define ENTRY(type, ary, name, default, min, max, attr, descr) configstore_##name##_str,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
   };
@@ -79,7 +79,7 @@ struct muos_configstore_schema
 static const struct muos_configstore_schema __flash schema[] =
   {
 #define ARRAY(len) len
-#define ENTRY(type, ary, name, default, min, max, descr) \
+#define ENTRY(type, ary, name, default, min, max, attr, descr)               \
    {                                                                         \
     MUOS_CONFIGSTORE_TYPE_##type,                                            \
     offsetof(struct muos_configstore_data, name),                            \
@@ -94,7 +94,7 @@ static const struct muos_configstore_schema __flash schema[] =
 #ifdef MUOS_CONFIGSTORE_DEFAULTS
 static const struct muos_configstore_data __flash configstore_defaults =
   {
-#define ENTRY(type, ary, name, default, min, max, descr) default,
+#define ENTRY(type, ary, name, default, min, max, attr, descr) default,
    CONFIGSTORE_DATA_IMPL
 #undef ENTRY
   };
@@ -109,7 +109,7 @@ static const struct
   int32_t max;
 } __flash limits[] =
 {
-#define ENTRY(type, ary, name, default, min, max, descr) {min, max},
+#define ENTRY(type, ary, name, default, min, max, attr, descr) {min, max},
   CONFIGSTORE_DATA_IMPL
 #undef ENTRY
 };
