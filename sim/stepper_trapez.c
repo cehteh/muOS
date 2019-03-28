@@ -88,6 +88,9 @@ cases:
 
 // configuration
 
+#define MUOS_STEPPER_SLOPE_FACTOR 128
+
+#define XPLOT 1   // 1=time; 2=position
 #define MUOS_STEPPER_SLOPE_SHIFT 2
 
 struct stepper_config
@@ -123,7 +126,7 @@ enum muos_stepper_arming_state
 
 struct stepper_slope
 {
-  int32_t  dest;           // absolute end position
+  int32_t  position;           // absolute end position
 
   int32_t decel_start;      // -countdown for starting decel
   uint16_t max_speed;
@@ -190,12 +193,12 @@ ilogs (uint16_t i)
 
 
 bool
-init (int32_t dest, uint16_t speed_in, uint16_t max_speed, uint16_t speed_out, uint16_t steps_out)
+init (int32_t position, uint16_t speed_in, uint16_t max_speed, uint16_t speed_out, uint16_t steps_out)
 {
   OCRA = speed_in;
   muos_steppers.state = MUOS_STEPPER_SLOPE;
 
-  slope->dest = dest;
+  slope->position = position;
 
   slope->max_speed = max_speed;
   slope->speed_in = speed_in;
@@ -205,7 +208,7 @@ init (int32_t dest, uint16_t speed_in, uint16_t max_speed, uint16_t speed_out, u
 
   stepper_slope_soffset = config->max_speed>>MUOS_STEPPER_SLOPE_SHIFT;
 
-  uint32_t slope_len = dest - steps_out;
+  uint32_t slope_len = position - steps_out;
 
   uint8_t accel_steps = ilogs (speed_in - max_speed);
 
@@ -236,11 +239,14 @@ overflow_isr(void)
   CLOCK += speed;
   ++muos_steppers.position;
 
-  if (muos_steppers.position == slope->dest)
+  if (muos_steppers.position == slope->position)
     {
       OCRA = slope->speed_out;
+#if XPLOT == 1
       printf("%u %u %u %u\n", CLOCKP, muos_steppers.position, 65536*16/(speed+config->max_speed+1), OCRA);
-      //printf("%u %u %u %u\n", muos_steppers.position, CLOCKP, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
+#elif XPLOT == 2
+      printf("%u %u %u %u\n", muos_steppers.position, CLOCKP, (uint32_t)((65536*16)/(OCRA+1)), OCRA);
+#endif
       return false;
     }
 
@@ -282,9 +288,12 @@ overflow_isr(void)
 
   OCRA = speed;
 
+#if XPLOT == 1
   printf("%u %u %u %u\n", CLOCKP, muos_steppers.position, 65536*16/(speed+config->max_speed+1), OCRA);
-  //printf("%u %u %u %u\n", muos_steppers.position, CLOCKP, 65536*16/(speed+config->max_speed+1), OCRA);
-
+#elif XPLOT == 2
+  printf("%u %u %u %u\n", muos_steppers.position, CLOCKP, 65536*16/(speed+config->max_speed+1), OCRA);
+#endif
+  
   return true;
 }
 
