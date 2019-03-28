@@ -463,11 +463,12 @@ muos_stepper_slope_prep (uint8_t hw,
 
   if (accel_steps + slope->decel_steps > slope_len)
     {
+      if ((uint16_t)accel_steps - slope->decel_steps > slope_len)
+        return muos_error_stepper_range;
+
       uint8_t xover = accel_steps + slope->decel_steps - slope_len;
       slope->decel_steps -= (xover)/2+1;
       slope->decel_start -= (xover+1)/2;
-
-      //FIXME: Error when accel to speed_out isnt possible
     }
 
   //PLANNED: add back slope->steps_out .. , compute decel_start based on steps out

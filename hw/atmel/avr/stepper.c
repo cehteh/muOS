@@ -152,7 +152,8 @@ MUOS_STEPPER_HW;
     }
 
 
-
+//FIXME: slope calculation needs to be exponential to account for slope over time, not steps
+//PLANNED: make slope runtime configurable (speed*config/256)
 #define SLOPE_CALCULATION(hw, shift)                                                            \
   struct muos_stepper_slope* slope = &muos_steppers[hw].slope[muos_steppers[hw].active];        \
   switch (muos_steppers[hw].state)                                                              \
