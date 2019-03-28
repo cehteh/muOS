@@ -72,6 +72,9 @@ struct muos_configstore_schema
   enum muos_configstore_type type;
   size_t offset;
   uint8_t ary;
+#ifdef MUOS_CONFIGSTORE_ATTRS
+  uint8_t attrs;
+#endif
 };
 
 
@@ -79,13 +82,25 @@ struct muos_configstore_schema
 static const struct muos_configstore_schema __flash schema[] =
   {
 #define ARRAY(len) len
+#ifdef MUOS_CONFIGSTORE_ATTRS
+#define ENTRY(type, ary, name, default, min, max, attr, descr)               \
+   {                                                                         \
+    MUOS_CONFIGSTORE_TYPE_##type,                                            \
+    offsetof(struct muos_configstore_data, name),                            \
+    ary,                                                                     \
+    attr,                                                                    \
+   },
+#else
 #define ENTRY(type, ary, name, default, min, max, attr, descr)               \
    {                                                                         \
     MUOS_CONFIGSTORE_TYPE_##type,                                            \
     offsetof(struct muos_configstore_data, name),                            \
     ary                                                                      \
    },
+#endif
+
    CONFIGSTORE_DATA_IMPL
+
 #undef ENTRY
 #undef ARRAY
   };
@@ -204,6 +219,13 @@ muos_configstore_set (char* var, uint8_t index, char* val)
     }
 
   if (id == CONFIGSTORE_MAX_ID)
+    return muos_error_configstore;
+
+  if (status != CONFIGSTORE_WLOCK
+#ifdef MUOS_CONFIGSTORE_ATTRS
+      && !(schema[id].attrs & CONFIGSTORE_VOLATILE)
+#endif
+      )
     return muos_error_configstore;
 
   if (schema[id].ary && index >= schema[id].ary)
