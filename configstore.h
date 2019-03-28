@@ -198,6 +198,9 @@ muos_configstore_type (enum muos_configstore_id id);
 uint8_t
 muos_configstore_ary (enum muos_configstore_id id);
 
+
+// API
+
 muos_error
 muos_configstore_output_name MUOS_IO_HWPARAM(enum muos_configstore_id id);
 
@@ -208,7 +211,21 @@ muos_error
 muos_configstore_set (char* var, uint8_t index, char* val);
 
 
-// API
+
+//configstore_api:
+//: .Attributes, Authentication
+//: ----
+//: #ifdef MUOS_CONFIGSTORE_ATTRS
+//: bool muos_configstore_authenticated
+//: #endif
+//: ----
+//:
+//: Flag if an user is authenticated. The application should set/clear this.
+//: Only affects 'muos_configstore_set()' and 'muos_configstore_output_*()'
+#ifdef MUOS_CONFIGSTORE_ATTRS
+extern bool muos_configstore_authenticated;
+#endif
+
 
 // loading/saving
 

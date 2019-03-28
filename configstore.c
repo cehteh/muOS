@@ -130,6 +130,9 @@ static const struct
 };
 #endif
 
+#ifdef MUOS_CONFIGSTORE_ATTRS
+bool muos_configstore_authenticated;
+#endif
 
 struct muos_configstore_frame
 {
@@ -172,6 +175,10 @@ muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8
   if (status <= CONFIGSTORE_VALID)
     return muos_error_configstore;
 
+
+  //TODO: not hidden
+  //TODO: not RPROT || auth 
+
   void* value = muos_configstore_value (id, index);
 
   switch (schema[id].type)
@@ -202,14 +209,14 @@ muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8
 muos_error
 muos_configstore_output_name MUOS_IO_HWPARAM(enum muos_configstore_id id)
 {
+  //TODO: not hidden
   return muos_output_fstr MUOS_IO_HWARG(muos_configstore_names[id]);
 }
 
 muos_error
 muos_configstore_set (char* var, uint8_t index, char* val)
 {
-  if (status != CONFIGSTORE_WLOCK)
-    return muos_error_configstore;
+  //TODO: not WPROT || auth
 
   enum muos_configstore_id id;
   for (id = 0; id < CONFIGSTORE_MAX_ID; ++id)
