@@ -72,7 +72,7 @@ muos_hw_stepper_stop (uint8_t hw);
 
 //stepper_states:
 //: ----
-//: enum muos_stepper_state
+//: enum muos_stepper_arming_state
 //: ----
 //:
 //: MUOS_STEPPER_UNKNOWN;;
@@ -164,7 +164,7 @@ struct muos_stepper_slope
   uint8_t decel_steps;
 };
 
-struct muos_stepper_state
+struct muos_stepper
 {
   volatile enum muos_stepper_arming_state state;
   volatile int32_t position;
@@ -181,7 +181,7 @@ struct muos_stepper_state
 };
 
 
-extern struct muos_stepper_state muos_steppers[MUOS_STEPPER_NUM];
+extern struct muos_stepper muos_steppers[MUOS_STEPPER_NUM];
 
 
 void

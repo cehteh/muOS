@@ -32,10 +32,9 @@
 
 //TODO: API for setting each axis and then start all together
 
-struct muos_stepper_state muos_steppers[MUOS_STEPPER_NUM];
+struct muos_stepper muos_steppers[MUOS_STEPPER_NUM];
 
 const struct muos_configstore_data* muos_steppers_config_lock;
-
 
 void
 muos_stepper_50init (void)
