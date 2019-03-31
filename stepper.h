@@ -659,7 +659,9 @@ muos_stepper_slope_set (uint8_t hw, muos_queue_function slope_gen)
   if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
+  muos_interrupt_disable ();
   muos_steppers[hw].slope_gen = slope_gen;
+  muos_interrupt_enable ();
 
   return muos_success;
 }
