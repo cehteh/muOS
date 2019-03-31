@@ -56,7 +56,7 @@ muos_stepper_disable_all (void)
   muos_hw_stepper_disable_all ();
   muos_configstore_unlock (&muos_steppers_config_lock);
 
-  muos_stepper_remove_actions_all (true);
+  muos_stepper_remove_actions_all ();
 
   for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
     {
@@ -91,7 +91,7 @@ muos_stepper_stop (uint8_t hw)
 {
   muos_hw_stepper_stop (hw);
 
-  muos_stepper_remove_actions (hw, false);
+  muos_stepper_remove_actions (hw);
 
   switch  (muos_steppers[hw].state)
     {
@@ -676,27 +676,23 @@ muos_stepper_remove_action (uint8_t hw,
 
 
 void
-muos_stepper_remove_actions (uint8_t hw,
-                             bool permanent)
+muos_stepper_remove_actions (uint8_t hw)
 {
   if (muos_stepper_not_moving (hw))
     {
       for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
         {
-          if (permanent || !(muos_steppers[hw].position_match[i].whattodo & MUOS_STEPPER_ACTION_PERMANENT))
-            {
-              muos_steppers[hw].position_match[i].whattodo = 0;
-            }
+          muos_steppers[hw].position_match[i].whattodo = 0;
         }
     }
 }
 
 
 void
-muos_stepper_remove_actions_all (bool permanent)
+muos_stepper_remove_actions_all (void)
 {
   for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
-    muos_stepper_remove_actions (i, permanent);
+    muos_stepper_remove_actions (i);
 }
 
 
