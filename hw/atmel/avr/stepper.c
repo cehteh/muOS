@@ -36,6 +36,9 @@
 
 extern const struct muos_configstore_data* muos_steppers_config_lock;
 
+/* sync moves */
+bool muos_steppers_sync;
+uint8_t muos_steppers_pending;
 
 //PLANNED: dynamic prescaler change to increase range and resolution
 

@@ -321,6 +321,22 @@ muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset);
 
 
+//: .Stepper Synchronization
+//: ----
+//: void
+//: muos_stepper_sync (bool enable)
+//: ----
+//:
+//: +enable+;;
+//:   new state.
+//:
+//: Enable/disable stepper syncing. Reset the sync state.
+//: Steppers can use the STEPPER_ACTION_WAIT to put either in waiting state or
+//: restarting any waiting steppers.
+//:
+void
+muos_stepper_sync (bool enable);
+
 // zeros the axis relative to the current position
 //: .Query position
 //: ----
@@ -636,6 +652,17 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position)
 
 
 
+//TODO: docme
+static inline muos_error
+muos_stepper_slope_set (uint8_t hw, muos_queue_function slope_gen)
+{
+  if (hw >= MUOS_STEPPER_NUM)
+    return muos_error_nodev;
+
+  muos_steppers[hw].slope_gen = slope_gen;
+
+  return muos_success;
+}
 
 
 
@@ -672,10 +699,10 @@ enum muos_stepper_actions
    MUOS_STEPPER_ACTION_2ND = (1<<1), //TODO: implement me
    MUOS_STEPPER_ACTION_SLOPE = (1<<2),
    MUOS_STEPPER_ACTION_STOP = (1<<3),
-   MUOS_STEPPER_ACTION_SYNC = (1<<4),//TODO: implement me
+   MUOS_STEPPER_ACTION_SYNC = (1<<4),
    MUOS_STEPPER_HPQ_FRONT = (1<<5),
    MUOS_STEPPER_HPQ_BACK = (1<<6),
-   MUOS_STEPPER_ACTION_DONE = (1<<7),
+   //MUOS_STEPPER_ACTION_DONE = (1<<7),
 
    //PLANNED:   MUOS_STEPPER_MERGE = (1<<7),
   };

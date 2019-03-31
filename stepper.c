@@ -220,6 +220,8 @@ muos_stepper_unlock_all (void)
 }
 
 
+extern bool muos_steppers_sync;
+extern uint8_t muos_steppers_pending;
 
 muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset)
@@ -248,6 +250,12 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
   return muos_success;
 }
 
+void
+muos_stepper_sync (bool state)
+{
+  muos_steppers_sync = state;
+  muos_steppers_pending = MUOS_STEPPER_NUM;
+}
 
 int32_t
 muos_stepper_position (uint8_t hw)
@@ -379,6 +387,8 @@ muos_stepper_move_rel (uint8_t hw,
                                     MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
                                     (uintptr_t)done);
 
+      //PLANNED: store end position in current slope?
+
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
 
       muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw]);
@@ -489,6 +499,8 @@ muos_stepper_slope_get (uint8_t hw)
 
 
 
+
+
 /*
   absolute movements
  */
@@ -500,10 +512,14 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
     return muos_error_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
-      || !muos_steppers_config_lock
-      || !muos_steppers[hw].ready)
+      || !muos_steppers_config_lock)
     return muos_error_stepper_state;
 
+  if (!muos_steppers[hw].ready && slope_gen)
+    slope_gen();
+
+  if (!muos_steppers[hw].ready)
+    return muos_error_stepper_state;
 
   // load buffer
   muos_steppers[hw].active = !muos_steppers[hw].active;
