@@ -482,7 +482,31 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen);
 muos_error
 muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed);
 
-//TODO: docme
+//: .Query Distance
+//: ----
+//: uint32_t
+//: muos_stepper_distance (uint8_t hw, int32_t position)
+//:
+//: uint32_t
+//: muos_stepper_end_distance (uint8_t hw, int32_t position)
+//: ----
+//:
+//: +hw+;;
+//:   Stepper to query.
+//: +position+;;
+//:   Absolute position to go to
+//:
+//: 'muos_stepper_distance()' returns the distance  from the current stepper position
+//: to +position+. Note that this might be unreliable on a running stepper since the
+//: current position constantly changes.
+//:
+//: 'muos_stepper_end_distance()' returns the distance from the end position of the
+//: current slope-movement to +position+.
+//:
+//: On error these functions return 0 and set 'muos_error_nodev' when the +hw+ parameter
+//: was out of range. 'muos_stepper_end_distance()' also sets 'muos_error_stepper_state'
+//: when no slope-movement is in progress.
+//:
 uint32_t
 muos_stepper_distance (uint8_t hw, int32_t position);
 
