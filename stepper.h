@@ -466,21 +466,38 @@ muos_stepper_move_rel (uint8_t hw,
 //: .Absolute Movements
 //: ----
 //: muos_error
+//: muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t speed)
+//:
+//: muos_error
 //: muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 //: ----
 //:
 //: +hw+;;
 //:   Stepper to control.
+//: +position+;;
+//:   Absolute position to go to
+//: +speed+;;
+//:   Maximum speed for the movement.
 //: +slope_gen+;;
 //:   Function to be scheduled to generate then next move
 //:
+//: Absolute movements using fast movements with configured
+//: acceleration/deceleration profiles.
+//:
+//: 'muos_stepper_move_abs()' Drives the axis to +position+ at +speed+
+//: (or capped at maximum configured speed) and stops at the end.
+//:
+//: 'muos_stepper_move_start()' is used for a sequence of complex movements.
+//: The initial movement has to be prepared with 'slope_prep()' and then committed.
+//: When +slope_gen+ is provided its used to generated the next movments.
 //:
 muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen);
 
 
 muos_error
-muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed);
+muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t speed);
+
 
 //: .Query Distance
 //: ----
@@ -538,35 +555,6 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 // :                          const struct muos_stepper_slope* slope)
 //: ----
 //:
-//: Fast movements require a slope for acceleration and deceleration to be prepared.
-//: Such a slope starts at speed_in, accelerates to max_speed (when there is enough
-//: distance to travel), keeps the max_speed for some distance, then decelerates to
-//: speed_out and finally does some 'out_steps' at constant speed_out.
-//:
-//: The stepper state itself keeps 2 such slopes internally, one as the active slope for the
-//: current movement the other for preparing a slope in the background for the next move.
-//: When a move completes it swaps buffers and executes the next move. While scheduling
-//: a job to prepare the slope for the next movement.
-//:
-//: Besides this 2 internal buffers it is also possible for a user to prepare slope for common
-//: movements which can be copied in place instead recalculating them for every move.
-//:
-//TODO: implement slope_load() (doing get, copy, commit)
-//:
-//: 'muos_stepper_slope_get()' returns a handle to the inactive slope buffer for the next move.
-//: This buffer can then be initialized with 'muos_stepper_slope_prep()' or loaded with
-//: an already prepared slope. When done, the buffer needs to be committed to tell the driver
-//: that the slope is ready to use.
-//:
-//: 'muos_stepper_slope_get()' will return NULL if either the stepper is not in a state >= ARMED or did
-//: not consume the previous slope yet. Zeroing/Arming invalidates the slope buffer and makes it
-//: ready to load new slopes (Those error's wont happen with the slope callback).
-//: When it is not possible to generate new slopes in a timely manner,the stepper driver will
-//: call 'muos_stepper_stop_all()' and error out.
-//:
-//: 'muos_stepper_slope_prep()' initializes a slope buffer. This calculation is somewhat expensive.
-//: Slope calculation is over a distance to travel, while there is a destination position stored
-//: within the slope structure this gets only be set when the slope is commited or loaded.
 //: +hw+;;
 //:   Stepper for which the slope is.
 //: +slope+;;
@@ -583,7 +571,42 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //:   followed by another movement in the same direction.
 //: +out_steps+;;
 //:   Steps done at the end at 'speed_out'.
+//: +position+;;
+//:   The destination position for the move.
 //:
+//: Fast movements require a slope for acceleration and deceleration to be prepared.
+//: Such a slope starts at speed_in, accelerates to max_speed (when there is enough
+//: distance to travel), keeps the max_speed for some distance, then decelerates to
+//: speed_out and finally does some 'out_steps' at constant speed_out.
+//:
+//: The stepper state itself keeps 2 such slopes internally, one as the active slope for the
+//: current movement the other for preparing a slope in the background for the next move.
+//: When a move completes it swaps buffers and executes the next move. While scheduling
+//: a job to prepare the slope for the next movement.
+//:
+// : Besides this 2 internal buffers it is also possible for a user to prepare slope for common
+// : movements which can be copied in place instead recalculating them for every move.
+//: 'muos_stepper_slope_get()' returns a handle to the inactive slope buffer for the next move.
+//: This buffer can then be initialized with 'muos_stepper_slope_prep()' or loaded with
+//: an already prepared slope. When done, the buffer needs to be committed to tell the driver
+//: that the slope is ready to use.
+//:
+//: 'muos_stepper_slope_get()' will return NULL if either the stepper is not in a state >= ARMED or did
+//: not consume the previous slope yet. Zeroing/Arming invalidates the slope buffer and makes it
+//: ready to load new slopes (Those error's wont happen with the slope callback).
+//: When it is not possible to generate new slopes in a timely manner,the stepper driver will
+//: call 'muos_stepper_stop_all()' and error out.
+//:
+//: 'muos_stepper_slope_prep()' initializes a slope buffer. This calculation is somewhat expensive.
+//: Slope calculation is over a distance to travel, while there is a destination position stored
+//: within the slope structure this gets only be set when the slope is commited or loaded.
+//:
+//: 'muos_stepper_slope_commit()' activates the current assembled slope buffer. It takes the absolute
+//: position for the move as argument to complete prepared buffers.
+//:
+// :
+//TODO: implement slope_load() (doing get, copy, commit)
+// :
 muos_error
 muos_stepper_slope_prep (uint8_t hw,
                          struct muos_stepper_slope* slope,
@@ -634,8 +657,7 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position)
 //: MUOS_STEPPER_ACTION_STOP;;
 //:   Immediately stop the stepper at the position.
 //: MUOS_STEPPER_ACTION_SYNC;;
-//:   Together with STOP: stops the stepper and puts it in WAIT state
-//:   Without STOP: wakes all waiting steppers.
+//:   Synchronous stepper movements
 //: MUOS_STEPPER_HPQ_FRONT;;
 //:   Use the provided argument as function to push it to the front of the hpq. This gives the
 //:   highest possible priority.
