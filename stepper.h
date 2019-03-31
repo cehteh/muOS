@@ -486,6 +486,9 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed);
 uint32_t
 muos_stepper_distance (uint8_t hw, int32_t position);
 
+uint32_t
+muos_stepper_end_distance (uint8_t hw, int32_t position);
+
 
 //stepper_api:
 //: .Slope Calculations

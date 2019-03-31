@@ -539,11 +539,37 @@ uint32_t
 muos_stepper_distance (uint8_t hw, int32_t position)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return 0;
+    {
+      muos_error_set (muos_error_nodev);
+      return 0;
+    }
 
   return (position > muos_steppers[hw].position)
     ? position - muos_steppers[hw].position
     : muos_steppers[hw].position - position;
+}
+
+
+uint32_t
+muos_stepper_end_distance (uint8_t hw, int32_t position)
+{
+  if (hw >= MUOS_STEPPER_NUM)
+    {
+      muos_error_set (muos_error_nodev);
+      return 0;
+    }
+
+  if (muos_steppers[hw].state != MUOS_STEPPER_SLOPE)
+    {
+      muos_error_set (muos_error_stepper_state);
+      return 0;
+    }
+
+  int32_t end_position = muos_steppers[hw].slope[muos_steppers[hw].active].position;
+
+  return (position > end_position)
+    ? position - end_position
+    : end_position - position;
 }
 
 
