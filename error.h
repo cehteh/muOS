@@ -116,8 +116,8 @@ muos_error_pending (void)
 //error_api:
 //: .Flagging asynchronous errors
 //: ----
-//: void muos_error_set (muos_error err)
-//: void muos_error_set_isr (muos_error err)
+//: muos_error muos_error_set (muos_error err)
+//: muos_error muos_error_set_isr (muos_error err)
 //: ----
 //:
 //: +err+::
