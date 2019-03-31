@@ -70,7 +70,8 @@
     MUOS_ERROR(error_stepper_state) /*: {ERRORDEF} action not possible from current state */            \
     MUOS_ERROR(error_stepper_range) /*: {ERRORDEF} some parameter out of range */                       \
     MUOS_ERROR(error_stepper_noslot) /*: {ERRORDEF} no position match slot */                           \
-    MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} no position match slot */                            \
+    MUOS_ERROR(error_stepper_slope) /*: {ERRORDEF} slope not ready */                                   \
+    MUOS_ERROR(error_stepper_sync) /*: {ERRORDEF} sync move not possible */                             \
     MUOS_ERROR(warn_stepper_backoff) /*: {ERRORDEF} stepper speed backoff active */                     \
     MUOS_ERROR(error_cppm_frame) /*: {ERRORDEF} received broken cppm frame */                           \
     MUOS_ERROR(error_cppm_hpq_callback) /*: {ERRORDEF} hpq overflow when pushing cppm handler */        \
