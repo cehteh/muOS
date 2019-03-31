@@ -534,8 +534,12 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 
       muos_stepper_register_action (hw,
                                     position,
-                                    slope_gen?MUOS_STEPPER_ACTION_SLOPE:MUOS_STEPPER_ACTION_STOP,
-                                    0);
+                                    (slope_gen
+                                     ?((MUOS_STEPPER_ACTION_SLOPE)|
+                                       (muos_steppers_sync
+                                        ?MUOS_STEPPER_ACTION_SYNC:0))
+                                     :MUOS_STEPPER_ACTION_STOP),
+                                    (uintptr_t)slope_gen);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOPE;
 
