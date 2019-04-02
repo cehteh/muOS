@@ -64,7 +64,7 @@ muos_error
 muos_hw_stepper_set_direction (uint8_t hw, bool dir);
 
 muos_error
-muos_hw_stepper_start (uint8_t hw, uint16_t speed_raw, uint8_t prescale);
+muos_hw_stepper_start (uint8_t hw, uint16_t speed_raw, uint8_t prescale, bool run);
 
 void
 muos_hw_stepper_stop (uint8_t hw);

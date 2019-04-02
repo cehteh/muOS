@@ -302,7 +302,7 @@ muos_stepper_move_raw (uint8_t hw,
 
       muos_steppers[hw].state = MUOS_STEPPER_RAW;
 
-      muos_hw_stepper_start (hw, speed_raw, prescale);
+      muos_hw_stepper_start (hw, speed_raw, prescale, true);
     }
   else
     {
@@ -345,7 +345,7 @@ muos_stepper_move_cal (uint8_t hw,
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_CAL;
 
-      muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw]);
+      muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw], true);
     }
   else
     {
@@ -391,7 +391,7 @@ muos_stepper_move_rel (uint8_t hw,
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
 
-      muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw]);
+      muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw], true);
     }
   else
     {

@@ -528,7 +528,7 @@ static const uint16_t __flash timerdividers2[] = {1,8,32,64,128,256,1024};
 //PLANNED: abstract F_CPU for timers running on other clock sources
 
 muos_error
-muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
+muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale, bool run)
 {
   switch (hw)
     {
@@ -540,7 +540,8 @@ muos_hw_stepper_start (uint8_t hw, uint16_t speed_in, uint8_t prescale)
         TIFR##timer = _BV(TOV##timer);                                                          \
         TIMSK##timer = _BV(TOIE##timer);                                                        \
         tccrb_on[hw] |= prescale;                                                               \
-        TCCR##timer##B = tccrb_on[hw]
+        if (run)                                                                                \
+          TCCR##timer##B = tccrb_on[hw]
 
 #define STEPDIR(hw, timer, slope, output, output_mode, wgm, dirport, dirpin, dirpol)            \
       case hw:                                                                                  \
