@@ -522,7 +522,7 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
   muos_steppers[hw].slope_gen = slope_gen;
 
   if (!muos_steppers[hw].ready && slope_gen)
-      slope_gen();
+    slope_gen();
 
   if (!muos_steppers[hw].ready)
     return muos_error_stepper_state;
@@ -548,13 +548,37 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
                                      :MUOS_STEPPER_ACTION_STOP),
                                     (uintptr_t)muos_steppers[hw].slope_gen);
 
-      muos_steppers[hw].state = MUOS_STEPPER_SLOPE;
 
+      if (muos_steppers_sync)
+        muos_steppers[hw].state = MUOS_STEPPER_WAIT;
+      else
+        muos_steppers[hw].state = MUOS_STEPPER_SLOPE;
 
-      //FIXME: implement sync start
       MUOS_OK (muos_hw_stepper_start (hw,
                                       muos_steppers[hw].slope[muos_steppers[hw].active].speed_in,
-                                      muos_steppers_config_lock->stepper_prescale[hw]));
+                                      muos_steppers_config_lock->stepper_prescale[hw], !muos_steppers_sync));
+
+      muos_output_wait (0, 40, MUOS_CLOCK_MILLISECONDS (1000));
+      muos_output_cstr_P (0, "DEBUG: stepper started "); muos_output_uint8 (0, hw); muos_output_nl (0);
+
+      //TODO: make the sync/pending api nicer
+      if (muos_steppers_sync)
+        {
+          muos_interrupt_disable ();
+          if (--muos_steppers_pending == 0)
+            {
+              muos_steppers_pending = MUOS_STEPPER_NUM;
+              muos_hw_stepper_cont ();
+              muos_output_wait (0, 40, MUOS_CLOCK_MILLISECONDS (1000));
+              muos_output_cstr_P (0, "DEBUG: called stepper_cont"); muos_output_nl (0);
+            }
+          else
+            {
+              muos_output_wait (0, 40, MUOS_CLOCK_MILLISECONDS (1000));
+              muos_output_cstr_P (0, "DEBUG: stepper_waiting"); muos_output_nl (0);
+              muos_interrupt_enable ();
+            }
+        }
     }
 
   if (muos_steppers[hw].slope_gen)

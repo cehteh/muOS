@@ -87,9 +87,12 @@ MUOS_STEPPER_HW;
 
 static uint8_t tccrb_on[MUOS_STEPPER_NUM];
 
+
 void
 muos_hw_stepper_cont (void)
 {
+  muos_interrupt_enable();
+
 #define STEPDIR(hw, timer, slope, output, out_mode, wgm, dirport, dirpin, dirpol)       \
   if (muos_steppers[hw].state == MUOS_STEPPER_WAIT)                                     \
     {                                                                                   \
@@ -114,17 +117,14 @@ muos_hw_stepper_cont (void)
 
 
 
-
 #define POSITION_MATCH_QUEUEING(hw, timer)                                                              \
   if (muos_steppers[hw].position_match[i].arg)                                                          \
     {                                                                                                   \
-      if (muos_steppers[hw].position_match[i].whattodo                                                  \
-          & MUOS_STEPPER_HPQ_FRONT)                                                                     \
+      if (whattodo & MUOS_STEPPER_HPQ_FRONT)                                                            \
         muos_error_set_isr (muos_hpq_pushfront_isr ((muos_queue_function)                               \
                                                     muos_steppers[hw].position_match[i].arg,            \
                                                     true));                                             \
-      else if (muos_steppers[hw].position_match[i].whattodo                                             \
-               & MUOS_STEPPER_HPQ_BACK)                                                                 \
+      else if (whattodo & MUOS_STEPPER_HPQ_BACK)                                                        \
         muos_error_set_isr (muos_hpq_pushback_isr ((muos_queue_function)                                \
                                                    muos_steppers[hw].position_match[i].arg,             \
                                                    true));                                              \
@@ -132,8 +132,7 @@ muos_hw_stepper_cont (void)
 
 
 #define POSITION_MATCH_STOP(hw, timer)                                          \
-  if (muos_steppers[hw].position_match[i].whattodo                              \
-      & MUOS_STEPPER_ACTION_STOP)                                               \
+  if (whattodo & MUOS_STEPPER_ACTION_STOP)                                      \
     {                                                                           \
       TCCR##timer##A = 0;                                                       \
       TCCR##timer##B = 0;                                                       \
@@ -158,8 +157,7 @@ muos_hw_stepper_cont (void)
 
 
 #define POSITION_MATCH_SYNC(hw, timer)                                                  \
-  if (muos_steppers[hw].position_match[i].whattodo                                      \
-      & MUOS_STEPPER_ACTION_SYNC)                                                       \
+  if (whattodo & MUOS_STEPPER_ACTION_SYNC)                                              \
     {                                                                                   \
       if (--muos_steppers_pending)                                                      \
         {                                                                               \
@@ -184,10 +182,8 @@ muos_hw_stepper_cont (void)
 
 
 
-
 #define POSITION_MATCH_SLOPE(hw, timer)                                                         \
-  if (muos_steppers[hw].position_match[i].whattodo                                              \
-      & MUOS_STEPPER_ACTION_SLOPE)                                                              \
+  if (whattodo & MUOS_STEPPER_ACTION_SLOPE)                                                     \
     {                                                                                           \
       if (!muos_steppers[hw].ready)                                                             \
         {                                                                                       \
@@ -217,21 +213,19 @@ muos_hw_stepper_cont (void)
 
 #define POSITION_MATCH_CLEAR(hw, timer)                                                 \
   if (muos_steppers[hw].position == muos_steppers[hw].position_match[i].position)       \
-    {                                                                                   \
-              muos_steppers[hw].position_match[i].whattodo = 0;                         \
-    }
-
+    muos_steppers[hw].position_match[i].whattodo = 0
 
 
 //boilerplate
 #define POSITION_MATCH(hw, timer)                                                                       \
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)                                                 \
     {                                                                                                   \
+      uint8_t whattodo = muos_steppers[hw].position_match[i].whattodo;                                  \
       if (muos_steppers[hw].position == muos_steppers[hw].position_match[i].position                    \
-          && muos_steppers[hw].position_match[i].whattodo)                                              \
+          && whattodo)                                                                                  \
         {                                                                                               \
-          POSITION_MATCH_QUEUEING(hw, timer);                                                           \
           POSITION_MATCH_STOP(hw, timer);                                                               \
+          POSITION_MATCH_QUEUEING(hw, timer);                                                           \
           POSITION_MATCH_SYNC(hw, timer);                                                               \
           POSITION_MATCH_SLOPE(hw, timer);                                                              \
           POSITION_MATCH_CLEAR(hw, timer);                                                              \
