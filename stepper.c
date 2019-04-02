@@ -459,7 +459,7 @@ muos_stepper_slope_prep (uint8_t hw,
     max_speed = muos_steppers_config_lock->stepper_maxspeed[hw];
 
   slope->max_speed = max_speed;
-  slope->speed_in = speed_in;
+  slope->speed_in = speed_in;   //FIXME: get speed_in from last slope or hardware when 0
   slope->speed_out = speed_out;
 
   muos_steppers[hw].slope_soffset = muos_steppers_config_lock->stepper_maxspeed[hw]>>slope_shift[hw];
@@ -505,6 +505,10 @@ muos_stepper_slope_get (uint8_t hw)
   absolute movements
  */
 
+void
+muos_hw_stepper_cont (void);
+
+
 muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 {
@@ -515,8 +519,10 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
       || !muos_steppers_config_lock)
     return muos_error_stepper_state;
 
+  muos_steppers[hw].slope_gen = slope_gen;
+
   if (!muos_steppers[hw].ready && slope_gen)
-    slope_gen();
+      slope_gen();
 
   if (!muos_steppers[hw].ready)
     return muos_error_stepper_state;
@@ -524,9 +530,10 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
   // load buffer
   muos_steppers[hw].active = !muos_steppers[hw].active;
   muos_steppers[hw].ready = false;
-  muos_steppers[hw].slope_gen = slope_gen;
 
   int32_t position = muos_steppers[hw].slope[muos_steppers[hw].active].position;
+
+  //FIXME: handle zero distance movements
 
   if (position != muos_steppers[hw].position)
     {
@@ -534,22 +541,24 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 
       muos_stepper_register_action (hw,
                                     position,
-                                    (slope_gen
+                                    (muos_steppers[hw].slope_gen
                                      ?((MUOS_STEPPER_ACTION_SLOPE)|
                                        (muos_steppers_sync
                                         ?MUOS_STEPPER_ACTION_SYNC:0))
                                      :MUOS_STEPPER_ACTION_STOP),
-                                    (uintptr_t)slope_gen);
+                                    (uintptr_t)muos_steppers[hw].slope_gen);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOPE;
 
+
+      //FIXME: implement sync start
       MUOS_OK (muos_hw_stepper_start (hw,
-                                      muos_steppers_config_lock->stepper_slowspeed[hw],
+                                      muos_steppers[hw].slope[muos_steppers[hw].active].speed_in,
                                       muos_steppers_config_lock->stepper_prescale[hw]));
     }
 
-  if (slope_gen)
-    MUOS_OK (muos_hpq_pushback (slope_gen));
+  if (muos_steppers[hw].slope_gen)
+    MUOS_OK (muos_hpq_pushback (muos_steppers[hw].slope_gen));
 
   return muos_success;
 }
