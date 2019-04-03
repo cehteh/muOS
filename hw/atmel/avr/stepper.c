@@ -226,8 +226,8 @@ muos_hw_stepper_cont (void)
         {                                                                                               \
           POSITION_MATCH_STOP(hw, timer);                                                               \
           POSITION_MATCH_QUEUEING(hw, timer);                                                           \
-          POSITION_MATCH_SYNC(hw, timer);                                                               \
           POSITION_MATCH_SLOPE(hw, timer);                                                              \
+          POSITION_MATCH_SYNC(hw, timer);                                                               \
           POSITION_MATCH_CLEAR(hw, timer);                                                              \
         }                                                                                               \
     }
