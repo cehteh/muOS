@@ -28,10 +28,6 @@
 #include <muos/stepper.h>
 
 
-//FIXME: 1 step didn't stop
-
-//TODO: API for setting each axis and then start all together
-
 struct muos_stepper muos_steppers[MUOS_STEPPER_NUM];
 
 const struct muos_configstore_data* muos_steppers_config_lock;
@@ -295,10 +291,13 @@ muos_stepper_move_raw (uint8_t hw,
   if (offset)
     {
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
-      muos_stepper_register_action (hw,
-                                    muos_steppers[hw].position + offset,
-                                    MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
-                                    (uintptr_t)done);
+      muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
+
+      if (done)
+        muos_stepper_register_action (hw,
+                                      muos_steppers[hw].position + offset,
+                                      MUOS_STEPPER_HPQ_BACK,
+                                      done);
 
       muos_steppers[hw].state = MUOS_STEPPER_RAW;
 
@@ -338,10 +337,13 @@ muos_stepper_move_cal (uint8_t hw,
   if (offset)
     {
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
-      muos_stepper_register_action (hw,
-                                    muos_steppers[hw].position + offset,
-                                    MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
-                                    (uintptr_t)done);
+      muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
+
+      if (done)
+        muos_stepper_register_action (hw,
+                                      muos_steppers[hw].position + offset,
+                                      MUOS_STEPPER_HPQ_BACK,
+                                      done);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_CAL;
 
@@ -382,12 +384,13 @@ muos_stepper_move_rel (uint8_t hw,
   if (offset)
     {
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
-      muos_stepper_register_action (hw,
-                                    muos_steppers[hw].position + offset,
-                                    MUOS_STEPPER_ACTION_STOP|(done?MUOS_STEPPER_HPQ_BACK:0),
-                                    (uintptr_t)done);
+      muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
 
-      //PLANNED: store end position in current slope?
+      if (done)
+        muos_stepper_register_action (hw,
+                                      muos_steppers[hw].position + offset,
+                                      MUOS_STEPPER_HPQ_BACK,
+                                      done);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
 
@@ -539,16 +542,6 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
     {
       muos_hw_stepper_set_direction (hw, position>muos_steppers[hw].position?1:0);
 
-      muos_stepper_register_action (hw,
-                                    position,
-                                    (muos_steppers[hw].slope_gen
-                                     ?((MUOS_STEPPER_ACTION_SLOPE)|
-                                       (muos_steppers_sync
-                                        ?MUOS_STEPPER_ACTION_SYNC:0))
-                                     :MUOS_STEPPER_ACTION_STOP),
-                                    (uintptr_t)muos_steppers[hw].slope_gen);
-
-
       if (muos_steppers_sync)
         muos_steppers[hw].state = MUOS_STEPPER_WAIT;
       else
@@ -662,8 +655,8 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
 muos_error
 muos_stepper_register_action (uint8_t hw,
                               int32_t position,
-                              uint8_t action,
-                              uintptr_t arg)
+                              enum muos_stepper_actions action,
+                              muos_queue_function callback)
 {
   if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
@@ -674,7 +667,7 @@ muos_stepper_register_action (uint8_t hw,
         {
           muos_steppers[hw].position_match[i].position = position;
           muos_steppers[hw].position_match[i].whattodo = action;
-          muos_steppers[hw].position_match[i].arg = arg;
+          muos_steppers[hw].position_match[i].callback = callback;
           return muos_success;
         }
     }
@@ -687,18 +680,18 @@ muos_error
 muos_stepper_remove_action (uint8_t hw,
                             int32_t position,
                             uint8_t action,
-                            uintptr_t arg)
+                            muos_queue_function callback)
 {
   if (hw >= MUOS_STEPPER_NUM)
     return muos_error_nodev;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
-      if (muos_steppers[hw].position_match[i].whattodo == action
+      if (muos_steppers[hw].position_match[i].callback == callback
           && muos_steppers[hw].position_match[i].position == position
-          && muos_steppers[hw].position_match[i].arg == arg)
+          && muos_steppers[hw].position_match[i].whattodo == action)
         {
-          muos_steppers[hw].position_match[i].whattodo = 0;
+          muos_steppers[hw].position_match[i].callback = 0;
           return muos_success;
         }
     }
@@ -715,7 +708,7 @@ muos_stepper_remove_actions (uint8_t hw)
     {
       for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
         {
-          muos_steppers[hw].position_match[i].whattodo = 0;
+          muos_steppers[hw].position_match[i].callback = 0;
         }
     }
 }

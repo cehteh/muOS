@@ -54,12 +54,16 @@
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
 #define MUOS_CLOCK_NANOSECONDS(s) (MUOS_CLOCK_MICROSECONDS(s)/1000)
 
+#define MUOS_CLOCK_SHORT_MAX ((muos_shortclock)~0)
+
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
 #define MUOS_CLOCK_OVERFLOW MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW)
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
 typedef MUOS_CLOCK_TYPE muos_clock;
 typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
+
+
 
 //clock_api:
 //: .The fullclock datatype

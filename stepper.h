@@ -116,7 +116,7 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper moving, accelerating or decelerating on slope parameters
 //:   - position known
 //    - must decelerate for stopping w/o loosing steps.
-//: MUOS_STEPPER_FAST;;
+//TODO: remove  MUOS_STEPPER_FAST;;
 //:   - stepper moving faster than slow_speed
 //:   - position known
 //:   - must decelerate for stopping w/o loosing steps.
@@ -149,7 +149,7 @@ struct muos_stepper_action
 {
   int32_t position;
   uint8_t whattodo;
-  uintptr_t arg;
+  muos_queue_function callback;
 };
 
 
@@ -677,29 +677,25 @@ muos_stepper_slope_set (uint8_t hw, muos_queue_function slope_gen)
 //: Define actions to take when the stepper reaches a position. These are bit values
 //: which can be or'ed together.
 //:
-//: MUOS_STEPPER_ACTION_SLOPE;;
-//:   Load new slope at end of move
-//: MUOS_STEPPER_ACTION_STOP;;
-//:   Immediately stop the stepper at the position.
-//: MUOS_STEPPER_ACTION_SYNC;;
-//:   Synchronous stepper movements
-//: MUOS_STEPPER_HPQ_FRONT;;
+//: MUOS_STEPPER_CALL;;
+//:   The provided argument is a function which is called directly in interrupt context.
+//:   This function must not enable interrupts.
+//: MUOS_STEPPER_{RTQ|HPQ|BGQ}_FRONT;;
 //:   Use the provided argument as function to push it to the front of the hpq. This gives the
 //:   highest possible priority.
-//: MUOS_STEPPER_HPQ_BACK;;
+//: MUOS_STEPPER_{RTQ|HPQ|BGQ}_BACK;;
 //:   Use the provided argument as function to push it to the back of the hpq.
 //:
 //TODO: docme/implementme bgq/rtq
 enum muos_stepper_actions
   {
-   MUOS_STEPPER_ACTION_SLOPE = (1<<0),
-   MUOS_STEPPER_ACTION_STOP = (1<<1),
-   MUOS_STEPPER_ACTION_SYNC = (1<<2),
-   MUOS_STEPPER_RTQ_FRONT = (1<<3),
-   MUOS_STEPPER_RTQ_BACK = (1<<4),
-   MUOS_STEPPER_HPQ_FRONT = (1<<5),
-   MUOS_STEPPER_HPQ_BACK = (1<<6),
-   MUOS_STEPPER_BGQ_BACK = (1<<7),
+   MUOS_STEPPER_CALL,
+   MUOS_STEPPER_RTQ_FRONT,
+   MUOS_STEPPER_RTQ_BACK,
+   MUOS_STEPPER_HPQ_FRONT,
+   MUOS_STEPPER_HPQ_BACK,
+   MUOS_STEPPER_BGQ_FRONT,
+   MUOS_STEPPER_BGQ_BACK,
   };
 
 
@@ -708,14 +704,14 @@ enum muos_stepper_actions
 //: muos_error
 //: muos_stepper_register_action (uint8_t hw,
 //:                               int32_t position,
-//:                               uint8_t action,
-//:                               uintptr_t arg)
+//:                               enum muos_stepper_actions action,
+//:                               muos_queue_function callback)
 //:
 //: muos_error
 //: muos_stepper_remove_action (uint8_t hw,
 //:                             int32_t position,
-//:                             uint8_t action,
-//:                             uintptr_t arg)
+//:                             enum muos_stepper_actions action,
+//:                             muos_queue_function callback)
 //: ----
 //:
 //: +hw+;;
@@ -723,13 +719,11 @@ enum muos_stepper_actions
 //: +position+;;
 //:   Position which triggers the action.
 //: +action+;;
-//:   Action flags or'ed together.
-//: +arg+;;
-//:   Argument to the action, callback function for the hpq for example.
+//:   Action tag.
+//: +callback+;;
+//:   callback function.
 //:
 //: Register or remove and action to be done when the stepper hits a position.
-//: Action must be at least one or more of the action flags above or'ed together.
-//: Optionally a pointer to a function which gets pushed to the HPQ can be supplied.
 //:
 //: Actions can only be registered or removed while the stepper is not moving.
 //:
@@ -748,14 +742,14 @@ enum muos_stepper_actions
 muos_error
 muos_stepper_register_action (uint8_t hw,
                               int32_t position,
-                              uint8_t action,
-                              uintptr_t arg);
+                              enum muos_stepper_actions action,
+                              muos_queue_function callback);
 
 muos_error
 muos_stepper_remove_action (uint8_t hw,
                             int32_t position,
-                            uint8_t action,
-                            uintptr_t arg);
+                            enum muos_stepper_actions action,
+                            muos_queue_function callback);
 
 
 //stepper_api:
@@ -784,12 +778,6 @@ muos_stepper_remove_actions_all (void);
 // functions suitable for muos_wait()
 
 bool muos_stepper_not_moving (intptr_t hw);
-
-
-
-
-
-
 
 
 
