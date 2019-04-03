@@ -95,7 +95,7 @@ muos_stepper_stop (uint8_t hw)
       muos_steppers[hw].state = MUOS_STEPPER_ON; break;
     case MUOS_STEPPER_SLOW_CAL:
     case MUOS_STEPPER_SLOPE:
-    case MUOS_STEPPER_FAST:
+      //case MUOS_STEPPER_FAST:
       muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;
     case MUOS_STEPPER_SLOW:
     case MUOS_STEPPER_SLOW_REL:

@@ -95,6 +95,10 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper energized
 //:   - position known
 //:   - done moving, waiting for sync/continuation
+//: MUOS_STEPPER_MOCK;;
+//:   - stepper energized
+//:   - position known
+//:   - zero movement mock, waiting for slope calculation
 //: MUOS_STEPPER_RAW;;
 //:   - stepper moving
 //:   - position unknown
@@ -116,14 +120,6 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper moving, accelerating or decelerating on slope parameters
 //:   - position known
 //    - must decelerate for stopping w/o loosing steps.
-//TODO: remove  MUOS_STEPPER_FAST;;
-//:   - stepper moving faster than slow_speed
-//:   - position known
-//:   - must decelerate for stopping w/o loosing steps.
-//: MUOS_STEPPER_STOPPING;;
-//:   - stepper moving faster than slow_speed, braking
-//:   - position known
-//:   - Controlled brake to a slow_speed, then stop
 //:
 enum muos_stepper_arming_state
   {
@@ -133,13 +129,13 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
    MUOS_STEPPER_WAIT,
+   MUOS_STEPPER_MOCK,
    MUOS_STEPPER_RAW,
    MUOS_STEPPER_SLOW_CAL,
    MUOS_STEPPER_SLOW_REL,
    MUOS_STEPPER_SLOW,
    MUOS_STEPPER_SLOPE,
-   MUOS_STEPPER_FAST,
-   MUOS_STEPPER_STOPPING,  //TODO: unimplemented
+   //MUOS_STEPPER_STOPPING,  //TODO: unimplemented
   };
 
 
