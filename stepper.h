@@ -95,10 +95,6 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper energized
 //:   - position known
 //:   - done moving, waiting for sync/continuation
-//: MUOS_STEPPER_MOCK;;
-//:   - stepper energized
-//:   - position known
-//:   - zero movement mock, waiting for slope calculation
 //: MUOS_STEPPER_RAW;;
 //:   - stepper moving
 //:   - position unknown
@@ -116,10 +112,13 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper moving slower than slow_speed
 //:   - position known
 //:   - can be stopped instantly without loosing steps
-//: MUOS_STEPPER_SLOPE;;
+//: MUOS_STEPPER_SLOPE_CONT;;
+//: MUOS_STEPPER_SLOPE_LAST;;
 //:   - stepper moving, accelerating or decelerating on slope parameters
 //:   - position known
-//    - must decelerate for stopping w/o loosing steps.
+//:   - must decelerate for stopping w/o loosing steps.
+//:   - _CONT will generate continuous movements by calling slope_gen
+//:   - _LAST is for the last move and/or when slope_gen is not set
 //:
 enum muos_stepper_arming_state
   {
@@ -128,13 +127,12 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_ON,
    MUOS_STEPPER_HOLD,
    MUOS_STEPPER_ARMED,
-   MUOS_STEPPER_WAIT,
-   MUOS_STEPPER_MOCK,
    MUOS_STEPPER_RAW,
    MUOS_STEPPER_SLOW_CAL,
    MUOS_STEPPER_SLOW_REL,
    MUOS_STEPPER_SLOW,
-   MUOS_STEPPER_SLOPE,
+   MUOS_STEPPER_SLOPE_CONT,
+   MUOS_STEPPER_SLOPE_LAST,
    //MUOS_STEPPER_STOPPING,  //TODO: unimplemented
   };
 
@@ -657,6 +655,10 @@ muos_stepper_slope_set (uint8_t hw, muos_queue_function slope_gen)
 
   muos_interrupt_disable ();
   muos_steppers[hw].slope_gen = slope_gen;
+  if (slope_gen)
+    muos_steppers[hw].state = MUOS_STEPPER_SLOPE_CONT;
+  else
+    muos_steppers[hw].state = MUOS_STEPPER_SLOPE_LAST;
   muos_interrupt_enable ();
 
   return muos_success;
