@@ -72,6 +72,13 @@ void muos_die (void)
 
 #ifdef MUOS_SCHED_DEPTH
 static uint8_t sched_depth_;
+
+uint8_t
+muos_sched_depth (void)
+{
+  return sched_depth_;
+}
+
 muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 {

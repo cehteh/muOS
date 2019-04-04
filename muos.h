@@ -138,6 +138,12 @@ muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_shortclock timeout, uint32
 //PLANNED: add priority, which queues to schedule
 muos_error
 muos_yield (uint8_t count);
+
+// undocumented, will be replaced
+uint8_t
+muos_sched_depth (void);
+
+
 #endif // MUOS_SCHED_DEPTH
 
 //TODO: document me
