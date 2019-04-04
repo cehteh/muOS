@@ -29,6 +29,8 @@
 #include <muos/error.h>
 #include <muos/clock.h>
 
+//PLANNED: making workqueues pure queues without push-front, then userland functions can pop arguments without starting with interrupts disabled
+//PLANNED: api to purge work queues (state reset)
 
 void
 muos_sleep (void);

@@ -2,6 +2,7 @@ PIPADOC:PLANNED: macros for Hz kHz
 
 PIPADOC:PLANNED: different timebase, stable timing etc
 
+PIPADOC:PLANNED: docme concepts, muos_error for anything that may fail, but stop/shutdown/disable like function shall never fail and return void
 
 PIPADOC:PLANNED: return continutations and schedule them in the schedulers
 

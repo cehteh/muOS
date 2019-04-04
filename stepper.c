@@ -249,6 +249,7 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
 void
 muos_stepper_sync (bool state)
 {
+  //FIXME: check that steppers are not running
   muos_steppers_sync = state;
   muos_steppers_pending = MUOS_STEPPER_NUM;
 }
