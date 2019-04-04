@@ -116,9 +116,6 @@ muos_hw_stepper_cont (void)
 #define UNIPOLAR(hw, timer, slope, port, table, mask, wgm)      \
   STEPPER_CONT(hw, timer, wgm)
 
-  muos_output_wait (0, 40, MUOS_CLOCK_MILLISECONDS (1000));
-  muos_output_cstr_P (0, "DEBUG: stepper_cont"); muos_output_nl (0);
-
   MUOS_STEPPER_HW;
 
 #undef STEPDIR
