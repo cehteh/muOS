@@ -92,7 +92,6 @@ state_enter (void)
 {
   uint8_t sm = muos_hpq_pop_isr ();
   muos_interrupt_enable ();
-  statemachine[sm].prev = statemachine[sm].current;
   statemachine[sm].current = statemachine[sm].params[0];
   statemachine[sm].params[0] = statemachine[sm].params[1];
   statemachine[sm].params[1] = statemachine[sm].params[2];
@@ -169,6 +168,7 @@ muos_sm_change (uint8_t sm, enum muos_sm_state params[4])
     MUOS_OK(state_definitions[statemachine[sm].current].leave(params));
 #endif
 
+  statemachine[sm].prev = statemachine[sm].current;
   statemachine[sm].params[0] = params[0];
   statemachine[sm].params[1] = params[1];
   statemachine[sm].params[2] = params[2];
