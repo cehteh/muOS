@@ -21,9 +21,11 @@
 #ifndef MUOS_STEPPER_H
 #define MUOS_STEPPER_H
 
-#include <stdint.h>
 #include <muos/muos.h>
 #include <muos/hpq.h>
+
+#include <stdint.h>
+#include <stddef.h>
 
 #ifndef MUOS_STEPPER_HW
 #error need MUOS_STEPPER_HW configuration
@@ -91,10 +93,6 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper energized
 //:   - position known
 //:   - all kinds of movements allowed
-//: MUOS_STEPPER_WAIT;;
-//:   - stepper energized
-//:   - position known
-//:   - done moving, waiting for sync/continuation
 //: MUOS_STEPPER_RAW;;
 //:   - stepper moving
 //:   - position unknown
@@ -112,13 +110,10 @@ muos_hw_stepper_stop (uint8_t hw);
 //:   - stepper moving slower than slow_speed
 //:   - position known
 //:   - can be stopped instantly without loosing steps
-//: MUOS_STEPPER_SLOPE_CONT;;
-//: MUOS_STEPPER_SLOPE_LAST;;
+//: MUOS_STEPPER_SLOPE;;
 //:   - stepper moving, accelerating or decelerating on slope parameters
 //:   - position known
 //:   - must decelerate for stopping w/o loosing steps.
-//:   - _CONT will generate continuous movements by calling slope_gen
-//:   - _LAST is for the last move and/or when slope_gen is not set
 //:
 enum muos_stepper_arming_state
   {
@@ -131,8 +126,7 @@ enum muos_stepper_arming_state
    MUOS_STEPPER_SLOW_CAL,
    MUOS_STEPPER_SLOW_REL,
    MUOS_STEPPER_SLOW,
-   MUOS_STEPPER_SLOPE_CONT,
-   MUOS_STEPPER_SLOPE_LAST,
+   MUOS_STEPPER_SLOPE,
    //MUOS_STEPPER_STOPPING,  //TODO: unimplemented
   };
 
@@ -557,7 +551,7 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //:                          uint16_t out_steps)
 //:
 //: void
-//: muos_stepper_slope_commit (uint8_t hw, int32_t position)
+//: muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
 // :
 // : muos_error
 // : muos_stepper_slope_load (uint8_t hw,
@@ -583,6 +577,8 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //:   Steps done at the end at 'speed_out'.
 //: +position+;;
 //:   The destination position for the move.
+//: +cont+;;
+//:   continue generating slopes, should be 'false' for the final move.
 //:
 //: Fast movements require a slope for acceleration and deceleration to be prepared.
 //: Such a slope starts at speed_in, accelerates to max_speed (when there is enough
@@ -636,7 +632,12 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position)
 {
   // no hw check because this must always be called after slope_get() which does the check
   muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
-  muos_steppers[hw].ready = 1;
+
+  muos_interrupt_disable ();
+  muos_steppers[hw].ready = true;
+  if (!cont)
+    muos_steppers[hw].slope_gen = NULL;
+  muos_interrupt_enable ();
 }
 
 //TODO: slope_load w/ fixing destination

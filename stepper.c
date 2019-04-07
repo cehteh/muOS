@@ -94,8 +94,7 @@ muos_stepper_stop (uint8_t hw)
     case MUOS_STEPPER_RAW:
       muos_steppers[hw].state = MUOS_STEPPER_ON; break;
     case MUOS_STEPPER_SLOW_CAL:
-    case MUOS_STEPPER_SLOPE_CONT:
-    case MUOS_STEPPER_SLOPE_LAST:
+    case MUOS_STEPPER_SLOPE:
       //case MUOS_STEPPER_FAST:
       muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;
     case MUOS_STEPPER_SLOW:
@@ -529,7 +528,7 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
   muos_steppers[hw].slope_gen = slope_gen;
 
   if (!muos_steppers[hw].ready && slope_gen)
-    slope_gen();
+    slope_gen ();
 
   if (!muos_steppers[hw].ready)
     return muos_error_stepper_state;
@@ -546,10 +545,7 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
     {
       muos_hw_stepper_set_direction (hw, position>muos_steppers[hw].position?1:0);
 
-      if (slope_gen)
-        muos_steppers[hw].state = MUOS_STEPPER_SLOPE_CONT;
-      else
-        muos_steppers[hw].state = MUOS_STEPPER_SLOPE_LAST;
+      muos_steppers[hw].state = MUOS_STEPPER_SLOPE;
 
       MUOS_OK (muos_hw_stepper_start (hw,
                                       muos_steppers[hw].slope[muos_steppers[hw].active].speed_in,
@@ -603,7 +599,7 @@ muos_stepper_end_distance (uint8_t hw, int32_t position)
       return 0;
     }
 
-  if (muos_steppers[hw].state < MUOS_STEPPER_SLOPE_CONT)
+  if (muos_steppers[hw].state < MUOS_STEPPER_SLOPE)
     {
       muos_error_set (muos_error_stepper_state);
       return 0;
@@ -638,7 +634,7 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
                                     muos_steppers_config_lock->stepper_slowspeed[hw],
                                     0));
 
-  muos_stepper_slope_commit (hw, position);
+  muos_stepper_slope_commit (hw, position, false);
   MUOS_OK (muos_stepper_move_start (hw, NULL));
 
   return muos_success;
