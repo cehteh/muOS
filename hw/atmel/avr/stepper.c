@@ -332,11 +332,11 @@ movement_end (uint8_t hw)
             }
         }
 
-      muos_steppers[hw].ready = false;
 
-      if (!muos_steppers[hw].slope_gen)
+      if (!muos_steppers[hw].ready && !muos_steppers[hw].slope_gen)
         /* finished */
         goto stop; //smaller than stepper_stop (hw);
+
     }
 
   else // !SLOPE
@@ -344,6 +344,7 @@ movement_end (uint8_t hw)
     stop:
       stepper_stop (hw);
     }
+  muos_steppers[hw].ready = false;
 }
 
 
