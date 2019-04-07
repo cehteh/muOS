@@ -555,11 +555,12 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
       //TODO: make the sync/pending api nicer
       if (muos_steppers_sync)
         {
+          //FIXME: remove interrupt handling after queue transition
           muos_interrupt_disable ();
           if (--muos_steppers_pending == 0)
             {
               muos_steppers_pending = MUOS_STEPPER_NUM;
-              muos_hw_stepper_cont ();
+              muos_hw_stepper_cont (); //enables ISR
             }
           else
             {
@@ -569,7 +570,7 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
     }
 
   if (muos_steppers[hw].slope_gen)
-    MUOS_OK (muos_hpq_pushback (muos_steppers[hw].slope_gen));
+    muos_steppers[hw].slope_gen ();
 
   return muos_success;
 }
