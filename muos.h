@@ -31,6 +31,7 @@
 
 //PLANNED: making workqueues pure queues without push-front, then userland functions can pop arguments without starting with interrupts disabled
 //PLANNED: api to purge work queues (state reset)
+//PLANNED: for all xxx() which have xxx_isr() make 3 variants:  xxx() does automatic locking xxx_locked() and xxx_unlocked() (needs better names)
 
 void
 muos_sleep (void);
