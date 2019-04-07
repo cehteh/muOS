@@ -628,7 +628,7 @@ muos_stepper_slope_get (uint8_t hw);
 
 
 static inline void
-muos_stepper_slope_commit (uint8_t hw, int32_t position)
+muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
 {
   // no hw check because this must always be called after slope_get() which does the check
   muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
