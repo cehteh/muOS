@@ -647,25 +647,6 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position)
 
 
 
-//TODO: docme
-static inline muos_error
-muos_stepper_slope_set (uint8_t hw, muos_queue_function slope_gen)
-{
-  if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
-
-  muos_interrupt_disable ();
-  muos_steppers[hw].slope_gen = slope_gen;
-  if (slope_gen)
-    muos_steppers[hw].state = MUOS_STEPPER_SLOPE_CONT;
-  else
-    muos_steppers[hw].state = MUOS_STEPPER_SLOPE_LAST;
-  muos_interrupt_enable ();
-
-  return muos_success;
-}
-
-
 
 //stepper_api:
 //: .Actions at Positions
