@@ -260,7 +260,7 @@ MUOS_SERIAL_HW;
             if (!muos_serial_status[hw].serial_rxhpq_pending && muos_serial_rxcallback[hw])             \
               {                                                                                         \
                 muos_serial_status[hw].serial_rxhpq_pending = true;                                     \
-                muos_error_set_isr (muos_hpq_pushback_arg_isr (muos_serial_rxhpq_call, hw, true));      \
+                muos_error_set_isr (muos_hpq_push_arg_isr (muos_serial_rxhpq_call, hw, true));          \
               }                                                                                         \
           }                                                                                             \
       }                                                                                                 \

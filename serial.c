@@ -238,8 +238,6 @@ void
 muos_serial_rxhpq_call (void)
 {
   uint8_t hw = muos_hpq_pop_isr ();
-  muos_interrupt_enable ();
-
   bool again = false;
 
   if (muos_serial_rxcallback[hw])
@@ -248,7 +246,7 @@ muos_serial_rxhpq_call (void)
   //FIXME: use  muos_serial_rx_stop (hw);
   muos_interrupt_disable (); // no need for enable, mainloop will disable on return
   if (again && muos_cbuffer_used (muos_rxbuffer[hw]))
-    muos_error_set (muos_hpq_pushback_arg_isr (muos_serial_rxhpq_call, hw, true));
+    muos_error_set (muos_hpq_push_arg_isr (muos_serial_rxhpq_call, hw, true));
   else
     muos_serial_status[hw].serial_rxhpq_pending = false;
 }

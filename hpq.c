@@ -25,82 +25,42 @@
 muos_hpq_type muos_hpq;
 
 muos_error
-muos_hpq_pushback_isr (muos_queue_function f, bool schedule)
+muos_hpq_push_isr (muos_queue_function f, bool schedule)
 {
   if (!muos_hpq_check (1))
     return muos_error_hpq_overflow;
 
-  muos_queue_pushback (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
+  muos_queue_push (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
   muos_status.schedule |= schedule;
   return muos_success;
 }
 
 muos_error
-muos_hpq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
+muos_hpq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
 {
   if (!muos_hpq_check (2))
     return muos_error_hpq_overflow;
 
-  muos_queue_pushback_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
-  muos_status.schedule |= schedule;
-  return muos_success;
-}
-
-muos_error
-muos_hpq_pushfront_isr (muos_queue_function f, bool schedule)
-{
-  if (!muos_hpq_check (1))
-    return muos_error_hpq_overflow;
-
-  muos_queue_pushfront (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
-  muos_status.schedule |= schedule;
-  return muos_success;
-}
-
-muos_error
-muos_hpq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
-{
-  if (!muos_hpq_check (2))
-    return muos_error_hpq_overflow;
-
-  muos_queue_pushfront_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
+  muos_queue_push_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
   muos_status.schedule |= schedule;
   return muos_success;
 }
 
 
 muos_error
-muos_hpq_pushback (muos_queue_function f)
+muos_hpq_push (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushback_isr (f, false);
+  muos_error ret = muos_hpq_push_isr (f, false);
   muos_interrupt_enable ();
   return ret;
 }
 
 muos_error
-muos_hpq_pushback_arg (muos_queue_function f, intptr_t a)
+muos_hpq_push_arg (muos_queue_function f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushback_arg_isr (f, a, false);
-  muos_interrupt_enable ();
-  return ret;
-}
-
-muos_error
-muos_hpq_pushfront (muos_queue_function f)
-{
-  muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushfront_isr (f, false);
-  muos_interrupt_enable ();
-  return ret;
-}
-
-muos_error
-muos_hpq_pushfront_arg (muos_queue_function f, intptr_t a)
-{
-  muos_interrupt_disable ();
-  muos_error ret = muos_hpq_pushfront_arg_isr (f, a, false);
+  muos_error ret = muos_hpq_push_arg_isr (f, a, false);
   muos_interrupt_enable ();
   return ret;
 }

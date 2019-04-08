@@ -64,6 +64,7 @@ muos_clpq_schedule (muos_spriq_priority when)
 
           if (tmp.fn)
             {
+              muos_interrupt_enable ();
               tmp.fn (&tmp);
               muos_interrupt_disable ();
             }

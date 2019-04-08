@@ -47,14 +47,10 @@ muos_hpq_check (uint8_t need)
 //hpq_api:
 //: .Schedule functions at high priority
 //: ----
-//: muos_error muos_hpq_pushback (muos_queue_function fn)
-//: muos_error muos_hpq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushfront (muos_queue_function fn)
-//: muos_error muos_hpq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_hpq_pushback_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_hpq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
-//: muos_error muos_hpq_pushfront_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_hpq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
+//: muos_error muos_hpq_push (muos_queue_function fn)
+//: muos_error muos_hpq_push_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_hpq_push_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_hpq_push_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
 //: ----
 //:
 //: +fn+::
@@ -79,29 +75,18 @@ muos_hpq_check (uint8_t need)
 //: (Note: no safety net when the caller didn't push an argument)
 
 muos_error
-muos_hpq_pushback (muos_queue_function f);
+muos_hpq_push (muos_queue_function f);
 
 muos_error
-muos_hpq_pushback_arg (muos_queue_function f, intptr_t a);
-
-muos_error
-muos_hpq_pushfront (muos_queue_function f);
-
-muos_error
-muos_hpq_pushfront_arg (muos_queue_function f, intptr_t a);
+muos_hpq_push_arg (muos_queue_function f, intptr_t a);
 
 
 muos_error
-muos_hpq_pushback_isr (muos_queue_function f, bool schedule);
+muos_hpq_push_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_hpq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
+muos_hpq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
-muos_error
-muos_hpq_pushfront_isr (muos_queue_function f, bool schedule);
-
-muos_error
-muos_hpq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 intptr_t
 muos_hpq_pop_isr (void);

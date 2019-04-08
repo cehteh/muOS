@@ -102,7 +102,6 @@ muos_txqueue_run (void)
 {
   //PLANNED: optimize hw out when there is only one serial (no arg on bgq)
   uint8_t hw = muos_bgq_pop_isr ();
-  muos_interrupt_enable ();
 
   while (muos_cbuffer_used (muos_txqueue[hw]) && muos_cbuffer_free (muos_txbuffer[hw]))
     {
@@ -135,7 +134,7 @@ muos_txqueue_run (void)
 
   if (muos_cbuffer_used (muos_txqueue[hw]))
     {
-      muos_bgq_pushback_arg (muos_txqueue_run, (intptr_t)hw);
+      muos_bgq_push_arg (muos_txqueue_run, (intptr_t)hw);
     }
   else
     {
@@ -150,7 +149,7 @@ muos_txqueue_start MUOS_IO_HWPARAM()
   if (!muos_serial_status[MUOS_IO_HWINDEX].txqueue_pending)
     {
       muos_serial_status[MUOS_IO_HWINDEX].txqueue_pending = true;
-      muos_bgq_pushback_arg (muos_txqueue_run, (intptr_t)MUOS_IO_HWINDEX);
+      muos_bgq_push_arg (muos_txqueue_run, (intptr_t)MUOS_IO_HWINDEX);
     }
 }
 

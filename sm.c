@@ -91,7 +91,7 @@ static void
 state_enter (void)
 {
   uint8_t sm = muos_hpq_pop_isr ();
-  muos_interrupt_enable ();
+
   statemachine[sm].current = statemachine[sm].params[0];
   statemachine[sm].params[0] = statemachine[sm].params[1];
   statemachine[sm].params[1] = statemachine[sm].params[2];
@@ -178,7 +178,7 @@ muos_sm_change (uint8_t sm, enum muos_sm_state params[4])
     {
       statemachine[sm].current = STATE_NONE;
       //FIXME: wait for 2 elements free, locked wait
-      MUOS_OK(muos_hpq_pushback_arg (state_enter, sm));
+      MUOS_OK(muos_hpq_push_arg (state_enter, sm));
     }
   else
     {
@@ -219,7 +219,7 @@ muos_sm_next (uint8_t sm)
     {
       statemachine[sm].current = STATE_NONE;
       //FIXME: wait for 2 elements free, locked wait
-      MUOS_OK(muos_hpq_pushback_arg (state_enter, sm));
+      MUOS_OK(muos_hpq_push_arg (state_enter, sm));
     }
   else
     {

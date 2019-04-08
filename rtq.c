@@ -25,82 +25,43 @@
 muos_rtq_type muos_rtq;
 
 muos_error
-muos_rtq_pushback_isr (muos_queue_function f, bool schedule)
+muos_rtq_push_isr (muos_queue_function f, bool schedule)
 {
   if (!muos_rtq_check (1))
     return muos_error_rtq_overflow;
 
-  muos_queue_pushback (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f);
+  muos_queue_push (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f);
   muos_status.schedule |= schedule;
   return muos_success;
 }
 
 muos_error
-muos_rtq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
+muos_rtq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
 {
   if (!muos_rtq_check (2))
     return muos_error_rtq_overflow;
 
-  muos_queue_pushback_arg (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f, a);
-  muos_status.schedule |= schedule;
-  return muos_success;
-}
-
-muos_error
-muos_rtq_pushfront_isr (muos_queue_function f, bool schedule)
-{
-  if (!muos_rtq_check (1))
-    return muos_error_rtq_overflow;
-
-  muos_queue_pushfront (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f);
-  muos_status.schedule |= schedule;
-  return muos_success;
-}
-
-muos_error
-muos_rtq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
-{
-  if (!muos_rtq_check (2))
-    return muos_error_rtq_overflow;
-
-  muos_queue_pushfront_arg (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f, a);
+  muos_queue_push_arg (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f, a);
   muos_status.schedule |= schedule;
   return muos_success;
 }
 
 
+
 muos_error
-muos_rtq_pushback (muos_queue_function f)
+muos_rtq_push (muos_queue_function f)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_rtq_pushback_isr (f, false);
+  muos_error ret = muos_rtq_push_isr (f, false);
   muos_interrupt_enable ();
   return ret;
 }
 
 muos_error
-muos_rtq_pushback_arg (muos_queue_function f, intptr_t a)
+muos_rtq_push_arg (muos_queue_function f, intptr_t a)
 {
   muos_interrupt_disable ();
-  muos_error ret = muos_rtq_pushback_arg_isr (f, a, false);
-  muos_interrupt_enable ();
-  return ret;
-}
-
-muos_error
-muos_rtq_pushfront (muos_queue_function f)
-{
-  muos_interrupt_disable ();
-  muos_error ret = muos_rtq_pushfront_isr (f, false);
-  muos_interrupt_enable ();
-  return ret;
-}
-
-muos_error
-muos_rtq_pushfront_arg (muos_queue_function f, intptr_t a)
-{
-  muos_interrupt_disable ();
-  muos_error ret = muos_rtq_pushfront_arg_isr (f, a, false);
+  muos_error ret = muos_rtq_push_arg_isr (f, a, false);
   muos_interrupt_enable ();
   return ret;
 }
@@ -113,7 +74,4 @@ muos_rtq_pop_isr (void)
 }
 
 #endif
-
-
-
 

@@ -108,6 +108,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                 {
                   do
                     {
+                      //TODO: docme, predicate is called with interrupts disabled
                       if (fn && fn (param))
                         {
                           muos_interrupt_disable ();
@@ -238,11 +239,11 @@ main()
 #endif
 
 #if MUOS_HPQ_LENGTH >= 2
-  muos_hpq_pushback (MUOS_INITFN);
-  muos_hpq_pushback (muos_init);
+  muos_hpq_push (MUOS_INITFN);
+  muos_hpq_push (muos_init);
 #elif MUOS_BGQ_LENGTH >= 2
-  muos_bgq_pushback (MUOS_INITFN);
-  muos_bgq_pushback (muos_init);
+  muos_bgq_push (MUOS_INITFN);
+  muos_bgq_push (muos_init);
 #else
   MUOS_INITFN ();
   muos_init ();

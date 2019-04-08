@@ -115,23 +115,14 @@ muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 //lib_queue_api:
 //: .Queue operations
 //: ----
-//: void muos_queue_pushback (struct muos_queue* queue,
+//: void muos_queue_push (struct muos_queue* queue,
+//:                       const muos_queue_size size,
+//:                       muos_queue_function func)
+//:
+//: void muos_queue_push_arg (struct muos_queue* queue,
 //:                           const muos_queue_size size,
-//:                           muos_queue_function func)
-//:
-//: void muos_queue_pushback_arg (struct muos_queue* queue,
-//:                               const muos_queue_size size,
-//:                               muos_queue_function func,
-//:                               intptr_t arg)
-//:
-//: void muos_queue_pushfront (struct muos_queue* queue,
-//:                            const muos_queue_size size,
-//:                            muos_queue_function func)
-//:
-//: void muos_queue_pushfront_arg (struct muos_queue* queue,
-//:                                const muos_queue_size size,
-//:                                muos_queue_function func,
-//:                                intptr_t arg)
+//:                           muos_queue_function func,
+//:                           intptr_t arg)
 //:
 //: intptr_t muos_queue_pop (struct muos_queue* queue,
 //:                          const muos_queue_size size)
@@ -147,24 +138,16 @@ muos_queue_schedule (struct muos_queue* queue, const muos_queue_size size);
 //:    inptr_t argument
 //:
 //: --
-//: * +muos_queue_pushback ()+ pushes 'func' onto the back of the queue
-//: * +muos_queue_pushback_arg ()+ pushes 'func' with 'arg' onto the back of the queue
-//: * +muos_queue_pushfront ()+ pushes 'func' onto front of the queue
-//: * +muos_queue_pushfront_arg ()+ pushes 'func' with 'arg' onto the front of the queue
+//: * +muos_queue_push ()+ pushes 'func' onto the back of the queue
+//: * +muos_queue_push_arg ()+ pushes 'func' with 'arg' onto the back of the queue
 //: * +muos_queue_pop ()+ removes the first argument from the queue
 //: --
 //:
 void
-muos_queue_pushback (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
+muos_queue_push (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
 
 void
-muos_queue_pushback_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn, intptr_t arg);
-
-void
-muos_queue_pushfront (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn);
-
-void
-muos_queue_pushfront_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn, intptr_t arg);
+muos_queue_push_arg (struct muos_queue* queue, const muos_queue_size size, muos_queue_function fn, intptr_t arg);
 
 intptr_t
 muos_queue_pop (struct muos_queue* queue, const muos_queue_size size);

@@ -98,8 +98,6 @@ muos_hw_stepper_wait_slope (intptr_t hw)
 void
 muos_hw_stepper_cont (void)
 {
-  sei (); //FIXME: remove after queue fixes
-
 #define STEPPER_CONT(hw, timer, wgm)                                                                            \
   if (muos_steppers[hw].position != muos_steppers[hw].slope[muos_steppers[hw].active].position)                 \
     { /* restart stepper */                                                                                     \
@@ -129,7 +127,6 @@ static void
 mock_movement (void)
 {
   uint8_t hw = muos_hpq_pop_isr ();
-  sei ();  //FIXME: remove afte queue fixes
 
   if (muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) != muos_success)
     {
@@ -140,7 +137,6 @@ mock_movement (void)
   movement_end (hw);
   if (muos_error_pending ())
     muos_hw_stepper_disable_all ();  //FIXME: proper error handling
-  //muos_interupt_enable ();
 }
 
 
@@ -256,7 +252,11 @@ stepper_sync (uint8_t hw)
       else
         {
           muos_steppers_pending = MUOS_STEPPER_NUM;
-          muos_error_set_isr (muos_hpq_pushfront_isr (muos_hw_stepper_cont, true));
+#if MUOS_RTQ_LENGTH > 0
+          muos_error_set_isr (muos_rtq_push_isr (muos_hw_stepper_cont, true));
+#else
+          muos_error_set_isr (muos_hpq_push_isr (muos_hw_stepper_cont, true));
+#endif
         }
     }
 }
@@ -306,7 +306,7 @@ movement_end (uint8_t hw)
             {
               /* zero movement, stop stepper, start mock movement */
               stop_timer (hw);
-              muos_error_set_isr (muos_hpq_pushback_arg_isr (mock_movement, hw, true));
+              muos_error_set_isr (muos_hpq_push_arg_isr (mock_movement, hw, true));
             }
           else
             {
@@ -322,7 +322,7 @@ movement_end (uint8_t hw)
         {
           if (muos_steppers[hw].ready)
             {
-              muos_error_set_isr (muos_hpq_pushback_isr (muos_steppers[hw].slope_gen, true));
+              muos_error_set_isr (muos_hpq_push_isr (muos_steppers[hw].slope_gen, true));
             }
           else
             {
@@ -362,28 +362,29 @@ position_match (uint8_t hw)
             case MUOS_STEPPER_CALL:
               muos_steppers[hw].position_match[i].callback ();
               break;
-            case MUOS_STEPPER_HPQ_FRONT:
-              muos_error_set_isr (muos_hpq_pushfront_isr (
-                                                          muos_steppers[hw].position_match[i].callback,
-                                                          true));
+#if MUOS_RTQ_LENGTH > 0
+            case MUOS_STEPPER_RTQ:
+              muos_error_set_isr (muos_hpq_push_isr (
+                                                     muos_steppers[hw].position_match[i].callback,
+                                                     true));
               break;
-            case    MUOS_STEPPER_HPQ_BACK:
-              muos_error_set_isr (muos_hpq_pushback_isr (
-                                                         muos_steppers[hw].position_match[i].callback,
-                                                         true));
+#endif
+#if MUOS_HPQ_LENGTH > 0
+            case MUOS_STEPPER_HPQ:
+              muos_error_set_isr (muos_hpq_push_isr (
+                                                     muos_steppers[hw].position_match[i].callback,
+                                                     true));
               break;
-            case    MUOS_STEPPER_BGQ_FRONT:
-              muos_error_set_isr (muos_bgq_pushfront_isr (
-                                                          muos_steppers[hw].position_match[i].callback,
-                                                          true));
+#endif
+#if MUOS_BGQ_LENGTH > 0
+            case MUOS_STEPPER_BGQ:
+              muos_error_set_isr (muos_bgq_push_isr (
+                                                     muos_steppers[hw].position_match[i].callback,
+                                                     true));
               break;
-            case    MUOS_STEPPER_BGQ_BACK:
-              muos_error_set_isr (muos_bgq_pushback_isr (
-                                                         muos_steppers[hw].position_match[i].callback,
-                                                         true));
-              break;
+#endif
             default:
-              muos_die(); /*TODO: unimplemented rtq */
+              muos_die();
             }
           muos_steppers[hw].position_match[i].callback = NULL;
         }
@@ -574,8 +575,6 @@ muos_hw_stepper_disable_all (void)
 #undef STEPDIR
 #undef UNIPOLAR
 
-  /* clear backkoff warning */
-  muos_error_check (muos_warn_stepper_backoff);
 }
 
 

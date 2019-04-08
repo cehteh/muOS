@@ -47,14 +47,10 @@ muos_rtq_check (uint8_t need)
 //rtq_api:
 //: .Schedule functions at realtime priority
 //: ----
-//: muos_error muos_rtq_pushback (muos_queue_function fn)
-//: muos_error muos_rtq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_rtq_pushfront (muos_queue_function fn)
-//: muos_error muos_rtq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_rtq_pushback_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_rtq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
-//: muos_error muos_rtq_pushfront_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_rtq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
+//: muos_error muos_rtq_push (muos_queue_function fn)
+//: muos_error muos_rtq_push_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_rtq_push_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_rtq_push_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
 //: ----
 //:
 //: +fn+::
@@ -79,29 +75,18 @@ muos_rtq_check (uint8_t need)
 //: (Note: no safety net when the caller didn't push an argument)
 
 muos_error
-muos_rtq_pushback (muos_queue_function f);
+muos_rtq_push (muos_queue_function f);
 
 muos_error
-muos_rtq_pushback_arg (muos_queue_function f, intptr_t a);
-
-muos_error
-muos_rtq_pushfront (muos_queue_function f);
-
-muos_error
-muos_rtq_pushfront_arg (muos_queue_function f, intptr_t a);
+muos_rtq_push_arg (muos_queue_function f, intptr_t a);
 
 
 muos_error
-muos_rtq_pushback_isr (muos_queue_function f, bool schedule);
+muos_rtq_push_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_rtq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
+muos_rtq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
-muos_error
-muos_rtq_pushfront_isr (muos_queue_function f, bool schedule);
-
-muos_error
-muos_rtq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 intptr_t
 muos_rtq_pop_isr (void);

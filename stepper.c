@@ -297,7 +297,7 @@ muos_stepper_move_raw (uint8_t hw,
       if (done)
         muos_stepper_register_action (hw,
                                       muos_steppers[hw].position + offset,
-                                      MUOS_STEPPER_HPQ_BACK,
+                                      MUOS_STEPPER_HPQ,
                                       done);
 
       muos_steppers[hw].state = MUOS_STEPPER_RAW;
@@ -307,7 +307,7 @@ muos_stepper_move_raw (uint8_t hw,
   else
     {
       if (done)
-        muos_error_set (muos_hpq_pushback (done));
+        muos_error_set (muos_hpq_push (done));
     }
 
   return muos_success;
@@ -343,7 +343,7 @@ muos_stepper_move_cal (uint8_t hw,
       if (done)
         muos_stepper_register_action (hw,
                                       muos_steppers[hw].position + offset,
-                                      MUOS_STEPPER_HPQ_BACK,
+                                      MUOS_STEPPER_HPQ,
                                       done);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_CAL;
@@ -353,7 +353,7 @@ muos_stepper_move_cal (uint8_t hw,
   else
     {
       if (done)
-        muos_error_set (muos_hpq_pushback (done));
+        muos_error_set (muos_hpq_push (done));
     }
 
   return muos_success;
@@ -390,7 +390,7 @@ muos_stepper_move_rel (uint8_t hw,
       if (done)
         muos_stepper_register_action (hw,
                                       muos_steppers[hw].position + offset,
-                                      MUOS_STEPPER_HPQ_BACK,
+                                      MUOS_STEPPER_HPQ,
                                       done);
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
@@ -400,7 +400,7 @@ muos_stepper_move_rel (uint8_t hw,
   else
     {
       if (done)
-        muos_error_set (muos_hpq_pushback (done));
+        muos_error_set (muos_hpq_push (done));
     }
 
   return muos_success;
@@ -553,19 +553,10 @@ muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 
 
       //TODO: make the sync/pending api nicer
-      if (muos_steppers_sync)
+      if (muos_steppers_sync && --muos_steppers_pending == 0)
         {
-          //FIXME: remove interrupt handling after queue transition
-          muos_interrupt_disable ();
-          if (--muos_steppers_pending == 0)
-            {
-              muos_steppers_pending = MUOS_STEPPER_NUM;
-              muos_hw_stepper_cont (); //enables ISR
-            }
-          else
-            {
-              muos_interrupt_enable ();
-            }
+          muos_steppers_pending = MUOS_STEPPER_NUM;
+          muos_hw_stepper_cont ();
         }
     }
 

@@ -69,19 +69,12 @@ PIPADOC:@clpq_config
 
 ==== Work Queues
 
-The mainloop will schedule work on the Workqueues until nothing left to be
-done. Work is always popped from the front of these queues. There are API's to
-push work on the back (preferred case) and on the front of this queues.
-Pushing something on the front of a queue means that it will be scheduled
-immediately before anything else pending.
+The main-loop will schedule work on the Workqueues until nothing left to be
+done. Work is always popped from the front of these queues.
 
 One can push an optional 'intptr_t' arguments together with each
 scheduled function to pass data. When this is used, functions *must*
-pop this arguments from the queue before enabling interrupts.
-
-All functions function are entered with interrupts globally disabled
-so that they can gather some data atomically or pop arguments from the
-queue. Functions should enable interrupts as soon as possible.
+pop this arguments.
 
 The underlying queue implementation in <<lib_queue>> can be configured in
 several ways.

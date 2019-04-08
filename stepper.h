@@ -663,19 +663,16 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
 //: MUOS_STEPPER_{RTQ|HPQ|BGQ}_FRONT;;
 //:   Use the provided argument as function to push it to the front of the hpq. This gives the
 //:   highest possible priority.
-//: MUOS_STEPPER_{RTQ|HPQ|BGQ}_BACK;;
+//: MUOS_STEPPER_{RTQ|HPQ|BGQ};;
 //:   Use the provided argument as function to push it to the back of the hpq.
 //:
 //TODO: docme/implementme bgq/rtq
 enum muos_stepper_actions
   {
    MUOS_STEPPER_CALL,
-   MUOS_STEPPER_RTQ_FRONT,
-   MUOS_STEPPER_RTQ_BACK,
-   MUOS_STEPPER_HPQ_FRONT,
-   MUOS_STEPPER_HPQ_BACK,
-   MUOS_STEPPER_BGQ_FRONT,
-   MUOS_STEPPER_BGQ_BACK,
+   MUOS_STEPPER_RTQ,
+   MUOS_STEPPER_HPQ,
+   MUOS_STEPPER_BGQ,
   };
 
 

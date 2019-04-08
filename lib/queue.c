@@ -40,6 +40,7 @@ muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
     {
       intptr_t fn = muos_queue_pop (queue, size);
 
+      muos_interrupt_enable ();
       ((muos_queue_function)(fn))();
       muos_interrupt_disable ();
       return true;
@@ -50,7 +51,7 @@ muos_queue_schedule (struct muos_queue* queue, muos_queue_size size)
 
 
 static void
-muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
+muos_queue_push_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
 {
   uint8_t index = queue->start+queue->len;
   if (index >= size)
@@ -61,41 +62,16 @@ muos_queue_pushback_intern (struct muos_queue* queue, muos_queue_size size, intp
 
 
 void
-muos_queue_pushback (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
+muos_queue_push (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
 {
-  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
+  muos_queue_push_intern (queue, size, (intptr_t) fn);
 }
 
 void
-muos_queue_pushback_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn, intptr_t arg)
+muos_queue_push_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn, intptr_t arg)
 {
-  muos_queue_pushback_intern (queue, size, (intptr_t) fn);
-  muos_queue_pushback_intern (queue, size, arg);
-}
-
-
-static void
-muos_queue_pushfront_intern (struct muos_queue* queue, muos_queue_size size, intptr_t value)
-{
-  queue->start -= 1;
-  queue->len += 1;
-  if (queue->start >= size)
-    queue->start += size;
-  queue->queue[queue->start] = value;
-}
-
-
-void
-muos_queue_pushfront (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn)
-{
-  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
-}
-
-void
-muos_queue_pushfront_arg (struct muos_queue* queue, muos_queue_size size, muos_queue_function fn, intptr_t arg)
-{
-  muos_queue_pushfront_intern (queue, size, arg);
-  muos_queue_pushfront_intern (queue, size, (intptr_t) fn);
+  muos_queue_push_intern (queue, size, (intptr_t) fn);
+  muos_queue_push_intern (queue, size, arg);
 }
 
 

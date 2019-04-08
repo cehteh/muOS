@@ -46,14 +46,10 @@ muos_bgq_check (uint8_t need)
 //bgq_api:
 //: .Schedule functions at background priority
 //: ----
-//: muos_error muos_bgq_pushback (muos_queue_function fn)
-//: muos_error muos_bgq_pushback_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_bgq_pushfront (muos_queue_function fn)
-//: muos_error muos_bgq_pushfront_arg (muos_queue_function_arg fn, intptr_t arg)
-//: muos_error muos_bgq_pushback_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_bgq_pushback_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
-//: muos_error muos_bgq_pushfront_isr (muos_queue_function fn, bool schedule)
-//: muos_error muos_bgq_pushfront_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
+//: muos_error muos_bgq_push (muos_queue_function fn)
+//: muos_error muos_bgq_push_arg (muos_queue_function_arg fn, intptr_t arg)
+//: muos_error muos_bgq_push_isr (muos_queue_function fn, bool schedule)
+//: muos_error muos_bgq_push_arg_isr (muos_queue_function_arg fn, intptr_t arg, bool schedule)
 //: ----
 //:
 //: +fn+::
@@ -78,28 +74,18 @@ muos_bgq_check (uint8_t need)
 //: (Note: no safety net when the caller didn't push an argument)
 
 muos_error
-muos_bgq_pushback_isr (muos_queue_function f, bool schedule);
+muos_bgq_push_isr (muos_queue_function f, bool schedule);
 
 muos_error
-muos_bgq_pushback_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
+muos_bgq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
+
 
 muos_error
-muos_bgq_pushfront_isr (muos_queue_function f, bool schedule);
+muos_bgq_push (muos_queue_function f);
 
 muos_error
-muos_bgq_pushfront_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
+muos_bgq_push_arg (muos_queue_function f, intptr_t a);
 
-muos_error
-muos_bgq_pushback (muos_queue_function f);
-
-muos_error
-muos_bgq_pushback_arg (muos_queue_function f, intptr_t a);
-
-muos_error
-muos_bgq_pushfront (muos_queue_function f);
-
-muos_error
-muos_bgq_pushfront_arg (muos_queue_function f, intptr_t a);
 
 intptr_t
 muos_bgq_pop_isr (void);
