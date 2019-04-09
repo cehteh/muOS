@@ -41,6 +41,7 @@ const char __flash * const __flash muos_cli_cmd_names[] =
 
 //PLANNED: prompt
 //PLANNED: parameter/prototype description for automatic parsing
+//PLANNED: use # as comment line
 void
 MUOS_CLI_NOCMD (const char*);
 
