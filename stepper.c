@@ -379,8 +379,8 @@ muos_stepper_move_rel (uint8_t hw,
       || !muos_steppers_config_lock)
     return muos_error_stepper_state;
 
-  if (speed < muos_steppers_config_lock->stepper_slowspeed[hw])
-    speed = muos_steppers_config_lock->stepper_slowspeed[hw];
+  if (speed < muos_steppers_config_lock->stepper_safespeed[hw])
+    speed = muos_steppers_config_lock->stepper_safespeed[hw];
 
   if (offset)
     {
@@ -621,9 +621,9 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
   MUOS_OK (muos_stepper_slope_prep (hw,
                                     slope,
                                     distance,
-                                    muos_steppers_config_lock->stepper_slowspeed[hw],
+                                    muos_steppers_config_lock->stepper_startspeed[hw],
                                     max_speed,
-                                    muos_steppers_config_lock->stepper_slowspeed[hw],
+                                    muos_steppers_config_lock->stepper_startspeed[hw],
                                     0));
 
   muos_stepper_slope_commit (hw, position, false);

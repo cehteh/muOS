@@ -241,7 +241,7 @@ stepper_sync (uint8_t hw)
     {
       if (--muos_steppers_pending)
         {
-          if (get_speed (hw) < muos_steppers_config_lock->stepper_slowspeed[hw])
+          if (get_speed (hw) < muos_steppers_config_lock->stepper_safespeed[hw])
             muos_error_set_isr (muos_error_stepper_sync);
           else
             {
@@ -275,7 +275,7 @@ stepper_stop (uint8_t hw)
     case MUOS_STEPPER_SLOW_CAL:
       muos_steppers[hw].state = MUOS_STEPPER_HOLD; break;
     case MUOS_STEPPER_SLOPE:
-      if (get_speed(hw) < muos_steppers_config_lock->stepper_slowspeed[hw])
+      if (get_speed(hw) < muos_steppers_config_lock->stepper_safespeed[hw])
         {
           muos_steppers[hw].state = MUOS_STEPPER_HOLD;
           break;
