@@ -235,7 +235,7 @@ muos_configstore_set (char* var, uint8_t index, char* val)
       )
     return muos_error_configstore;
 
-  if (schema[id].ary && index >= schema[id].ary)
+  if (index > schema[id].ary)
     return muos_error_configstore;
 
   void* dest = muos_configstore_value (id, index);
