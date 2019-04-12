@@ -649,7 +649,7 @@ muos_stepper_register_action (uint8_t hw,
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
-      if (!muos_steppers[hw].position_match[i].whattodo)
+      if (!muos_steppers[hw].position_match[i].callback)
         {
           muos_steppers[hw].position_match[i].position = position;
           muos_steppers[hw].position_match[i].whattodo = action;
