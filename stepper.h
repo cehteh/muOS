@@ -322,7 +322,6 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset);
 void
 muos_stepper_sync (bool enable);
 
-// zeros the axis relative to the current position
 //: .Query position
 //: ----
 //: int32_t

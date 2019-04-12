@@ -1,5 +1,18 @@
 PIPADOC:PLANNED: macros for Hz kHz
 
+PIPADOC:PLANNED: high speed timer, no overflow rollover, calling functions directly from compmatch, has a small sorted array what to call when
+
+  API: hst_now() get current time
+       hst_at(ticks, what)
+       hst_delay(ticks, what)
+       maybe: hst_every(ticks, what)
+       hst_start()
+       hst_stop()
+       hst_pending()
+
+       modes: oneshot, every, auto start/stop etc
+
+
 PIPADOC:PLANNED: different timebase, stable timing etc
 
 PIPADOC:PLANNED: docme concepts, muos_error for anything that may fail, but stop/shutdown/disable like function shall never fail and return void
