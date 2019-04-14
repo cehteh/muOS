@@ -354,39 +354,40 @@ position_match (uint8_t hw)
 {
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
-      if (muos_steppers[hw].position == muos_steppers[hw].position_match[i].position
-          && muos_steppers[hw].position_match[i].callback)
+      struct muos_stepper_action* position_match = muos_steppers[hw].slope[muos_steppers[hw].active].position_match;
+      if (muos_steppers[hw].position == position_match[i].position
+          && position_match[i].action)
         {
-          switch (muos_steppers[hw].position_match[i].whattodo)
+          switch (position_match[i].action)
             {
-            case MUOS_STEPPER_CALL:
-              muos_steppers[hw].position_match[i].callback ();
+            case MUOS_STEPPER_ACTION_CALL:
+              position_match[i].callback ();
               break;
 #if MUOS_RTQ_LENGTH > 0
-            case MUOS_STEPPER_RTQ:
-              muos_error_set_isr (muos_hpq_push_isr (
-                                                     muos_steppers[hw].position_match[i].callback,
+            case MUOS_STEPPER_ACTION_RTQ:
+              muos_error_set_isr (muos_rtq_push_isr (
+                                                     position_match[i].callback,
                                                      true));
               break;
 #endif
 #if MUOS_HPQ_LENGTH > 0
-            case MUOS_STEPPER_HPQ:
+            case MUOS_STEPPER_ACTION_HPQ:
               muos_error_set_isr (muos_hpq_push_isr (
-                                                     muos_steppers[hw].position_match[i].callback,
+                                                     position_match[i].callback,
                                                      true));
               break;
 #endif
 #if MUOS_BGQ_LENGTH > 0
-            case MUOS_STEPPER_BGQ:
+            case MUOS_STEPPER_ACTION_BGQ:
               muos_error_set_isr (muos_bgq_push_isr (
-                                                     muos_steppers[hw].position_match[i].callback,
+                                                     position_match[i].callback,
                                                      true));
               break;
 #endif
             default:
               muos_die();
             }
-          muos_steppers[hw].position_match[i].callback = NULL;
+          position_match[i].action = MUOS_STEPPER_ACTION_NONE;
         }
     }
 }

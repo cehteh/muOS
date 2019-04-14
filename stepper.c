@@ -52,12 +52,12 @@ muos_stepper_disable_all (void)
   muos_hw_stepper_disable_all ();
   muos_configstore_unlock (&muos_steppers_config_lock);
 
-  muos_stepper_remove_actions_all ();
-
-  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
+  for (uint8_t hw=0; hw<MUOS_STEPPER_NUM; ++hw)
     {
-      if (muos_steppers[i].state > MUOS_STEPPER_OFF)
-        muos_steppers[i].state = MUOS_STEPPER_OFF;
+      muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
+
+      if (muos_steppers[hw].state > MUOS_STEPPER_OFF)
+        muos_steppers[hw].state = MUOS_STEPPER_OFF;
     }
 }
 
@@ -87,7 +87,7 @@ muos_stepper_stop (uint8_t hw)
 {
   muos_hw_stepper_stop (hw);
 
-  muos_stepper_remove_actions (hw);
+  muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
 
   switch  (muos_steppers[hw].state)
     {
@@ -234,11 +234,6 @@ muos_stepper_set_zero (uint8_t hw, int32_t offset)
   muos_steppers[hw].position = offset;
   muos_steppers[hw].ready = false;
 
-  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
-    {
-      muos_steppers[hw].position_match[i].position -= offset;
-    }
-
   //FIXME: phase correction for UP steppers
 
   muos_steppers[hw].state = MUOS_STEPPER_ARMED;
@@ -294,11 +289,16 @@ muos_stepper_move_raw (uint8_t hw,
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
       muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
 
+      muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
+
+      (void) done; //FIXME: done handler
+#if 0
       if (done)
-        muos_stepper_register_action (hw,
+        muos_stepper_register_action (&muos_steppers[hw].slope[muos_steppers[hw].active],
                                       muos_steppers[hw].position + offset,
                                       MUOS_STEPPER_HPQ,
                                       done);
+#endif
 
       muos_steppers[hw].state = MUOS_STEPPER_RAW;
 
@@ -340,11 +340,16 @@ muos_stepper_move_cal (uint8_t hw,
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
       muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
 
+      muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
+
+      (void) done; //FIXME: done handler
+#if 0
       if (done)
         muos_stepper_register_action (hw,
                                       muos_steppers[hw].position + offset,
                                       MUOS_STEPPER_HPQ,
                                       done);
+#endif
 
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_CAL;
 
@@ -387,12 +392,16 @@ muos_stepper_move_rel (uint8_t hw,
       muos_hw_stepper_set_direction (hw, offset>0?1:0);
       muos_steppers[hw].slope[muos_steppers[hw].active].position = muos_steppers[hw].position + offset;
 
+      muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
+
+      (void) done; //FIXME: done handler
+#if 0
       if (done)
         muos_stepper_register_action (hw,
                                       muos_steppers[hw].position + offset,
                                       MUOS_STEPPER_HPQ,
                                       done);
-
+#endif
       muos_steppers[hw].state = MUOS_STEPPER_SLOW_REL;
 
       muos_hw_stepper_start (hw, speed, muos_steppers_config_lock->stepper_prescale[hw], true);
@@ -504,6 +513,27 @@ muos_stepper_slope_get (uint8_t hw)
 }
 
 
+void
+muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont)
+{
+  // no hw check because this must always be called after slope_get() which does the check
+  muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
+
+  for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
+    {
+      if (rev_actions)
+        muos_steppers[hw].slope[!muos_steppers[hw].active].position_match[i].position =
+          position - muos_steppers[hw].slope[!muos_steppers[hw].active].position_match[i].position;
+      else
+        muos_steppers[hw].slope[!muos_steppers[hw].active].position_match[i].position += position;
+    }
+
+  muos_interrupt_disable ();
+  muos_steppers[hw].ready = true;
+  if (!cont)
+    muos_steppers[hw].slope_gen = NULL;
+  muos_interrupt_enable ();
+}
 
 
 
@@ -626,7 +656,8 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
                                     muos_steppers_config_lock->stepper_startspeed[hw],
                                     0));
 
-  muos_stepper_slope_commit (hw, position, false);
+  muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
+  muos_stepper_slope_commit (hw, position, false, false);
   MUOS_OK (muos_stepper_move_start (hw, NULL));
 
   return muos_success;
@@ -639,21 +670,18 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
  */
 
 muos_error
-muos_stepper_register_action (uint8_t hw,
-                              int32_t position,
-                              enum muos_stepper_actions action,
-                              muos_queue_function callback)
+muos_stepper_slope_register_action (struct muos_stepper_slope* slope,
+                                    int32_t position,
+                                    enum muos_stepper_actions action,
+                                    muos_queue_function callback)
 {
-  if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
-
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
-      if (!muos_steppers[hw].position_match[i].callback)
+      if (slope->position_match[i].action == MUOS_STEPPER_ACTION_NONE)
         {
-          muos_steppers[hw].position_match[i].position = position;
-          muos_steppers[hw].position_match[i].whattodo = action;
-          muos_steppers[hw].position_match[i].callback = callback;
+          slope->position_match[i].position = position;
+          slope->position_match[i].action = action;
+          slope->position_match[i].callback = callback;
           return muos_success;
         }
     }
@@ -662,50 +690,17 @@ muos_stepper_register_action (uint8_t hw,
 }
 
 
-muos_error
-muos_stepper_remove_action (uint8_t hw,
-                            int32_t position,
-                            uint8_t action,
-                            muos_queue_function callback)
+void
+muos_stepper_slope_clear_actions (struct muos_stepper_slope* slope)
 {
-  if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
-
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
     {
-      if (muos_steppers[hw].position_match[i].callback == callback
-          && muos_steppers[hw].position_match[i].position == position
-          && muos_steppers[hw].position_match[i].whattodo == action)
-        {
-          muos_steppers[hw].position_match[i].callback = 0;
-          return muos_success;
-        }
-    }
-
-  return muos_error_stepper_noslot;
-}
-
-
-
-void
-muos_stepper_remove_actions (uint8_t hw)
-{
-  if (muos_stepper_not_moving (hw))
-    {
-      for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
-        {
-          muos_steppers[hw].position_match[i].callback = 0;
-        }
+       slope->position_match[i].action = MUOS_STEPPER_ACTION_NONE;
     }
 }
 
 
-void
-muos_stepper_remove_actions_all (void)
-{
-  for (uint8_t i=0; i<MUOS_STEPPER_NUM; ++i)
-    muos_stepper_remove_actions (i);
-}
+
 
 
 bool

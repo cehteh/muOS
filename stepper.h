@@ -130,10 +130,21 @@ enum muos_stepper_arming_state
 
 typedef void (*muos_stepper_fn)(uint8_t hw);
 
+
+enum muos_stepper_actions
+  {
+   MUOS_STEPPER_ACTION_NONE,
+   MUOS_STEPPER_ACTION_CALL,
+   MUOS_STEPPER_ACTION_RTQ,
+   MUOS_STEPPER_ACTION_HPQ,
+   MUOS_STEPPER_ACTION_BGQ,
+  };
+
+
 struct muos_stepper_action
 {
   int32_t position;
-  uint8_t whattodo;
+  enum muos_stepper_actions action;
   muos_queue_function callback;
 };
 
@@ -141,6 +152,7 @@ struct muos_stepper_action
 struct muos_stepper_slope
 {
   int32_t position;
+  struct muos_stepper_action position_match[MUOS_STEPPER_POSITION_SLOTS];
 
   int32_t decel_start;      // -countdown for starting decel
   uint16_t max_speed;
@@ -161,8 +173,6 @@ struct muos_stepper
   volatile uint8_t active:1;              // which one is the active from the buffer
   volatile uint8_t ready:1;               // set when the next slope is prepared
   struct muos_stepper_slope slope[2];     // double buffered
-
-  struct muos_stepper_action position_match[MUOS_STEPPER_POSITION_SLOTS];
 };
 
 
@@ -547,7 +557,7 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //:                          uint16_t out_steps)
 //:
 //: void
-//: muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
+//: muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont)
 // :
 // : muos_error
 // : muos_stepper_slope_load (uint8_t hw,
@@ -573,6 +583,8 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //:   Steps done at the end at 'speed_out'.
 //: +position+;;
 //:   The destination position for the move.
+//: +rev_actions+;;
+//:   reverse the action coordinates (counting from end of movement rather than begin).
 //: +cont+;;
 //:   continue generating slopes, should be 'false' for the final move.
 //:
@@ -604,7 +616,8 @@ muos_stepper_end_distance (uint8_t hw, int32_t position);
 //: within the slope structure this gets only be set when the slope is commited or loaded.
 //:
 //: 'muos_stepper_slope_commit()' activates the current assembled slope buffer. It takes the absolute
-//: position for the move as argument to complete prepared buffers.
+//: position for the move as argument to complete prepared buffers and translates all registered actions
+//: to absolute coordinates.
 //:
 // :
 //TODO: implement slope_load() (doing get, copy, commit)
@@ -623,18 +636,9 @@ struct muos_stepper_slope*
 muos_stepper_slope_get (uint8_t hw);
 
 
-static inline void
-muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
-{
-  // no hw check because this must always be called after slope_get() which does the check
-  muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
+void
+muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont);
 
-  muos_interrupt_disable ();
-  muos_steppers[hw].ready = true;
-  if (!cont)
-    muos_steppers[hw].slope_gen = NULL;
-  muos_interrupt_enable ();
-}
 
 //TODO: slope_load w/ fixing destination
 // : muos_error
@@ -653,42 +657,25 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position, bool cont)
 //: Define actions to take when the stepper reaches a position. These are bit values
 //: which can be or'ed together.
 //:
-//: MUOS_STEPPER_CALL;;
+//: MUOS_STEPPER_ACTION_CALL;;
 //:   The provided argument is a function which is called directly in interrupt context.
 //:   This function must not enable interrupts.
-//: MUOS_STEPPER_{RTQ|HPQ|BGQ}_FRONT;;
-//:   Use the provided argument as function to push it to the front of the hpq. This gives the
-//:   highest possible priority.
-//: MUOS_STEPPER_{RTQ|HPQ|BGQ};;
-//:   Use the provided argument as function to push it to the back of the hpq.
+//: MUOS_STEPPER_ACTION_{RTQ|HPQ|BGQ};;
+//:   Use the provided argument as function to push it to respective work queue.
 //:
-//TODO: docme/implementme bgq/rtq
-enum muos_stepper_actions
-  {
-   MUOS_STEPPER_CALL,
-   MUOS_STEPPER_RTQ,
-   MUOS_STEPPER_HPQ,
-   MUOS_STEPPER_BGQ,
-  };
 
 
 //stepper_api:
 //: ----
 //: muos_error
-//: muos_stepper_register_action (uint8_t hw,
-//:                               int32_t position,
-//:                               enum muos_stepper_actions action,
-//:                               muos_queue_function callback)
-//:
-//: muos_error
-//: muos_stepper_remove_action (uint8_t hw,
-//:                             int32_t position,
-//:                             enum muos_stepper_actions action,
-//:                             muos_queue_function callback)
+//: muos_stepper_slope_register_action (struct muos_stepper_slope* slope,
+//:                                     int32_t position,
+//:                                     enum muos_stepper_actions action,
+//:                                     muos_queue_function callback);
 //: ----
 //:
-//: +hw+;;
-//:   Stepper to address.
+//: +slope+;;
+//:   Pointer to the slope where to register.
 //: +position+;;
 //:   Position which triggers the action.
 //: +action+;;
@@ -697,55 +684,35 @@ enum muos_stepper_actions
 //:   callback function.
 //:
 //: Register or remove and action to be done when the stepper hits a position.
+//: Positions are positions within the slope (relative coordinates) at commit time
+//: these positions will be translated into absolute positions.
 //:
-//: Actions can only be registered or removed while the stepper is not moving.
-//:
-//: Removing an action needs the exact same arguments as given registering it. Only one
-//: instance gets removed even when the action was registered multiple times.
-//:
-//: Returning +muos_success+ when everything worked well or one of the following errors:
-//: +muos_error_nohw+;;
-//:   'hw' out of range.
-//: +muos_error_stepper_state+;;
-//:   Tried to register/remove an action while the steppers are moving.
-//: +muos_error_stepper_noslot+;;
-//:   'register_action':: no more slots free to register an action.
-//:   'remove_action':: no action found with the given parameters.
+//: Returning +muos_success+ when everything worked well or
+//: +muos_error_stepper_noslot+  when there are no more slots free to register an action.
 //:
 muos_error
-muos_stepper_register_action (uint8_t hw,
-                              int32_t position,
-                              enum muos_stepper_actions action,
-                              muos_queue_function callback);
+muos_stepper_slope_register_action (struct muos_stepper_slope* slope,
+                                    int32_t position,
+                                    enum muos_stepper_actions action,
+                                    muos_queue_function callback);
 
-muos_error
-muos_stepper_remove_action (uint8_t hw,
-                            int32_t position,
-                            enum muos_stepper_actions action,
-                            muos_queue_function callback);
+
 
 
 //stepper_api:
 //: ----
 //: void
-//: muos_stepper_remove_actions (uint8_t hw)
-//:
-//: void
-//: muos_stepper_remove_actions_all (void)
+//: muos_stepper_slope_clear_actions (struct muos_stepper_slope* slope);
 //: ----
 //:
-//: +hw+;;
-//:   Stepper to address.
+//: +slope+;;
+//:   Slope to clear.
 //:
-//: Removes registered actions from one stepper or all steppers.
-//:
-//: Will do nothing when the stepper is moving.
+//: Removes all actions registered on a slope.
 //:
 void
-muos_stepper_remove_actions (uint8_t hw);
+muos_stepper_slope_clear_actions (struct muos_stepper_slope* slope);
 
-void
-muos_stepper_remove_actions_all (void);
 
 
 // functions suitable for muos_wait()
