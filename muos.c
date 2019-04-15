@@ -89,7 +89,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
   muos_clock start = muos_now_ = muos_clock_now ();
 
-  muos_clpq_at_isr (muos_now_,  timeout, 0);
+  muos_clpq_at_isr (start,  timeout, 0);
 
   if (muos_error_check (muos_error_clpq_overflow))
     return muos_error_clpq_overflow;
@@ -112,7 +112,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                       if (fn && fn (param))
                         {
                           muos_interrupt_disable ();
-                          muos_clpq_remove_isr (muos_now_, timeout, 0);
+                          muos_clpq_remove_isr (start, timeout, 0);
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_success;
