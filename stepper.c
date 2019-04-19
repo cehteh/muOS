@@ -56,6 +56,8 @@ muos_stepper_disable_all (void)
     {
       muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
 
+      muos_steppers[hw].ready = false;
+
       if (muos_steppers[hw].state > MUOS_STEPPER_OFF)
         muos_steppers[hw].state = MUOS_STEPPER_OFF;
     }
@@ -513,10 +515,16 @@ muos_stepper_slope_get (uint8_t hw)
 }
 
 
-void
+muos_error
 muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont)
 {
-  // no hw check because this must always be called after slope_get() which does the check
+  if (hw >= MUOS_STEPPER_NUM)
+    return muos_error_nodev;
+
+  // dont commit on non zerored stepper
+  if (muos_steppers[hw].state < MUOS_STEPPER_HOLD)
+    return muos_error_stepper_state;
+
   muos_steppers[hw].slope[!muos_steppers[hw].active].position = position;
 
   for (uint8_t i=0; i<MUOS_STEPPER_POSITION_SLOTS; ++i)
@@ -533,6 +541,8 @@ muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool 
   if (!cont)
     muos_steppers[hw].slope_gen = NULL;
   muos_interrupt_enable ();
+
+  return muos_success;
 }
 
 

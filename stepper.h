@@ -636,7 +636,7 @@ struct muos_stepper_slope*
 muos_stepper_slope_get (uint8_t hw);
 
 
-void
+muos_error
 muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont);
 
 
