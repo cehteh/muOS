@@ -128,15 +128,14 @@ mock_movement (void)
 {
   uint8_t hw = muos_hpq_pop_isr ();
 
-  if (muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) != muos_success)
+  if (muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) == muos_success)
     {
-      muos_die ();
+      cli ();
+      movement_end (hw);
+      if (muos_error_pending ())
+        muos_hw_stepper_disable_all ();  //FIXME: proper error handling
     }
 
-  cli ();
-  movement_end (hw);
-  if (muos_error_pending ())
-    muos_hw_stepper_disable_all ();  //FIXME: proper error handling
 }
 
 
