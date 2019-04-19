@@ -23,6 +23,8 @@
 
 #include <muos/io.h>
 
+#include <stdbool.h>
+
 //PLANNED: strategy on input errors, desync?
 //PLANNED: full line overflow, because lineedit buffer > txqueue, needs some strategy (blocking_io/atomic_io)
 //PLANNED: ^^ -DMUOS_LINEDIT_BLOCKING
@@ -30,6 +32,9 @@
 //#if defined(MUOS_IO_TXQUEUE_SIZE) && MUOS_LINEEDIT_BUFFER >= MUOS_IO_TXQUEUE
 //#error MUOS_IO_TXQUEUE must be bigger than MUOS_LINEEDIT_BUFFER
 //#endif
+
+void
+muos_lineedit_echo MUOS_IO_HWPARAM(bool echo);
 
 bool
 muos_lineedit MUOS_IO_HWPARAM();

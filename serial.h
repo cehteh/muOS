@@ -42,6 +42,7 @@ extern volatile struct muos_serial_flags
   uint8_t serial_rxhpq_pending:1;
   uint8_t lineedit_pending:1;
   uint8_t lineedit_ovwr:1;
+  uint8_t lineedit_echo:1;
   uint8_t txqueue_pending:1;
   uint8_t serial_tx_blocked:1;
   uint8_t serial_rx_blocked:1;
