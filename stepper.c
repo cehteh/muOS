@@ -56,6 +56,7 @@ muos_stepper_disable_all (void)
     {
       muos_stepper_slope_clear_actions (&muos_steppers[hw].slope[muos_steppers[hw].active]);
 
+      muos_stepper_sync(false);
       muos_steppers[hw].ready = false;
 
       if (muos_steppers[hw].state > MUOS_STEPPER_OFF)
