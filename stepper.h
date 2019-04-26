@@ -67,6 +67,9 @@ muos_hw_stepper_start (uint8_t hw, uint16_t speed_raw, uint8_t prescale, bool ru
 
 void
 muos_hw_stepper_stop (uint8_t hw);
+
+void
+muos_hw_stepper_speed_set (uint8_t hw, uint16_t speed);
 #endif
 
 //stepper_states:
@@ -222,7 +225,7 @@ muos_stepper_50init (void);
 //: after a stop. For Steppers running at 'MUOS_STEPPER_SLOW' or slower the position is
 //: kept valid and the state becomes 'MUOS_STEPPER_ARMED'.
 //:
-//: 'muos_stepper_all_stop ()' is the same as 'muos_stepper_stop (hw)' but for all Steppers.
+//: 'muos_stepper_stop_all ()' is the same as 'muos_stepper_stop (hw)' but for all Steppers.
 //:
 //: Stopping and turning steppers off will never fail nor return an error code.
 //: Only the resulting state may differ depending on the initial state.
@@ -462,7 +465,9 @@ muos_stepper_move_rel (uint8_t hw,
                        muos_queue_function done); //FIXME: done -> plan
 
 
-
+//FIXME: docme
+muos_error
+muos_stepper_speed_set (uint8_t hw, uint16_t speed);
 
 
 /*

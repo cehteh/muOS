@@ -419,6 +419,22 @@ muos_stepper_move_rel (uint8_t hw,
 }
 
 
+muos_error
+muos_stepper_speed_set (uint8_t hw, uint16_t speed)
+{
+  if (hw >= MUOS_STEPPER_NUM)
+    return muos_error_nodev;
+
+  if (muos_steppers[hw].state != MUOS_STEPPER_SLOW_REL || !muos_steppers_config_lock)
+    return muos_error_stepper_state;
+
+  if (speed < muos_steppers_config_lock->stepper_safespeed[hw])
+    speed = muos_steppers_config_lock->stepper_safespeed[hw];
+
+  muos_hw_stepper_speed_set (hw, speed);
+
+  return muos_success;
+}
 
 /*
   absolute movement
