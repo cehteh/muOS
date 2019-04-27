@@ -21,6 +21,7 @@
 #ifdef MUOS_CLI
 
 #include <muos/cli.h>
+#include <muos/serial.h>
 #include <muos/io.h>
 
 #include <stdlib.h>
@@ -48,7 +49,10 @@ MUOS_CLI_NOCMD (const char*);
 void
 muos_cli (const char* line)
 {
-  muos_output_nl (0); //FIXME: linedit should support prompt/newline
+  //FIXME: hardcoded hw for cli
+  if (muos_serial_status[0].lineedit_echo)
+    muos_output_nl (0); //FIXME: linedit should support prompt/newline
+
   line += strspn_P (line, PSTR(MUOS_CLI_DELIM));
 
   uint8_t len = strcspn_P (line, PSTR(MUOS_CLI_DELIM));
