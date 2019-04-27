@@ -455,7 +455,8 @@ muos_configstore_save (muos_configstore_callback cb)
 
   the_configstore.crc = crc;
 
-  muos_eeprom_write (&the_configstore,
+  //FIXME: smart write fails
+  muos_eeprom_writeverify (&the_configstore,
                      MUOS_CONFIGSTORE_OFFSET,
                      sizeof(struct muos_configstore_frame),
                      eeprom_write_done);
