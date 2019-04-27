@@ -417,7 +417,7 @@ muos_configstore_load (muos_configstore_callback cb)
 static void
 eeprom_write_done (void)
 {
-  if (muos_error_check (muos_error_eeprom_verify))
+  if (muos_error_peek (muos_error_eeprom_verify))
     {
       //FIXME: DEAD not as state but error, let states only reflect the state in memory
       status = CONFIGSTORE_DEAD;
