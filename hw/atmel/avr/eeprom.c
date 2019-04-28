@@ -53,6 +53,10 @@ ISR(ISRNAME_EEPROM_READY)
 {
   MUOS_DEBUG_INTR_ON;
 
+  if (!bytes--)
+    goto done;
+
+  // Verification of last written byte
   switch (operation)
     {
     case MUOS_EEPROM_WRITE_CONT:
@@ -60,7 +64,7 @@ ISR(ISRNAME_EEPROM_READY)
       EECR |= (1<<EERE);
       if (EEDR != *memory)
         {
-          if (--retry)
+          if (retry--)
             goto retry;
 
           muos_error_set_isr (muos_error_eeprom_verify);
@@ -74,11 +78,10 @@ ISR(ISRNAME_EEPROM_READY)
     case MUOS_EEPROM_ERASE_CONT:
       ++EEAR;
 
-    default:
-      if (!bytes--)
-        goto done;
-    };
+    default:;
+    }
 
+  // sets the the *_CONT operation
   switch (operation)
     {
     case MUOS_EEPROM_WRITE:
@@ -86,7 +89,7 @@ ISR(ISRNAME_EEPROM_READY)
     case MUOS_EEPROM_WRITEERASE:
     case MUOS_EEPROM_WRITEONLY:
     case MUOS_EEPROM_ERASE:
-      ++operation; // sets the the *_CONT operation
+      ++operation;
 
     default:;
     }
@@ -98,13 +101,13 @@ ISR(ISRNAME_EEPROM_READY)
         {
           ++memory;
           ++EEAR;
-          if (!--bytes)
+          if (!bytes--)
             goto done;
           //PLANNED: batching?
         }
     }
 
-  // start ISR writing
+  // Writing
 #ifdef  MUOS_EEPROM_RETRY
   retry = MUOS_EEPROM_RETRY;
 #endif
@@ -127,13 +130,12 @@ ISR(ISRNAME_EEPROM_READY)
       muos_error_set_isr (muos_hpq_push_isr (callback, true));
 #endif
     }
-  return;
 }
 
 
 
 static void
-readbatch (void)
+eeprom_read (void)
 {
   //PLANNED: implement batching
 
@@ -197,7 +199,7 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
                        muos_eeprom_callback complete)
 {
   // check no eeprom operation pending
-  if (EECR & (1<<EEPE) && operation == MUOS_EEPROM_IDLE)
+  if (EECR & (1<<EEPE) || operation != MUOS_EEPROM_IDLE)
     return muos_error_eeprom_busy;
 
   // set states
@@ -231,19 +233,19 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
     default:
 #ifndef DMUOS_EEPROM_RBATCH
       // batching disabled call it directly
-      readbatch ();
+      eeprom_read ();
       return muos_success;
 #elif MUOS_BGQ_LENGTH >= 1
-      return muos_bgq_push (readbatch, true);
+      return muos_bgq_push (eeprom_read);
 #elif MUOS_HPQ_LENGTH >= 1
-      return muos_hpq_push (readbatch, true);
+      return muos_hpq_push (eeprom_read);
 #endif
     }
 
   /*
     writing modes below
    */
-  
+
 #ifdef MUOS_EEPROM_DEBUG_WDELAY
   for (volatile int i = MUOS_EEPROM_DEBUG_WDELAY; i; --i)
     _delay_loop_2 (F_CPU/1000);

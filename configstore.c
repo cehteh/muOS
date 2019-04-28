@@ -448,15 +448,15 @@ muos_configstore_save (muos_configstore_callback cb)
 
   uint16_t crc = MUOS_EEPROM_CRC16_INIT;
 
-  for (size_t i = 0; i < sizeof(struct muos_configstore_frame)-2; ++i)
+  for (size_t i = 0; i < sizeof(struct muos_configstore_data); ++i)
     {
-      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_configstore)[i]);
+      crc = MUOS_EEPROM_CRC16_FN (crc, ((uint8_t*)&the_configstore.userdata)[i]);
     }
 
   the_configstore.crc = crc;
 
   //FIXME: smart write fails
-  muos_eeprom_writeverify (&the_configstore,
+  muos_eeprom_write (&the_configstore,
                      MUOS_CONFIGSTORE_OFFSET,
                      sizeof(struct muos_configstore_frame),
                      eeprom_write_done);

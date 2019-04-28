@@ -90,7 +90,7 @@ const struct muos_sm_def __flash state_definitions[] =
 static void
 state_enter (void)
 {
-  uint8_t sm = muos_hpq_pop_isr ();
+  uint8_t sm = muos_hpq_pop ();
 
   statemachine[sm].current = statemachine[sm].params[0];
   statemachine[sm].params[0] = statemachine[sm].params[1];
