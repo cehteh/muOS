@@ -67,7 +67,7 @@ muos_hpq_check (uint8_t need)
 //: These functions return 'muos_success' on success and 'muos_error_hpq_overflow' on error.
 //:
 //: ----
-//: intptr_t muos_hpq_pop_isr (void)
+//: intptr_t muos_hpq_pop (void)
 //: ----
 //:
 //: removes and returns the first element (argument) from the hpq. Must be called
@@ -89,7 +89,7 @@ muos_hpq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule);
 
 
 intptr_t
-muos_hpq_pop_isr (void);
+muos_hpq_pop (void);
 
 #else
 // stub for the schedule loop

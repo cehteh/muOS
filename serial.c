@@ -238,7 +238,7 @@ muos_serial_rx_flush (bool desync)
 void
 muos_serial_rxhpq_call (void)
 {
-  uint8_t hw = muos_hpq_pop_isr ();
+  uint8_t hw = muos_hpq_pop ();
   bool again = false;
 
   if (muos_serial_rxcallback[hw])

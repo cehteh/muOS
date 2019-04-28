@@ -101,7 +101,7 @@ void
 muos_txqueue_run (void)
 {
   //PLANNED: optimize hw out when there is only one serial (no arg on bgq)
-  uint8_t hw = muos_bgq_pop_isr ();
+  uint8_t hw = muos_bgq_pop ();
 
   while (muos_cbuffer_used (muos_txqueue[hw]) && muos_cbuffer_free (muos_txbuffer[hw]))
     {

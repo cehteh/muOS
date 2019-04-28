@@ -126,7 +126,7 @@ movement_end (uint8_t hw);
 static void
 mock_movement (void)
 {
-  uint8_t hw = muos_hpq_pop_isr ();
+  uint8_t hw = muos_hpq_pop ();
   //FIXME: is is really ok to wait for timeout here? let stepper_disable_all set pending to 0
   if (muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) == muos_success)
     {

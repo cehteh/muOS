@@ -68,9 +68,13 @@ muos_rtq_push_arg (muos_queue_function f, intptr_t a)
 
 
 intptr_t
-muos_rtq_pop_isr (void)
+muos_rtq_pop (void)
 {
-  return muos_queue_pop (&muos_rtq.descriptor, MUOS_RTQ_LENGTH);
+  muos_interrupt_disable ();
+  intptr_t ret = muos_queue_pop (&muos_rtq.descriptor, MUOS_RTQ_LENGTH);
+  muos_interrupt_enable ();
+
+  return ret;
 }
 
 #endif

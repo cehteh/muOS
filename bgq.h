@@ -66,7 +66,7 @@ muos_bgq_check (uint8_t need)
 //: These functions return 'muos_success' on success and 'muos_error_bgq_overflow' on error.
 //:
 //: ----
-//: intptr_t muos_bgq_pop_isr (void)
+//: intptr_t muos_bgq_pop (void)
 //: ----
 //:
 //: removes and returns the first element (argument) from the bgq. Must be called
@@ -88,7 +88,7 @@ muos_bgq_push_arg (muos_queue_function f, intptr_t a);
 
 
 intptr_t
-muos_bgq_pop_isr (void);
+muos_bgq_pop (void);
 
 #else
 // stub for the schedule loop

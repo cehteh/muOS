@@ -67,9 +67,13 @@ muos_hpq_push_arg (muos_queue_function f, intptr_t a)
 
 
 intptr_t
-muos_hpq_pop_isr (void)
+muos_hpq_pop (void)
 {
-  return muos_queue_pop (&muos_hpq.descriptor, MUOS_HPQ_LENGTH);
+  muos_interrupt_disable ();
+  intptr_t ret = muos_queue_pop (&muos_hpq.descriptor, MUOS_HPQ_LENGTH);
+  muos_interrupt_enable ();
+
+  return ret;
 }
 
 #endif
