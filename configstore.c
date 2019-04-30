@@ -230,7 +230,7 @@ muos_configstore_set (char* var, uint8_t index, char* val)
 
   if (status != CONFIGSTORE_WLOCK
 #ifdef MUOS_CONFIGSTORE_ATTRS
-      && !(schema[id].attrs & CONFIGSTORE_VOLATILE)
+      && !(schema[id].attrs & CONFIGSTORE_MUTABLE)
 #endif
       )
     return muos_error_configstore;

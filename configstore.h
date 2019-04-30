@@ -111,7 +111,7 @@ typedef enum
    CONFIGSTORE_WPROT    = 1,   // needs auth for set
    CONFIGSTORE_RPROT    = 2,   // needs auth for output
    CONFIGSTORE_HIDDEN   = 4,   // hide from listing
-   CONFIGSTORE_VOLATILE = 8,   // can be set even even when readonly locked
+   CONFIGSTORE_MUTABLE  = 8,   // can be set even even when readonly locked
   } muos_configstore_attr;
 
 
