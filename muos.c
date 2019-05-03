@@ -89,13 +89,12 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
   muos_clock start = muos_now_ = muos_clock_now ();
 
-  muos_clpq_at_isr (start,  timeout, 0);
+  muos_clpq_at (start,  timeout, NULL);
 
   if (muos_error_check (muos_error_clpq_overflow))
     return muos_error_clpq_overflow;
 
   ++sched_depth_;
-
   muos_interrupt_disable ();
 
   while (1)
@@ -109,6 +108,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                   do
                     {
                       //TODO: docme, predicate is called with interrupts disabled
+
                       if (fn && fn (param))
                         {
                           muos_interrupt_disable ();
@@ -117,6 +117,8 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                           --sched_depth_;
                           return muos_success;
                         }
+
+                      muos_interrupt_disable (); // in case fn() enabled interrupts
 
                       if (muos_clock_elapsed (muos_now_, start) > timeout)
                         {
@@ -186,9 +188,10 @@ muos_yield (uint8_t count)
                   if (muos_error_pending ())
                     {
                       MUOS_ERRORFN ();
-                      muos_interrupt_disable ();
                     }
 #endif
+                  muos_interrupt_disable ();
+
                   MUOS_DEBUG_SWITCH_TOGGLE;
                   muos_now_ = muos_clock_now_isr ();
                   --count;
