@@ -128,7 +128,7 @@ mock_movement (void)
 {
   uint8_t hw = muos_hpq_pop ();
   //FIXME: is is really ok to wait for timeout here? let stepper_disable_all set pending to 0
-  if (muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) == muos_success)
+  if (!muos_steppers[hw].slope_gen || muos_wait (muos_hw_stepper_wait_slope, hw, MUOS_CLOCK_SHORT_MAX) == muos_success)
     {
       cli ();
       movement_end (hw);
@@ -248,7 +248,7 @@ stepper_sync (uint8_t hw)
 {
   if (muos_steppers_sync)
     {
-      if (--muos_steppers_pending)
+      if (muos_steppers_pending && --muos_steppers_pending)
         {
           if (get_speed (hw) < muos_steppers_config_lock->stepper_safespeed[hw])
             muos_error_set_isr (muos_error_stepper_sync);
@@ -340,7 +340,6 @@ movement_end (uint8_t hw)
               goto stop; // smaller than stepper_stop (hw);
             }
         }
-
 
       if (!muos_steppers[hw].ready && !muos_steppers[hw].slope_gen)
         /* finished */
@@ -584,7 +583,7 @@ muos_hw_stepper_disable_all (void)
 #undef DISABLE_TIMER
 #undef STEPDIR
 #undef UNIPOLAR
-
+  muos_steppers_pending = 0;
 }
 
 
