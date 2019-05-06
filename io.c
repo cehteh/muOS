@@ -60,7 +60,7 @@ muos_tx_wait (intptr_t data);
 #if MUOS_SERIAL_NUM > 1
 
 muos_error
-muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_shortclock timeout)
+muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
 {
   MUOS_IO_HWCHECK;
 

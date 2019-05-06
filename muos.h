@@ -70,10 +70,10 @@ extern volatile struct muos_status_flags
 //: typedef bool (*muos_wait_fn)(intptr_t)
 //:
 //: muos_error
-//: muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
+//: muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 //:
 //: muos_error
-//: muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_shortclock timeout, uint32_t rep)
+//: muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
 //: ----
 //: +fn+::
 //:   function checking for some condition, must return 'false' while the condition
@@ -91,7 +91,7 @@ extern volatile struct muos_status_flags
 //: 'muos_wait()' will put the MCU to sleep when there is nothing to do and wake itself
 //: after +timeout+. This makes it suitable for waiting on state changes which are caused
 //: by interrupts and application code, but not for polling hardware changes that don't
-//: wake the MPU. Also the time span is limited to 'muos_shortclock' only.
+//: wake the MPU. The time span is limited to 16bit only.
 //:
 //: 'muos_wait_poll()' puts 'muos_wait()' for at most +rep+ times in a loop which which
 //: each sleeps at most for +timeout+. This makes it suitable for polling things that don't
@@ -111,10 +111,10 @@ extern volatile struct muos_status_flags
 //:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
 //:   'muos_warn_wait_timeout':: timed out
 muos_error
-muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout);
+muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout);
 
 muos_error
-muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_shortclock timeout, uint32_t rep);
+muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep);
 
 
 //muos_api:

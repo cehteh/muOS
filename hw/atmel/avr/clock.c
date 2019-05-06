@@ -24,8 +24,10 @@
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
   MUOS_DEBUG_INTR_ON;
-  ++muos_clock_count_;
-  muos_status.schedule |= true;
+  muos_clock_coarse += (muos_clock)(1) << (sizeof(MUOS_CLOCK_REGISTER)*8);
+
+  //PLANNED: test not schedule on overflow, make it configurable
+  muos_status.schedule = true;
 }
 
 ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
@@ -33,18 +35,19 @@ ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
   // compmatch is one-shot
   MUOS_DEBUG_INTR_ON;
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-  muos_status.schedule |= true;
+  muos_status.schedule = true;
 }
 
 #ifdef MUOS_CLOCK_CALIBRATE
+#error //TODO: new clock implementation, calibrate is untested
 static muos_clock calibrate_last;
 static int32_t divert;
 
 
 void
-muos_clock_calibrate (const muos_clock now, const muos_clock sync)
+muos_clock_calibrate (const muos_clock now, const muos_clock32 sync)
 {
-  muos_clock elapsed = muos_clock_elapsed (now, calibrate_last);
+  muos_clock32 elapsed = muos_clock32_elapsed (now, calibrate_last);
   calibrate_last = now;
 
   if (sync

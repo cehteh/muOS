@@ -36,8 +36,11 @@ muos_clpq_type muos_clpq;
 
 
 bool
-muos_clpq_schedule (muos_spriq_priority when)
+muos_clpq_schedule (void)
 {
+  muos_clpq.now = muos_clock_now ();
+
+#if 0 //FIXME: new clpq
   if (muos_clpq.descriptor.used)
     {
       if ((when - muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when) < ((muos_spriq_priority)~0/2))
@@ -71,76 +74,30 @@ muos_clpq_schedule (muos_spriq_priority when)
           return true;  //PLANNED: may shortcut 'return false' when nothing to be done in 'near' future (within hwclock reach)
         }
     }
+#endif
 
   return false;
 }
 
 
+//PLANNED: delay relative to clpq.now
+//muos_error
+//muos_clpq16_in (muos_clock16 when, muos_clpq_function what)
+//muos_error
+//muos_clpq32_in (muos_clock32 when, muos_clpq_function what)
 
-//TODO: return error instead async
+
 muos_error
-muos_clpq_at_isr (muos_spriq_priority base, muos_spriq_priority when, muos_spriq_function what)
+muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
 {
+  (void) when; (void) what; //FIXME:
+#if 0 //FIXME: new clpq
   if (muos_clpq.descriptor.used == MUOS_SPRIQ_SIZE(muos_clpq))
     return muos_error_clpq_overflow;
 
   muos_spriq_push (&muos_clpq.descriptor, base, when, what);
+#endif
   return muos_success;
-}
-
-// This is the time between setting compmatch for wakeup and going to sleep
-#define MUOS_CLOCK_LATENCY (32U/MUOS_CLOCK_PRESCALER)
-
-
-// The time a schedule loop takes
-#define MUOS_CLOCK_BUSYLATENCY (64U/MUOS_CLOCK_PRESCALER)
-
-
-//TODO: return when already compmatch or disable compmatch when time is too short
-/*
-//TODO: new implementation
-
-    - must be in current hw_count range
-    - not too soon (time to set compmatch)
-    - wakeup earlier
-    - compmatch can wrap!
-    - dont forget to reschedule when a new event was added before the first one
-
-    also
-    when - now
-        < hw range
-           else no compmatch
-        > compset time
-     -> compmatch
-   */
-
-bool
-muos_clpq_set_compmatch (void)
-{
-  if (!muos_clpq.descriptor.used)
-    return true;
-
-  muos_spriq_priority at = muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when -
-    (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
-
-  muos_spriq_priority now = MUOS_CLOCK_REGISTER;
-
-  if (at < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_BUSYLATENCY)
-    {
-      if (at > MUOS_CLOCK_LATENCY + now
-          && now < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY)
-        {
-          MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, at);
-        }
-      else
-        return false;
-    }
-  else
-    {
-      MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-    }
-
-  return true;
 }
 
 #endif

@@ -42,7 +42,7 @@ volatile struct muos_status_flags muos_status;
 void
 muos_sleep (void)
 {
-  if (muos_clpq_set_compmatch ())
+  if (muos_hw_clpq_set_compmatch ())
     {
       //TODO: select sleep mode depending on active hardware (adc, usart)
       muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
@@ -57,7 +57,7 @@ muos_sleep (void)
     {
       // busywait for timespans which are to small for compmatch
       muos_interrupt_enable ();
-      while (MUOS_CLOCK_REGISTER < (typeof(MUOS_CLOCK_REGISTER)) muos_clpq.descriptor.spriq[0].when);
+      //FIXME: new clpq while (MUOS_CLOCK_REGISTER < (typeof(MUOS_CLOCK_REGISTER)) muos_clpq.descriptor.spriq[0].when);
       muos_interrupt_disable ();
     }
 }
@@ -80,19 +80,17 @@ muos_sched_depth (void)
 }
 
 muos_error
-muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
+muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 {
   if (sched_depth_ >= MUOS_SCHED_DEPTH)
     {
       return muos_warn_sched_depth;
     }
 
-  muos_clock start = muos_now_ = muos_clock_now ();
+  //FIXME: new timer/clpq semantics
+  muos_clock start = muos_clock_now ();
 
-  muos_clpq_at (start,  timeout, NULL);
-
-  if (muos_error_check (muos_error_clpq_overflow))
-    return muos_error_clpq_overflow;
+  MUOS_OK (muos_clpq_at (start + timeout, NULL));
 
   ++sched_depth_;
   muos_interrupt_disable ();
@@ -112,7 +110,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                       if (fn && fn (param))
                         {
                           muos_interrupt_disable ();
-                          muos_clpq_remove_isr (start, timeout, 0);
+                          muos_clpq_remove_isr (start + timeout, 0);
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_success;
@@ -120,9 +118,9 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 
                       muos_interrupt_disable (); // in case fn() enabled interrupts
 
-                      if (muos_clock_elapsed (muos_now_, start) > timeout)
+                      if (muos_clock_elapsed (muos_clock_now (), start) > timeout)
                         {
-                          muos_clpq_remove_isr (muos_now_, timeout, 0);
+                          muos_clpq_remove_isr (start + timeout, NULL);
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_warn_wait_timeout;
@@ -136,11 +134,10 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
                         }
 #endif
                       MUOS_DEBUG_SWITCH_TOGGLE;
-                      muos_now_ = muos_clock_now_isr ();
                     }
                   while (muos_rtq_schedule ());
                 }
-               while (muos_clpq_schedule (muos_now_));
+               while (muos_clpq_schedule ());
             }
           while (muos_hpq_schedule ());
         }
@@ -151,7 +148,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_shortclock timeout)
 }
 
 muos_error
-muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_shortclock timeout, uint32_t rep)
+muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
 {
   while (rep--)
     {
@@ -193,12 +190,11 @@ muos_yield (uint8_t count)
                   muos_interrupt_disable ();
 
                   MUOS_DEBUG_SWITCH_TOGGLE;
-                  muos_now_ = muos_clock_now_isr ();
                   --count;
                 }
               while (count && muos_rtq_schedule ());
             }
-          while (count && muos_clpq_schedule (muos_now_));
+          while (count && muos_clpq_schedule ());
         }
       while (count && muos_hpq_schedule ());
     }
@@ -270,11 +266,10 @@ main()
                         }
 #endif
                       MUOS_DEBUG_SWITCH_TOGGLE;
-                      muos_now_ = muos_clock_now_isr ();
                     }
                   while (muos_rtq_schedule ());
                 }
-              while (muos_clpq_schedule (muos_now_));
+              while (muos_clpq_schedule ());
             }
           while (muos_hpq_schedule ());
         }
@@ -283,3 +278,4 @@ main()
       muos_sleep ();
     }
 }
+

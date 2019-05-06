@@ -25,13 +25,39 @@
 
 #include MUOS_HW_HEADER
 
-//PLANNED: dont inline clock functions
-
 //PLANNED: macros compensating drift over long timespans; using rationals thereof
 
 //PLANNED: make it possible to configure muos w/o a clock
 
 //PLANNED: only stop clock interrupts when querying time
+
+
+
+
+//: .Clock Types
+//: ----
+//: typedef MUOS_CLOCK_TYPE muos_clock
+//: typedef uint32_t muos_clock32
+//: typedef uint16_t muos_clock16
+//: ----
+//:
+//: +muos_clock+::
+//:   The configureable uint32_t or uint64_t type used for the main clock implementation.
+//: +muos_clock32+::
+//:   Clock type truncated to uint32_t for limited time ranges.
+//: +muos_clock16+::
+//:   Clock type truncated to uint16_t for limited time ranges.
+//:
+//: Muos provides 3 clock types. The main type is configureable and should be wide enough that
+//: it will not overflow for the expected worst case application runtime. The actual details will
+//: vary depending on application and prescaler setttings. The 2 truncated types can save a lot
+//: memory and are useful when only shorter timespans are required and overflows are handled
+//: properly in the software.
+//:
+typedef MUOS_CLOCK_TYPE muos_clock;
+typedef uint32_t muos_clock32;
+typedef uint16_t muos_clock16;
+
 
 //clock_api:
 //: .Time calculation macros
@@ -54,68 +80,15 @@
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
 #define MUOS_CLOCK_NANOSECONDS(s) (MUOS_CLOCK_MICROSECONDS(s)/1000)
 
-#define MUOS_CLOCK_SHORT_MAX ((muos_shortclock)~0)
-
 #define MUOS_CLOCK_REGISTER MUOS_HW_CLOCK_REGISTER(MUOS_CLOCK_HW)
 #define MUOS_CLOCK_OVERFLOW MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW)
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
-typedef MUOS_CLOCK_TYPE muos_clock;
-typedef MUOS_CLOCK_SHORT_TYPE muos_shortclock;
+extern volatile muos_clock muos_clock_coarse;
 
 
-
-//clock_api:
-//: .The fullclock datatype
-//: ----
-//: typedef struct \{
-//:  muos_clock coarse;
-//:  muos_hwclock fine;
-//: \} muos_fullclock;
-//: ----
-//:
-//: +coarse+::
-//:   the global counter for hardware overflows
-//: +fine+::
-//:   the hardware part of the clock
-//:
-//: This is the type with the widest range. With sane configurations it can be ensured
-//: that 'muos_fullclock' never overflows. The drawback is that it needs the most memory
-//: for its representaton which becomes a problem when storing multiple timestamps in
-//: queues. Most often the smaller datatypes 'muos_clock' and 'muos_shortclock' are more
-//: approbiate when one handles overflows correctly.
-//:
-typedef struct {
-  muos_clock coarse;
-  muos_hwclock fine;
-} muos_fullclock;
-
-
-extern volatile muos_clock muos_clock_count_;
-
-extern muos_clock muos_now_;
-
-//clock_api:
-//: .Event time
-//: ----
-//: muos_clock muos_now (void)
-//: ----
-//:
-//: This function is very cheap and gives a consistent time throughout the whole mainloop iteration.
-//:
-//: Returns time if each mainloop (also recursive from 'muos_wait()' and 'muos_yield()') iteration start.
-static inline muos_clock
-muos_now (void)
-{
-  return muos_now_;
-}
-
-static inline void
-muos_clock_90init (void)
-{
-  MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE(MUOS_CLOCK_HW);
-  MUOS_HW_CLOCK_PRESCALE_SET(MUOS_CLOCK_HW, MUOS_CLOCK_PRESCALER);
-}
+void
+muos_clock_90init (void);
 
 
 
@@ -124,117 +97,36 @@ muos_clock_90init (void)
 //: ----
 //: muos_clock muos_clock_now (void)
 //: muos_clock muos_clock_now_isr (void)
+//: muos_clock32 muos_clock32_now (void)
+//: muos_clock32 muos_clock32_now_isr (void)
 //: ----
 //:
 //: Returns the current time as queried from the hardware.
+//: The clock32 functions return truncated time, overflows need to be
+//: handled by the software.
 //:
-static inline muos_clock
-muos_clock_now (void)
-{
-  volatile muos_clock counter;
-  volatile muos_hwclock hw;
+muos_clock
+muos_clock_now (void);
 
-  muos_interrupt_disable ();
-  hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-  muos_interrupt_enable ();
-
-  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
-}
+muos_clock
+muos_clock_now_isr (void);
 
 
-static inline muos_clock
-muos_clock_now_isr (void)
-{
-  volatile muos_clock counter;
-  volatile muos_hwclock hw;
+muos_clock32
+muos_clock32_now (void);
 
-  hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-
-  return (counter<<(sizeof(MUOS_CLOCK_REGISTER) * 8)) + hw;
-}
-
-//clock_api:
-//: ----
-//: muos_shortclock muos_clock_shortnow (void)
-//: muos_shortclock muos_clock_shortnow_isr (void)
-//: ----
-//:
-//: Returns the current time as queried from the hardware, using the 'muos_shortclock' datatype.
-static inline muos_shortclock
-muos_clock_shortnow (void)
-{
-  if (sizeof(MUOS_CLOCK_REGISTER) < sizeof(muos_shortclock))
-    {
-      volatile muos_shortclock counter;
-      volatile muos_hwclock hw;
-
-      muos_interrupt_disable ();
-      hw = MUOS_CLOCK_REGISTER;
-      counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-      muos_interrupt_enable ();
-
-      return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
-    }
-  else
-    return MUOS_CLOCK_REGISTER;
-}
+muos_clock32
+muos_clock_now_isr (void);
 
 
-static inline muos_shortclock
-muos_clock_shortnow_isr (void)
-{
-  if (sizeof(MUOS_CLOCK_REGISTER) < sizeof(muos_shortclock))
-    {
-      volatile muos_shortclock counter;
-      volatile muos_hwclock hw;
-
-      hw = MUOS_CLOCK_REGISTER;
-      counter = muos_clock_count_ + (hw<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-
-      return ((counter<<((sizeof(MUOS_CLOCK_REGISTER) * 8)-1))<<1) + hw;
-    }
-  else
-    return MUOS_CLOCK_REGISTER;
-}
 
 
-//clock_api:
-//: ----
-//: muos_fullclock muos_clock_fullnow (void)
-//: muos_fullclock muos_clock_fullnow_isr (void)
-//: ----
-//:
-//: Returns the current time as queried from the hardware, using the 'muos_fullclock' datatype.
-static inline muos_fullclock
-muos_clock_fullnow (void)
-{
-  volatile muos_fullclock clock;
-
-  muos_interrupt_disable ();
-  clock.fine = MUOS_CLOCK_REGISTER;
-  clock.coarse = muos_clock_count_ + (clock.fine<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-  muos_interrupt_enable ();
-
-  return clock;
-}
-
-static inline muos_fullclock
-muos_clock_fullnow_isr (void)
-{
-  volatile muos_fullclock clock;
-
-  clock.fine = MUOS_CLOCK_REGISTER;
-  clock.coarse = muos_clock_count_ + (clock.fine<((muos_hwclock)~0/2)?MUOS_CLOCK_OVERFLOW:0);
-
-  return clock;
-}
 
 //clock_api:
 //: .Time difference between two timestamps
 //: ----
-//: muos_clock muos_clock_elapsed (muos_clock now, muos_clock start)
+//: muos_clock muos_clock_elapsed (muos_clock end, muos_clock start)
+//: muos_clock32 muos_clock32_elapsed (muos_clock end, muos_clock start)
 //: ----
 //:
 //: +now+::
@@ -242,11 +134,21 @@ muos_clock_fullnow_isr (void)
 //: +start+::
 //:   Begin of the timespan to to be calculated
 //:
-//: returns the time difference between 'now' and 'start'. The result is
+//: returns the time difference between 'end' and 'start'. The result is
 //: always positive or zero. Simple overflows on the arguments are respected.
 //: Thus the full range of 'muos_clock' is available.
+//:
+//: The *32 and *16 bit versions save memory, but it must be guaranteed that
+//: the time spans are short enough to fall into the respective range.
+//:
 muos_clock
-muos_clock_elapsed (muos_clock now, muos_clock start);
+muos_clock_elapsed (muos_clock end, muos_clock start);
+
+muos_clock32
+muos_clock32_elapsed (muos_clock32 end, muos_clock32 start);
+
+muos_clock16
+muos_clock16_elapsed (muos_clock16 end, muos_clock16 start);
 
 
 #ifdef MUOS_CLOCK_CALIBRATE
@@ -273,7 +175,7 @@ muos_clock_elapsed (muos_clock now, muos_clock start);
 //: expect some drift remaining. The configuration specially includes a deadband for this. Otherwise
 //: when calibration tries to constantly change the frequency there would be very much jitter on the timing.
 void
-muos_clock_calibrate (const muos_clock now, const muos_clock sync);
+muos_clock_calibrate (const muos_clock now, const muos_clock32 sync);
 #endif
 
 #endif
