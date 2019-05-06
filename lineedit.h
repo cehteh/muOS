@@ -33,6 +33,8 @@
 //#error MUOS_IO_TXQUEUE must be bigger than MUOS_LINEEDIT_BUFFER
 //#endif
 
+//PLANNED: docme Serial init, clear line "\x1b\x5b\x31\x7e\x0b\x0d"
+
 void
 muos_lineedit_echo MUOS_IO_HWPARAM(bool echo);
 

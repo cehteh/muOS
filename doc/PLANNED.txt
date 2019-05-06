@@ -1,5 +1,7 @@
 PIPADOC:PLANNED: macros for Hz kHz
 
+PIPADOC:PLANNED: doc make targets and documentation creation
+
 PIPADOC:PLANNED: high speed timer, no overflow rollover, calling functions directly from compmatch, has a small sorted array what to call when
 
   API: hst_now() get current time
