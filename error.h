@@ -65,9 +65,9 @@ typedef enum
 extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
 extern volatile uint8_t muos_errors_pending_;
 
-
+#ifdef MUOS_HW_HEADER
 #include MUOS_HW_HEADER
-
+#endif
 
 //error_api:
 //: .Query number of pending errors
