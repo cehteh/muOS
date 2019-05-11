@@ -2,7 +2,7 @@
  *      mµOS            - my micro OS
  *
  * Copyright (C)
- *      2015                            Christian Thäter <ct@pipapo.org>
+ *      2015, 2019                      Christian Thäter <ct@pipapo.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,43 @@
 #define MUOS_LIB_QUEUE_H
 
 #include <muos/muos.h>
+
+// autoconfigure MUOS_QUEUE_INDEX
+#ifndef MUOS_QUEUE_INDEX
+
+#ifdef MUOS_RTQ_LENGTH
+# define MUOS_QUEUE_MAX_LENGTH MUOS_RTQ_LENGTH
+#else
+# define MUOS_QUEUE_MAX_LENGTH 0
+#endif
+
+#ifdef MUOS_HPQ_LENGTH
+# if MUOS_HPQ_LENGTH > MUOS_QUEUE_MAX_LENGTH
+#  undef MUOS_QUEUE_MAX_LENGTH
+#  define MUOS_QUEUE_MAX_LENGTH MUOS_HPQ_LENGTH
+# endif
+#endif
+
+#ifdef MUOS_BGQ_LENGTH
+# if MUOS_BGQ_LENGTH > MUOS_QUEUE_MAX_LENGTH
+#  undef MUOS_QUEUE_MAX_LENGTH
+#  define MUOS_QUEUE_MAX_LENGTH MUOS_BGQ_LENGTH
+# endif
+#endif
+
+//TODO: rename MUOS_QUEUE_INDEX to MUOS_QUEUE_WIDTH
+
+#if MUOS_QUEUE_MAX_LENGTH <= 16
+# define MUOS_QUEUE_INDEX 4
+#elif MUOS_QUEUE_MAX_LENGTH <= 256
+# define MUOS_QUEUE_INDEX 8
+#elif MUOS_QUEUE_MAX_LENGTH <= 65526
+# define MUOS_QUEUE_INDEX 16
+#else
+# error queue too big
+#endif
+
+#endif
 
 #include <stdint.h>
 #include <stdbool.h>

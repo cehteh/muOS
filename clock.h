@@ -23,15 +23,14 @@
 
 #include <stdbool.h>
 
-#ifdef MUOS_HW_HEADER
 #include MUOS_HW_HEADER
-#endif
 
 //PLANNED: macros compensating drift over long timespans; using rationals thereof
 
 //PLANNED: make it possible to configure muos w/o a clock
 
 //PLANNED: only stop clock interrupts when querying time
+
 
 
 
