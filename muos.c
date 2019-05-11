@@ -135,9 +135,10 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 #endif
                       MUOS_DEBUG_SWITCH_TOGGLE;
                     }
+                  //FIXME: rename all *schedule to *schedule_isr
                   while (muos_rtq_schedule ());
                 }
-               while (muos_clpq_schedule ());
+               while (muos_clpq_schedule_isr ());
             }
           while (muos_hpq_schedule ());
         }
@@ -194,7 +195,7 @@ muos_yield (uint8_t count)
                 }
               while (count && muos_rtq_schedule ());
             }
-          while (count && muos_clpq_schedule ());
+          while (count && muos_clpq_schedule_isr ());
         }
       while (count && muos_hpq_schedule ());
     }
@@ -269,7 +270,7 @@ main()
                     }
                   while (muos_rtq_schedule ());
                 }
-              while (muos_clpq_schedule ());
+              while (muos_clpq_schedule_isr ());
             }
           while (muos_hpq_schedule ());
         }

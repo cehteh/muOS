@@ -60,6 +60,7 @@ void muos_die (void);
 extern volatile struct muos_status_flags
 {
   uint8_t schedule:1;
+  uint8_t clpq_parity:1; // odd/even mark for the current clpq segment
 } muos_status;
 
 

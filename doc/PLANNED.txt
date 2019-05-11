@@ -30,15 +30,6 @@ runs direct in timer interrupt, exact timing, wakes up a little earlier
 spins to exact time. Serve from clpq, tag functions as hard-rt and dont
 reenable interrupts then.
 
-PIPADOC:PLANNED: ltpq long time queue
-. uses longer, absolute time format (muos_clock or muos_fullclock)
-. needs more memory
-. handled from the clpq (one regular job at each cycles moves elements
-  form ltpq to clpq)
-. optional only needed for 'calendar' like events, may be short, only as
-much long time events the program uses at most
-. persistent timers stored in EEPROM when RTC is present
-
 PIPADOC:PLANNED: -mint8 compatible
 
 PIPADOC:PLANNED: library for rationals

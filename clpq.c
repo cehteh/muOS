@@ -2,7 +2,7 @@
  *      mµOS            - my micro OS
  *
  * Copyright (C)
- *      2015                            Christian Thäter <ct@pipapo.org>
+ *      2019                            Christian Thäter <ct@pipapo.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,66 +18,203 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if MUOS_CLPQ_LENGTH > 0
+
 #include <muos/clpq.h>
 #include <muos/clock.h>
 #include <muos/error.h>
 
-#if MUOS_CLPQ_LENGTH > 0
+#include <string.h>
+
+//PLANNED: wrapper for recurring jobs
+//PLANNED: implement minimal uint8_t array math lib (inc/compare/xor etc)
+//PLANNED: wrap all clock math in functions for above conversion
+
+
+#ifndef MUOS_CLPQ_BARRIERS
+#define MUOS_CLPQ_BARRIERS (MUOS_CLPQ_LENGTH<16?MUOS_CLPQ_LENGTH:16)
+#endif
+
+#if MUOS_CLPQ_BARRIERS > 1
+// use exponential barriers (1,2,4,8,..) with splitting and merging
+#define MUOS_CLPQ_EXPONENTIAL
+#error Exponential Barriers are not implemented yet, configure MUOS_CLPQ_BARRIERS=1
+#endif
+
+
+// How many barriers can be held at most
+#define MUOS_CLPQ_BARRIER_MAX ((1ULL<<(MUOS_CLPQ_BARRIERS-1))*MUOS_CLPQ_LENGTH)
+
+#if MUOS_CLPQ_BARRIER_MAX <= UINT8_MAX
+typedef uint8_t muos_clpq_segment;
+#elif MUOS_CLPQ_BARRIER_MAX <= UINT16_MAX
+typedef uint16_t muos_clpq_segment;
+#elif MUOS_CLPQ_BARRIER_MAX <= UINT32_MAX
+typedef uint32_t muos_clpq_segment;
+#else
+typedef uint64_t muos_clpq_segment;
+#endif
+
+
+
+//clpq_impl:
+//: Time Segments
+//: -------------
+//:
+//: The time is sliced into segments of 65536 ticks. To reduce memory only the span since the begin of the
+//: current segment is stored in entries. Later events need to Time barriers to separate the segment borders.
+//:
+//: Segments are alternating with the state stored in muos_status.clpq_parity.
+//:
+//:
+//: Priority Queue
+//: --------------
+//:
+//: Uses a 'sorted stack' approach because times are compressed by storing base relative intervals only.
+//: A heap datastructure can not handle that. The general assumption is that pushing events in farer future
+//: is allowed to be more expensive than close times. Also in most cases there wont be very much events on a
+//: CLPQ at any time.
+//:
+//: Each entry in the clpq is defined by:
+//:  'when'::
+//:     the relative time to clpq_base() (that is 0..65535) any longer time spans need time barriers, see below
+//:  'what'::
+//:     the function to call or some special sentinel values implementing the barriers.
+//:
+//:
+//:
+//: Wakeup Mark
+//: -----------
+//:
+//: Uses 'NULL' as 'what'. Nothing gets scheduled but a wakeup gets scheduled. Used to implement silent
+//: timeouts (nothing else wakes the MPU like in muos_wait())
+//:
+//: Time Barriers
+//: -------------
+//:
+//: Time barriers are inserted when a time exceeds into succeeding segments, the 'when' of a Time barrier is always 0
+//: The MUOS_CLPQ_BARRIERS
+//:
+//: transition from barrier to non barrier toggles the wait flag.
+//:
+//:
 
 muos_clpq_type muos_clpq;
 
 
-//PLANNED: realtime in interrupt function calls
-//PLANNED: sorting before normal functions
-//PLANNED: possibly add a small 'boost' (MUOS_CLOCK_LATENCY/2) for sorting them earlier (sorting only)
+/*
 
+  Tools
 
-//PLANNNED: wrapper for recurring jobs
+*/
 
-
-bool
-muos_clpq_schedule (void)
+static inline bool
+clpq_segment_parity (muos_clock when)
 {
-  muos_clpq.now = muos_clock_now ();
+  return when & 1ULL<<16;
+}
 
-#if 0 //FIXME: new clpq
-  if (muos_clpq.descriptor.used)
+
+static inline uint8_t
+clpq_barrier (muos_clpq_function what)
+{
+  if (!what || (uintptr_t)what > MUOS_CLPQ_BARRIERS)
+    return 0;
+
+  return (uintptr_t)what;
+}
+
+static inline muos_clpq_segment
+clpq_segment (muos_clock when)
+{
+  return when >> 16;
+}
+
+
+
+/*
+
+  Pushing jobs
+
+*/
+
+muos_error
+muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
+{
+  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
+    return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
+
+  muos_clpq_segment segmentdist = clpq_segment (when) - clpq_segment (muos_clpq.now);
+
+  if (!segmentdist)
     {
-      if ((when - muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when) < ((muos_spriq_priority)~0/2))
+      if (muos_clpq.used >= MUOS_CLPQ_LENGTH)
+        return muos_error_clpq_overflow;
+
+      muos_clpq_index i = muos_clpq.used;
+      for (; i; --i)
         {
+          if (muos_clpq.entries[i-1].when > when
+              || (muos_clpq.entries[i-1].what && (uintptr_t)muos_clpq.entries[i-1].what <= MUOS_CLPQ_BARRIERS))
+            break;
 
-          const struct muos_spriq_entry tmp = muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1];
-
-          if (sizeof(muos_spriq_priority) > sizeof(muos_hwclock)) /* statically evaluated */
-            {
-              // no need for time barrier
-              muos_spriq_pop (&muos_clpq.descriptor);
-            }
-          else
-            {
-              // with time barrier for the sliding window
-              if (muos_clpq.descriptor.used == 1)
-                {
-                  muos_clpq.descriptor.spriq[0].fn = 0;
-                  muos_clpq.descriptor.spriq[0].when += (muos_spriq_priority)-1/2-1;
-                }
-              else
-                muos_spriq_pop (&muos_clpq.descriptor);
-            }
-
-          if (tmp.fn)
-            {
-              muos_interrupt_enable ();
-              tmp.fn (&tmp);
-              muos_interrupt_disable ();
-            }
-          return true;  //PLANNED: may shortcut 'return false' when nothing to be done in 'near' future (within hwclock reach)
+          muos_clpq.entries[i] = muos_clpq.entries[i-1];
         }
+
+      muos_clpq.entries[i] = (struct muos_clpq_entry){when, what};
+      ++muos_clpq.used;
     }
+  else
+    {
+      uint8_t barrier = 0;
+      muos_clpq_index i = muos_clpq.used;
+
+      for (; i; --i)
+        {
+          barrier = clpq_barrier (muos_clpq.entries[i-1].what);
+          if (barrier > segmentdist)
+            break;
+          segmentdist -= barrier;
+        }
+
+      if (!barrier)
+        {
+#if MUOS_CLPQ_EXPONENTIAL
+          //TODO: number of barriers clpq_bitcount (muos_clpq_segment segments)
+#else
+          uint8_t barriers = segmentdist;
 #endif
 
-  return false;
+          if (barriers > MUOS_CLPQ_LENGTH-1 || MUOS_CLPQ_LENGTH-muos_clpq.used < segmentdist+1)
+            {
+              return muos_error_clpq_overflow;
+            }
+
+          memmove (&muos_clpq.entries[i+barriers+1], &muos_clpq.entries[i], sizeof (struct muos_clpq_entry) * (muos_clpq.used-i));
+          muos_clpq.used += barriers + 1;
+
+#if MUOS_CLPQ_EXPONENTIAL
+          //TODO: insert exponential barriers
+#else
+          for (;barriers; --barriers)
+            muos_clpq.entries[i+barriers] = (struct muos_clpq_entry){0, (muos_clpq_function)0x1};
+#endif
+        }
+#if MUOS_CLPQ_EXPONENTIAL
+      else if (barrier > 1)
+        {
+          //TODO: barrier splitting/reordering, check allocation
+          //if (muos_clpq.used > MUOS_CLPQ_LENGTH-2)
+          //  return muos_error_clpq_overflow;
+        }
+#endif
+
+      // insert what
+      muos_clpq.entries[i] = (struct muos_clpq_entry){when, what};
+    }
+  return muos_success;
 }
+
 
 
 //PLANNED: delay relative to clpq.now
@@ -87,17 +224,149 @@ muos_clpq_schedule (void)
 //muos_clpq32_in (muos_clock32 when, muos_clpq_function what)
 
 
-muos_error
-muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
-{
-  (void) when; (void) what; //FIXME:
-#if 0 //FIXME: new clpq
-  if (muos_clpq.descriptor.used == MUOS_SPRIQ_SIZE(muos_clpq))
-    return muos_error_clpq_overflow;
 
-  muos_spriq_push (&muos_clpq.descriptor, base, when, what);
-#endif
-  return muos_success;
+
+/*
+
+  Removing Jobs
+
+ */
+
+bool
+muos_clpq_remove_isr (muos_clock when, muos_clpq_function what)
+{
+  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
+    return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
+
+  muos_clpq_segment segmentdist = clpq_segment (when) - clpq_segment (muos_clpq.now);
+
+  if (!segmentdist)
+    {
+      muos_clpq_index i = muos_clpq.used;
+      for (; i; --i)
+        {
+          if (muos_clpq.entries[i-1].when == (muos_clock16)when && muos_clpq.entries[i-1].what == what)
+            break;
+        }
+
+      if (!i)
+        return false;
+
+      //TODO: memmove?
+      for (; i < muos_clpq.used; ++i)
+        {
+          muos_clpq.entries[i-1] = muos_clpq.entries[i];
+        }
+
+      --muos_clpq.used;
+    }
+  else
+    {
+      // remove with barriers
+
+      //TODO: when removing last, remove all preceeding barriers
+      //TODO: when exponential, then merge barriers
+
+      uint8_t barrier = 0;
+      muos_clpq_index i = muos_clpq.used;
+
+      for (; i && segmentdist; --i)
+        {
+          barrier = clpq_barrier (muos_clpq.entries[i-1].what);
+          if (barrier > segmentdist)
+            return false;
+
+          segmentdist -= barrier;
+        }
+
+      if (!i)
+        return false;
+
+      for (; i; --i)
+        {
+          if (muos_clpq.entries[i-1].when == (muos_clock16)when && muos_clpq.entries[i-1].what == what)
+            break;
+        }
+
+      if (!i)
+        return false;
+
+      //TODO: memmove?
+      for (; i < muos_clpq.used; ++i)
+        {
+          muos_clpq.entries[i-1] = muos_clpq.entries[i];
+        }
+
+      --muos_clpq.used;
+    }
+  return true;
 }
+
+
+#if 0 //PLANNED: unimplemented
+bool
+muos_clpq_remove_first (muos_clpq_function what);
+
+bool
+muos_clpq_remove_last (muos_clpq_function what);
+#endif
+
+
+
+//PLANNED: function to scan for 'what', first or count (for recover after errors)
+
+
+
+/*
+
+  Scheduling
+
+ */
+bool
+muos_clpq_schedule_isr (void)
+{
+  muos_clpq.now = muos_clock_now_isr ();
+
+  if (!muos_clpq.used)
+    return false;
+
+  if (clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
+    {
+      if (clpq_segment_parity (muos_clpq.now) != muos_status.clpq_parity)
+        {
+#if MUOS_CLPQ_EXPONENTIAL
+          //TODO: split barriers
+#endif
+          --muos_clpq.used;
+          muos_status.clpq_parity ^= 1;
+        }
+      else
+        {
+          // stop at barrier
+          return false;
+        }
+    }
+
+  if (!clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
+    {
+      if (muos_clpq.entries[muos_clpq.used-1].when <= (muos_clock16)muos_clpq.now)
+        {
+          --muos_clpq.used;
+
+          muos_clpq_function what = muos_clpq.entries[muos_clpq.used].what;
+          if (what)
+            {
+              muos_clock16 delay = muos_clock16_elapsed (muos_clpq.now, muos_clpq.entries[muos_clpq.used].when);
+              muos_interrupt_enable ();
+              what (delay);
+              muos_interrupt_disable ();
+            }
+          return true;
+        }
+    }
+
+  return false;
+}
+
 
 #endif

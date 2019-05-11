@@ -41,11 +41,7 @@ configured in some details and disabled if not required.
 
 ==== clock priority queue
 
-Uses the clock to wake the mainloop for scheduling events in 'near future'.
-'near future' is defined by the clock configuration, times longer than the
-'muos_shortclock' type can not be handled. This times are also affected by the
-timers prescaler, the faster the clock runs, the shorter are the time spans it
-can handle. Common ranges are from few milliseconds to many hours.
+Uses the clock to wake the mainloop for scheduling events in 'future'.
 
 Events scheduled by the clpq have the second highest priority, but are still
 called synchronously within the mainloop and interrupts enabled.
@@ -53,16 +49,13 @@ called synchronously within the mainloop and interrupts enabled.
 
 ===== clpq API
 
-The clpq uses a sliding-window implementation, this allows to add
-times covering the while range of the 'muos_shortclock' datatype.
-
 
 PIPADOC:=clpq_api
 
 ===== clpq configuration
 
 Only the length is configured for the 'clpq', most of its configurations come
-from the clock and spriq configuration see below.
+from the clock configuration see below.
 
 PIPADOC:@clpq_config
 
