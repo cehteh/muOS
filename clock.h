@@ -2,7 +2,7 @@
  *      mµOS            - my micro OS
  *
  * Copyright (C)
- *      2015                            Christian Thäter <ct@pipapo.org>
+ *      2019                            Christian Thäter <ct@pipapo.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,15 @@
 
 #include <stdbool.h>
 
+#ifdef MUOS_HW_HEADER
 #include MUOS_HW_HEADER
+#endif
 
 //PLANNED: macros compensating drift over long timespans; using rationals thereof
 
 //PLANNED: make it possible to configure muos w/o a clock
 
 //PLANNED: only stop clock interrupts when querying time
-
 
 
 
@@ -49,9 +50,9 @@
 //:   Clock type truncated to uint16_t for limited time ranges.
 //:
 //: Muos provides 3 clock types. The main type is configureable and should be wide enough that
-//: it will not overflow for the expected worst case application runtime. The actual details will
-//: vary depending on application and prescaler setttings. The 2 truncated types can save a lot
-//: memory and are useful when only shorter timespans are required and overflows are handled
+//: it will not overflow for the expected worst case application run time. The actual details will
+//: vary depending on application and prescaler settings. The 2 truncated types can save  memory
+//: and are useful when only shorter time spans are required or overflows are handled
 //: properly in the software.
 //:
 typedef MUOS_CLOCK_TYPE muos_clock;
@@ -116,7 +117,7 @@ muos_clock32
 muos_clock32_now (void);
 
 muos_clock32
-muos_clock_now_isr (void);
+muos_clock32_now_isr (void);
 
 
 
