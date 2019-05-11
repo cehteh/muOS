@@ -27,7 +27,7 @@ CCFLAGS += -Os
 #CCFLAGS += -mtiny-stack
 CCFLAGS += -fshort-enums
 CCFLAGS += -flto=$(PARALLEL)
-#CCFLAGS += -mcall-prologues
+CCFLAGS += -mcall-prologues
 
 FUSE_DEFAULT = -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 #FUSE_RELEASE = -U lfuse:w:0x64:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
