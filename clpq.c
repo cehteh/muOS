@@ -118,11 +118,12 @@ clpq_segment_parity (muos_clock when)
 static inline uint8_t
 clpq_barrier (muos_clpq_function what)
 {
-  if (!what || (uintptr_t)what > MUOS_CLPQ_BARRIERS)
-    return 0;
+  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
+    return (uintptr_t)what;
 
-  return (uintptr_t)what;
+  return 0;
 }
+
 
 static inline muos_clpq_segment
 clpq_segment (muos_clock when)
@@ -144,9 +145,18 @@ muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
   if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
     return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
 
-  muos_clpq_segment segmentdist = clpq_segment (when) - clpq_segment (muos_clpq.now);
+  if (when < muos_clpq.now)
+    when = muos_clpq.now;
 
-  if (!segmentdist)
+  muos_clpq_segment segments = clpq_segment (when) - clpq_segment (muos_clpq.now);
+
+  // increment segments when there are leftover jobs
+  if (clpq_segment_parity (muos_clpq.now) != muos_status.clpq_parity && !clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
+    {
+      ++segments;
+    }
+
+  if (!segments)
     {
       if (muos_clpq.used >= MUOS_CLPQ_LENGTH)
         return muos_error_clpq_overflow;
@@ -154,7 +164,7 @@ muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
       muos_clpq_index i = muos_clpq.used;
       for (; i; --i)
         {
-          if (muos_clpq.entries[i-1].when > when
+          if (muos_clpq.entries[i-1].when > (muos_clock16)when
               || (muos_clpq.entries[i-1].what && (uintptr_t)muos_clpq.entries[i-1].what <= MUOS_CLPQ_BARRIERS))
             break;
 
@@ -169,38 +179,55 @@ muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
       uint8_t barrier = 0;
       muos_clpq_index i = muos_clpq.used;
 
-      for (; i; --i)
+      // find respective barrier
+      for (; i && segments; --i)
         {
           barrier = clpq_barrier (muos_clpq.entries[i-1].what);
-          if (barrier > segmentdist)
+          if (barrier >= segments)
             break;
-          segmentdist -= barrier;
+          segments -= barrier;
         }
 
+      //have to insert barrier or not?
       if (!barrier)
         {
-#if MUOS_CLPQ_EXPONENTIAL
-          //TODO: number of barriers clpq_bitcount (muos_clpq_segment segments)
-#else
-          uint8_t barriers = segmentdist;
-#endif
+          // create new (segments) barriers at end
 
-          if (barriers > MUOS_CLPQ_LENGTH-1 || MUOS_CLPQ_LENGTH-muos_clpq.used < segmentdist+1)
+          //PLANNED: calculation for exponential barriers (log2)
+          if (MUOS_CLPQ_LENGTH-muos_clpq.used < segments+1)
             {
               return muos_error_clpq_overflow;
             }
 
-          memmove (&muos_clpq.entries[i+barriers+1], &muos_clpq.entries[i], sizeof (struct muos_clpq_entry) * (muos_clpq.used-i));
-          muos_clpq.used += barriers + 1;
+          memmove (&muos_clpq.entries[i+segments+1], &muos_clpq.entries[i], sizeof (struct muos_clpq_entry) * (muos_clpq.used-i));
+          muos_clpq.used += segments + 1;
 
-#if MUOS_CLPQ_EXPONENTIAL
+#ifdef MUOS_CLPQ_EXPONENTIAL
           //TODO: insert exponential barriers
 #else
-          for (;barriers; --barriers)
-            muos_clpq.entries[i+barriers] = (struct muos_clpq_entry){0, (muos_clpq_function)0x1};
+          for (; segments; --segments)
+            muos_clpq.entries[i+segments] = (struct muos_clpq_entry){0, (muos_clpq_function)0x1};
 #endif
         }
-#if MUOS_CLPQ_EXPONENTIAL
+      else if (barrier == 1)
+        {
+          // insert into barrier at i
+          if (muos_clpq.used >= MUOS_CLPQ_LENGTH)
+            {
+              return muos_error_clpq_overflow;
+            }
+
+          for (--i; i; --i)
+            {
+              if (muos_clpq.entries[i-1].when > (muos_clock16)when
+                  || (muos_clpq.entries[i-1].what && (uintptr_t)muos_clpq.entries[i-1].what <= MUOS_CLPQ_BARRIERS))
+                break;
+            }
+
+          memmove (&muos_clpq.entries[i+1], &muos_clpq.entries[i], sizeof (struct muos_clpq_entry) * (muos_clpq.used-i));
+          muos_clpq.used += 1;
+        }
+#ifdef MUOS_CLPQ_EXPONENTIAL
       else if (barrier > 1)
         {
           //TODO: barrier splitting/reordering, check allocation
@@ -238,9 +265,9 @@ muos_clpq_remove_isr (muos_clock when, muos_clpq_function what)
   if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
     return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
 
-  muos_clpq_segment segmentdist = clpq_segment (when) - clpq_segment (muos_clpq.now);
+  muos_clpq_segment segments = clpq_segment (when) - clpq_segment (muos_clpq.now);
 
-  if (!segmentdist)
+  if (!segments)
     {
       muos_clpq_index i = muos_clpq.used;
       for (; i; --i)
@@ -270,13 +297,13 @@ muos_clpq_remove_isr (muos_clock when, muos_clpq_function what)
       uint8_t barrier = 0;
       muos_clpq_index i = muos_clpq.used;
 
-      for (; i && segmentdist; --i)
+      for (; i && segments; --i)
         {
           barrier = clpq_barrier (muos_clpq.entries[i-1].what);
-          if (barrier > segmentdist)
+          if (barrier > segments)
             return false;
 
-          segmentdist -= barrier;
+          segments -= barrier;
         }
 
       if (!i)
@@ -334,7 +361,7 @@ muos_clpq_schedule_isr (void)
     {
       if (clpq_segment_parity (muos_clpq.now) != muos_status.clpq_parity)
         {
-#if MUOS_CLPQ_EXPONENTIAL
+#ifdef MUOS_CLPQ_EXPONENTIAL
           //TODO: split barriers
 #endif
           --muos_clpq.used;
@@ -347,6 +374,7 @@ muos_clpq_schedule_isr (void)
         }
     }
 
+
   if (!clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
     {
       if (muos_clpq.entries[muos_clpq.used-1].when <= (muos_clock16)muos_clpq.now)
@@ -357,6 +385,10 @@ muos_clpq_schedule_isr (void)
           if (what)
             {
               muos_clock16 delay = muos_clock16_elapsed (muos_clpq.now, muos_clpq.entries[muos_clpq.used].when);
+
+              if (delay > UINT16_MAX/2)
+                muos_error_set_isr (muos_warn_clpq_delay);
+
               muos_interrupt_enable ();
               what (delay);
               muos_interrupt_disable ();
