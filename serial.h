@@ -29,7 +29,7 @@
 
 //PLANNED: lowwater/highwater generic
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 typedef bool (*muos_serial_rxcallback_type)(uint8_t hw);
 #else
 typedef bool (*muos_serial_rxcallback_type)(void);
@@ -66,7 +66,7 @@ extern muos_serial_rxcallback_type muos_serial_rxcallback[MUOS_SERIAL_NUM];
 MUOS_SERIAL_HW
 #undef UART
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 extern struct muos_cbuffer* const muos_txbuffer[];
 
 static inline muos_cbuffer_index
@@ -85,7 +85,7 @@ muos_serial_tx_free (void)
 //uart_api:
 //: .Initializing and Starting
 //: ----
-//: #if MUOS_SERIAL_NUM > 1
+//: #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 //: muos_error
 //: muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync);
 //: #else
@@ -122,7 +122,7 @@ muos_serial_tx_free (void)
 //:   characters. A running port will be stopped and flushed unconditionally
 //:   (even in case of error).
 //:
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 muos_error
 muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback);
 #else
@@ -133,7 +133,7 @@ muos_serial_start (uint32_t baud, const char config[3], int rxsync, muos_serial_
 
 
 //TODO: DOCME
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 static inline void
 muos_serial_tx_run (uint8_t hw)
 {
@@ -224,7 +224,7 @@ muos_serial_rx_stop (void)
 //uart_api:
 //: .Sending data
 //: ----
-//: #if MUOS_SERIAL_NUM > 1
+//: #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 //: muos_error muos_serial_tx_byte (uint8_t hw, uint8_t data)
 //: #else
 //: muos_error muos_serial_tx_byte (uint8_t data)
@@ -247,7 +247,7 @@ muos_serial_rx_stop (void)
 //:   muos_success::
 //:     no error.
 //:
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 muos_error
 muos_serial_tx_byte (uint8_t hw, uint8_t b);
 #else
@@ -257,7 +257,7 @@ muos_serial_tx_byte (uint8_t b);
 
 
 //TODO: DOCME
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 void
 muos_serial_tx_flush (uint8_t hw);
 #else
@@ -292,7 +292,7 @@ muos_serial_tx_flush (void);
 //: *return*::
 //:   a character value or a negated error as noted above.
 //:
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 int16_t
 muos_serial_rx_byte (uint8_t hw);
 #else
@@ -303,7 +303,7 @@ muos_serial_rx_byte (void);
 
 
 //TODO: DOCME
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 void
 muos_serial_rx_flush (uint8_t hw, bool desync);
 #else
@@ -335,7 +335,7 @@ muos_serial_rx_flush (bool desync);
 
 
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 #else
 #endif
 void

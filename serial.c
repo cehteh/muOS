@@ -39,7 +39,7 @@ MUOS_SERIAL_HW
 #undef UART
 
 // indexed descriptor arrays are only used when there is more than one serial
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 struct muos_cbuffer* const muos_txbuffer[]  =
   {
 #define UART(hw, txsize, rxsize)                \
@@ -64,7 +64,7 @@ struct muos_cbuffer* const muos_rxbuffer[] =
   init/startup
 */
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 muos_error
 muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback)
 {
@@ -92,7 +92,7 @@ muos_serial_start (uint32_t baud, const char config[3], int rxsync, muos_serial_
   Sending
 */
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
 muos_error
 muos_serial_tx_byte (uint8_t hw, uint8_t b)
@@ -165,7 +165,7 @@ muos_serial_tx_flush (void)
   Receiving
 */
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
 int16_t
 muos_serial_rx_byte (uint8_t hw)

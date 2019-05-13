@@ -367,7 +367,7 @@ void txqueue_CSI MUOS_IO_HWPARAM()
 */
 
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
 bool
 muos_tx_wait (intptr_t data)

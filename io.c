@@ -57,7 +57,7 @@ bool
 muos_tx_wait (intptr_t data);
 
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
@@ -103,7 +103,7 @@ muos_output_unlock (uint8_t hw)
 #else
 
 muos_error
-muos_output_wait (muos_cbuffer_index space, muos_shortclock timeout)
+muos_output_wait (muos_cbuffer_index space, muos_clock16 timeout)
 {
   if (muos_serial_status[0].serial_tx_blocked)
     return muos_error_serial_status;
@@ -142,7 +142,7 @@ muos_output_unlock (void)
 #ifndef MUOS_IO_TXQUEUE
 //PLANNED: fixed point for integers and mille delimiters
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 bool
 muos_tx_wait (intptr_t data)
 {

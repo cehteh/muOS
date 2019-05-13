@@ -107,7 +107,7 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 //: +muos_output_csi_cstr_P ("literal")+::
 //:  puts "literal" into flash section and uses +muos_output_csi_fstr+ for printing it
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 #define MUOS_IO_HWPARAM(...) (const uint8_t hw, ## __VA_ARGS__)
 #define MUOS_IO_HWARG(...) (hw, ## __VA_ARGS__)
 #define MUOS_IO_HWINDEX  hw
@@ -122,7 +122,7 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
 
 
-#if MUOS_SERIAL_NUM > 1
+#if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 #define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
 
 struct muos_txwait
