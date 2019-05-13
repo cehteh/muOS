@@ -141,53 +141,33 @@ some external signal, as far this is supported by the hardware.
 
 .Datatypes
 
-The full time is defined by the global overflow counter and the timers
-internal hardware register. This overflow counter can be selected from various
-unsigned integer types (16, 32, 64 bit wide), the internal timer counter
-register extends this value by its size, enabling rather high resolution
-clocks from 24 up to 80 bits precision. Depending on the circumstances one
-should select a proper size so that overflows don't happen or do not matter.
+PIPADOC:FIXME: new timer doc
+The full time is defined by the global counter and the hardware timers
+internal register.
 
+All clock types are unsigned, this includes the few cases were one queries time
+differences.
 
 There are following types used:
 
 +muos_clock+::
- Generic type used for moderate long time spans. Depending on configuration
- it overflows rarely (or preferably never). This is the primary datatype for
- the clock and the 'global overflow counter'
-
-+muos_shortclock+::
- Type for short time intervals. Used in the clock priority for events which
- are scheduled within shorter times.
+ Type for the complete clock, should be configured to never overflow for the
+ applications runtime.
 
 +muos_hwclock+::
  The type of the hardware timer. Usually 8 or 16 bits wide
 
-+muos_fullclock+::
-  a structure containing the whole clock state with the high bits stored
-  as muos_clock and the low bits stored as muos_hwclock. When properly
-  configured this state should never overflow for the application run time.
++muos_clock16+ +muos_clock32+::
+ Type for shorter time intervals with well defined sizes.
+
 
 .Some conclusions about the Datatypes
-
-* The default for the overflow counter is 'uint32_t', calculations show that
-  16bit makes hardly any sense, because it would overflow quite often even in
-  slow increment configurations.
-
-* More than 32 bit is only needed for fast running clocks or when very long
-  run times are intended.
 
 * Choosing 16 bit hwclock when it is available will have less interrupt
   load but needs more memory. When in doubt, it is not mandatory when the
   timer prescaler is not on the fastest setting. This is especially useful if
   only one 16 bit timer is available and is needed for something else.
   However some mµOS drivers may require a 16 bit timer.
-
-* 'muos_clock' alone overflows quite often but using a 64 bit datatype for it
-  would need a lot memory in the queues (and 64 bit math libs).
-
-//* use 'fullclock' for ltpq scheduling, 'clock' alone would need another
-//       sliding window pq implementation with no much benefits.
 
 ==== API
 
