@@ -30,6 +30,7 @@
 //PLANNED: implement minimal uint8_t array math lib (inc/compare/xor etc)
 //PLANNED: wrap all clock math in functions for above conversion
 
+#include <muos/io.h>
 
 #ifndef MUOS_CLPQ_BARRIERS
 #define MUOS_CLPQ_BARRIERS (MUOS_CLPQ_LENGTH<16?MUOS_CLPQ_LENGTH:16)
@@ -131,6 +132,43 @@ clpq_segment (muos_clock when)
   return when >> 16;
 }
 
+//FIXME: remove this when finally debugged
+void
+clpq_dump (void)
+{
+  if (muos_output_wait (0, 40, 1000) == muos_success)
+    {
+      muos_output_cstr_P (0, "DEBUG:clpq now ");
+      muos_output_uint32 (0, muos_clpq.now);
+      muos_output_char (0, '/');
+      muos_output_uint32 (0, muos_clpq.now%65536);
+      muos_output_cstr_P (0, ": used ");
+      muos_output_uint8 (0, muos_clpq.used);
+
+      muos_output_cstr_P (0, ": parity ");
+      muos_output_uint8 (0, clpq_segment_parity(muos_clpq.now));
+      muos_output_char (0, '/');
+      muos_output_uint32 (0, muos_status.clpq_parity);
+
+      muos_output_nl (0);
+    }
+
+  for (uint8_t i = 0; i < muos_clpq.used; ++i)
+    {
+      if (muos_output_wait (0, 40, 1000) == muos_success)
+        {
+          muos_output_cstr_P (0, "DEBUG:clpq ");
+          muos_output_uint8 (0, i);
+          muos_output_char (0, ' ');
+          muos_output_uint16 (0, muos_clpq.entries[i].when);
+          muos_output_char (0, ' ');
+          muos_output_uintptr (0, (uintptr_t)muos_clpq.entries[i].what);
+          muos_output_nl (0);
+        }
+    }
+
+  muos_output_nl (0);
+}
 
 
 /*
@@ -357,37 +395,32 @@ muos_clpq_schedule_isr (void)
   if (!muos_clpq.used)
     return false;
 
+  bool parity_unmatch = clpq_segment_parity (muos_clpq.now) != muos_status.clpq_parity;
+
   if (clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
     {
-      if (clpq_segment_parity (muos_clpq.now) != muos_status.clpq_parity)
+
+      if (parity_unmatch)
         {
 #ifdef MUOS_CLPQ_EXPONENTIAL
           //TODO: split barriers
 #endif
           --muos_clpq.used;
           muos_status.clpq_parity ^= 1;
-        }
-      else
-        {
-          // stop at barrier
-          return false;
+          return true;
         }
     }
-
-
-  if (!clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
+  else
     {
-      if (muos_clpq.entries[muos_clpq.used-1].when <= (muos_clock16)muos_clpq.now)
+      if (muos_clpq.entries[muos_clpq.used-1].when <= (muos_clock16)muos_clpq.now
+          || parity_unmatch)
         {
           --muos_clpq.used;
 
           muos_clpq_function what = muos_clpq.entries[muos_clpq.used].what;
           if (what)
             {
-              muos_clock16 delay = muos_clock16_elapsed (muos_clpq.now, muos_clpq.entries[muos_clpq.used].when);
-
-              if (delay > UINT16_MAX/2)
-                muos_error_set_isr (muos_warn_clpq_delay);
+              muos_clock16 delay = muos_clock16_elapsed (muos_clpq.now,muos_clpq.entries[muos_clpq.used].when);
 
               muos_interrupt_enable ();
               what (delay);
