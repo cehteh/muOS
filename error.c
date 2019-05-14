@@ -25,8 +25,7 @@
 #include <stddef.h>
 
 volatile uint8_t muos_errors_pending_;
-//TODO: no need to store muos_error_success, array one bit smaller, fix indexing
-volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
+volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
 
 #ifdef MUOS_ERROR_STR
 #define MUOS_ERROR(name, ...) static const char __flash muos_error_##name##_str[] = #name;
@@ -60,7 +59,7 @@ muos_error_set_isr (muos_error err)
   if (err && !(muos_errors_[err/8] & 1<<(err%8)))
       {
         MUOS_DEBUG_ERROR_ON;
-        muos_errors_[err/8] |= 1<<(err%8);
+        muos_barray_setbit (muos_errors_, err);
         ++muos_errors_pending_;
       }
   return err;
@@ -77,10 +76,9 @@ muos_error_check_isr (muos_error err)
     {
       ret = muos_error_peek (err);
 
-
       if (ret)
         {
-          muos_errors_[err/8] &= ~(1<<(err%8));
+          muos_barray_clearbit (muos_errors_, err);
           --muos_errors_pending_;
         }
 
@@ -99,8 +97,7 @@ muos_error_check_isr (muos_error err)
 void
 muos_error_clearall_isr (void)
 {
-  for (uint8_t i = 0; i < (muos_errors_end+7)/8; ++i)
-    muos_errors_[i] = 0;
+  muos_barray_clear(muos_errors_);
 
   muos_errors_pending_ = 0;
   MUOS_DEBUG_ERROR_OFF;

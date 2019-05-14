@@ -21,6 +21,8 @@
 #ifndef MUOS_ERROR_H
 #define MUOS_ERROR_H
 
+#include <muos/lib/barray.h>
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -62,7 +64,7 @@ typedef enum
     muos_errors_end,
   } muos_error;
 
-extern volatile uint8_t muos_errors_[(muos_errors_end+7)/8];
+extern volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
 extern volatile uint8_t muos_errors_pending_;
 
 #ifdef MUOS_HW_HEADER
@@ -139,7 +141,7 @@ muos_error_set (muos_error err)
 static inline bool
 muos_error_peek (muos_error err)
 {
-  return muos_errors_[err/8] & 1<<(err%8);
+  return muos_barray_getbit (muos_errors_, err);
 }
 
 
