@@ -15,6 +15,7 @@ a.out
 \#*
 .#*
 *.v
+*.log
 muos_issues.*
 muos_manual.*
 index.html
