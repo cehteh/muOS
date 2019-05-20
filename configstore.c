@@ -240,7 +240,7 @@ muos_configstore_set (char* var, uint8_t index, char* val)
 
   void* dest = muos_configstore_value (id, index);
 
-  long number = atol (val);
+  long number = strtol (val, NULL, 0);
 
 #ifdef MUOS_CONFIGSTORE_LIMITS
   if (schema[id].type != MUOS_CONFIGSTORE_TYPE_string)
