@@ -26,6 +26,7 @@
 
 #include <muos/error.h>
 
+//PLANNED: facility that enter functions can set a return state (modify the params)
 
 //sm_api:
 //: .States Enumeration
