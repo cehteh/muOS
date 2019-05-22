@@ -30,22 +30,27 @@
 //: Bit Array Library
 //: -----------------
 //:
-//: Defines arrays of up to 2040 bits (255bytes).
+//: Defines arrays of up to 255bytes (2040 bits).
+//: Sizes are rounded to the next byte boundary (multiplies of 8 bits).
 //:
 //: Simple arithmetic and bit operations on these arrays are supported
-//: Optimized for size, not speed.
-//: Does not do bounds checking.
+//: Optimized for size, not speed. Does not do bounds checking.
 //:
 //: Most functions are implemented as macros to properly derive sizes from arrays
-//: and allow proper 'volatile' propagation.
+//: and allow proper 'volatile' propagation. This documentation still gives
+//: prototypes as if they where functions. Refer to the source for the underlying
+//: functions.
+//:
+//: Arithmetic does not handle over/underflows. It can be easily handled by
+//: making barrays big enough and use the highest bit as indicator.
 //:
 
 
 //lib_barray_api:
-//: .Constructors/Macros
+//: .Constructors
 //: ----
-//: MUOS_BARRAY(name, bits)
-//: MUOS_BARRAY_SIZE(bits)
+//: MUOS_BARRAY (name, uint8_t bits)
+//: MUOS_BARRAY_SIZE (uint8_t bits)
 //: ----
 //:
 //: +name+::
@@ -62,9 +67,11 @@
 #define MUOS_BARRAY_SIZE(bits) (((bits)+7)/8)
 #define MUOS_BARRAY(name, bits) uint8_t name[MUOS_BARRAY_SIZE(bits)]
 
+typedef uint8_t muos_barray[];
+
 //: .Whole Array Operations
 //: ----
-//: muos_barray_clear(dst)
+//: void muos_barray_clear (muos_barray dst)
 //: ----
 //:
 //: +dst+::
@@ -78,10 +85,10 @@
 //lib_barray_api:
 //: .Single Bit Operations
 //: ----
-//: muos_barray_getbit(src, bit)
-//: muos_barray_setbit(dst, bit)
-//: muos_barray_clearbit(dst, bit)
-//: muos_barray_setbit(dst, bit)
+//: bool muos_barray_getbit (const muos_barray src, uint8_t bit)
+//: void muos_barray_setbit (muos_barray dst, uint8_t bit)
+//: void muos_barray_clearbit (muos_barray dst, uint8_t bit)
+//: void muos_barray_setbit (muos_barray dst, uint8_t bit)
 //: ----
 //:
 //: 'muos_barray_getbit()'
@@ -93,189 +100,206 @@
 //: set, clear or toggle the 'bit' in 'dst'.
 //:
 #define muos_barray_getbit(src, bit) !!(((src)[(bit)>>3] & 1<<((bit)&7)))
-#define muos_barray_setbit(dst, bit) (dst)[(bit)>>3] |= 1<<((bit)&7)
-#define muos_barray_clearbit(dst, bit) (dst)[(bit)>>3] &= ~(1<<((bit)&7))
-#define muos_barray_togglebit(dst, bit) (dst)[(bit)>>3] ^= 1<<((bit)&7)
+#define muos_barray_setbit(dst, bit) dst[(bit)>>3] |= 1<<((bit)&7)
+#define muos_barray_clearbit(dst, bit) dst[(bit)>>3] &= ~(1<<((bit)&7))
+#define muos_barray_togglebit(dst, bit) dst[(bit)>>3] ^= 1<<((bit)&7)
 
 
 
+#if 0 //PLANNED: not implemented yet
+// lib_barray_api:
+// : .Shift Operations
+// : ----
+// : void muos_barray_r8shift(muos_barray dst, uint8_t pos)
+// : void muos_barray_l8shift(muos_barray dst, uint8_t pos)
+// : void muos_barray_r1shift(muos_barray dst, uint8_t pos)
+// : void muos_barray_l1shift(muos_barray dst, uint8_t pos)
+// : void muos_barray_rshift(muos_barray dst, uint8_t pos)
+// : void muos_barray_lshift(muos_barray dst, uint8_t pos)
+// : ----
+// :
+// :
+// :
+// :
+// :
+// :
+#define muos_barray_r8shift(dst, pos)
+#define muos_barray_l8shift(dst, pos)
+#define muos_barray_r1shift(dst, pos)
+#define muos_barray_l1shift(dst, pos)
+#define muos_barray_rshift(dst, pos)
+#define muos_barray_lshift(dst, pos)
 
-//TODO: implementme below
-
-/*
- shifting by bytes
-*/
-
-//TODO: shift with copy
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: dest >>= bytes*8
-static inline bool
-muos_barray_r8shift (uint8_t* dest, uint8_t len, uint8_t bytes)
+static inline void
+muos_barray_r8shift_ (muos_barray dest, uint8_t len, uint8_t bytes)
 {
 }
-#endif
 
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: dest <<= bytes*8
-static inline bool
-muos_barray_l8shift (uint8_t* dest, uint8_t len, uint8_t bytes)
+static inline void
+muos_barray_l8shift_ (muos_barray dest, uint8_t len, uint8_t bytes)
 {
 }
-#endif
 
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: dest >>= bits (for bits < 8)
-static inline bool
-muos_barray_rshift (uint8_t* dest, uint8_t len, uint8_t bits)
+static inline void
+muos_barray_r1shift_ (muos_barray dest, uint8_t len, uint8_t bits)
 {
 }
-#endif
 
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: dest <<= bits  (for bits < 8)
-static inline bool
-muos_barray_lshift (uint8_t* dest, uint8_t len, uint8_t bits)
+static inline void
+muos_barray_l1shift_ (muos_barray dest, uint8_t len, uint8_t bits)
 {
 }
 #endif
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //lib_barray_api:
-//: Arithmetic
-//: ----------
+//: .Comparsions
+//: ----
+//: bool muos_barray_is_zero (const muos_barray a)
+//: bool muos_barray_is_eq (const muos_barray a, const muos_barray b)
+//: bool muos_barray_is_lt (const muos_barray a, const muos_barray b)
+//: bool muos_barray_is_lte (const muos_barray a, const muos_barray b)
+//: ----
 //:
+//: 'muos_barray_is_zero()' returns 'true' when the all bits in the
+//: barray are set to 0 and 'false' when not.
 //:
+//: 'muos_barray_is_eq()'
+//: 'muos_barray_is_lt()'
+//: 'muos_barray_is_lte()'
+//: unsigned arithmetic for 'a == b', 'a < b', 'a <= b', returns 'true' when
+//: the condition is met and 'false' otherwise. 'a' and 'b' can have different
+//: sizes, the excess bytes on the longer argument are considered zero.
 //:
+#define muos_barray_is_zero(a) muos_barray_is_zero_ (a, sizeof(a))
+#define muos_barray_is_eq(a, b) muos_barray_is_eq_ (a, sizeof(a), b, sizeof(b))
+#define muos_barray_is_lt(a, b) muos_barray_is_lt_ (a, sizeof(a), b, sizeof(b))
+#define muos_barray_is_lte(a, b) muos_barray_is_lte_ (a, sizeof(a), b, sizeof(b))
 
-
-
-
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//:  dest += src
 static inline bool
-muos_barray_add(uint8_t* dest, uint8_t destlen, uint8_t* src, uint8_t srclen)
+muos_barray_is_zero_ (const muos_barray a, uint8_t len)
+{
+  for (uint8_t i = 0; i < len; ++i)
+    if (a[i]) return false;
+
+  return true;
+}
+
+static inline bool
+muos_barray_is_eq_ (const muos_barray a, uint8_t alen, const muos_barray b, uint8_t blen)
+{
+  for (uint8_t i = 0; i < alen ; ++i)
+    if (alen <= blen)
+      {
+        if (a[i] != b[i]) return false;
+      }
+    else
+      {
+        if (a[i]) return false;
+      }
+
+  return true;
+}
+
+static inline bool
+muos_barray_is_lt_ (const muos_barray a, uint8_t alen, const muos_barray b, uint8_t blen)
+{
+  for (uint8_t i = alen>blen?alen:blen; i; --i)
+    if (alen <= blen)
+      {
+        if (a[i-1] >= b[i-1]) return false;
+      }
+    else
+      {
+        if (a[i]) return false;
+      }
+
+  return true;
+}
+
+static inline bool
+muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uint8_t blen)
+{
+  for (uint8_t i = alen>blen?alen:blen; i; --i)
+    if (alen <= blen)
+      {
+        if (a[i-1] > b[i-1]) return false;
+      }
+    else
+      {
+        if (a[i]) return false;
+      }
+
+  return true;
+}
+
+
+
+
+//lib_barray_api:
+//: .Arithmetic
+//: ----
+//: void muos_barray_add_imm (muos_barray dst, uint8_t imm, uint8_t shift)
+//: void muos_barray_add (muos_barray dst, const muos_barray src)
+//: void muos_barray_sub_imm (muos_barray dst, uint8_t imm, uint8_t shift)
+//: void muos_barray_sub (muos_barray dst, const muos_barray src)
+//: ----
+//:
+//: +dst+::
+//:   Destination operand for the operation which gets mutated.
+//: +src+::
+//:   Second operand for the operation which stays unchanged
+//: +imm+::
+//:   immediate (uint8_t) value
+//: +shift+::
+//:   byte shift (8 bits) applied to the immediate
+//:
+//: 'muos_barray_add_imm()'
+//: 'muos_barray_add()'
+//: 'muos_barray_sub_imm()'
+//: 'muos_barray_sub()'
+//:
+//:
+//:
+//:
+//:
+#define muos_barray_add_imm(dst, imm, shift)
+#define muos_barray_add(dst, src)
+#define muos_barray_sub_imm(dst, imm, shift)
+#define muos_barray_sub(dst, src)
+
+#if 0
+static inline void
+muos_barray_add_imm_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t pos)
+{
+}
+
+static inline void
+muos_barray_add_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
+{
+}
+
+
+static inline bool
+muos_barray_sub_imm_ (muos_barray dst, uint8_t dlen, const uint8_t src, uint8_t pos)
+{
+}
+
+static inline bool
+muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
 {
 }
 #endif
 
 
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//:  dest += src<<(pos*8)
-static inline bool
-muos_barray_add_uint8 (uint8_t* dest, uint8_t len, uint8_t src, uint8_t pos)
-{
-}
+#if 0 //PLANNED: not implemented yet
+// lib_barray_api:
+// : .Logic Operations
+// : ----
+// : ----
+// : and or xor not
+// :
 #endif
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//:  dest -= src
-static inline bool
-muos_barray_sub (uint8_t* dest, uint8_t destlen, uint8_t* src, uint8_t srclen)
-{
-}
-#endif
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//:  dest -= src<<(pos*8)
-static inline bool
-muos_barray_sub_uint8 (uint8_t* dest, uint8_t len, uint8_t src, uint8_t pos)
-{
-}
-#endif
-
-
-//lib_barray_api:
-//: Comparsions
-//: -----------
-//:
-//:
-//:
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: a == 0
-static inline bool
-muos_barray_zero (uint8_t* a, uint8_t len)
-{
-}
-#endif
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: a == b
-static inline bool
-muos_barray_eq (uint8_t* a, uint8_t* b, uint8_t len)
-{
-}
-#endif
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: a < b
-static inline bool
-muos_barray_lt (uint8_t* a, uint8_t* b, uint8_t len)
-{
-}
-#endif
-
-
-#if 0 //PLANNED: implementme
-//lib_barray_api:
-//:
-//: a <= b
-static inline bool
-muos_barray_lte (uint8_t* a, uint8_t* b, uint8_t len)
-{
-}
-#endif
-
 
 #endif
