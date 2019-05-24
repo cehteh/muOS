@@ -165,18 +165,20 @@ muos_cli_arg_strncpy (const char** cont, char* dest, size_t len, const char* del
 {
   if (*cont)
     {
-      //char* begin = *cont;
-
       size_t slen = strcspn_P (*cont, delim);
 
       if (slen < len)
         {
-          strncpy (dest, *cont, slen);
-          dest[slen] = '\0';
+          if (dest)
+            {
+              strncpy (dest, *cont, slen);
+              dest[slen] = '\0';
+            }
+
           *cont += slen;
           *cont += strspn_P (*cont, delim);
         }
-      else
+      else if (dest)
         {
           *dest = '\0';
           *cont = NULL;
