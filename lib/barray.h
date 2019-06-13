@@ -105,7 +105,6 @@ typedef uint8_t muos_barray[];
 #define muos_barray_togglebit(dst, bit) dst[(bit)>>3] ^= 1<<((bit)&7)
 
 
-
 #if 0 //PLANNED: not implemented yet
 // lib_barray_api:
 // : .Shift Operations
@@ -240,9 +239,9 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 //lib_barray_api:
 //: .Arithmetic
 //: ----
-//: void muos_barray_add_imm (muos_barray dst, uint8_t imm, uint8_t shift)
+//: void muos_barray_add_uint8 (muos_barray dst, uint8_t uint8, uint8_t bshift)
 //: void muos_barray_add (muos_barray dst, const muos_barray src)
-//: void muos_barray_sub_imm (muos_barray dst, uint8_t imm, uint8_t shift)
+//: void muos_barray_sub_uint8 (muos_barray dst, uint8_t uint8, uint8_t bshift)
 //: void muos_barray_sub (muos_barray dst, const muos_barray src)
 //: ----
 //:
@@ -250,47 +249,83 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 //:   Destination operand for the operation which gets mutated.
 //: +src+::
 //:   Second operand for the operation which stays unchanged
-//: +imm+::
-//:   immediate (uint8_t) value
-//: +shift+::
-//:   byte shift (8 bits) applied to the immediate
+//: +bshift+::
+//:   byte shift (8 bits) applied to the uint8ediate or src operand
 //:
-//: 'muos_barray_add_imm()'
-//: 'muos_barray_add()'
-//: 'muos_barray_sub_imm()'
-//: 'muos_barray_sub()'
+//: 'muos_barray_add_uint8()' and 'muos_barray_sub_uint8()' add/substract an 8 byte value
+//: to an barray. The value can be shifted initially in 8 bit increments to extend the
+//: magnitude of the operation. These are the low level functions that should be preferred
+//: when the 'src' operand will fit into the uint8_t/shift. Esp for increment/decement operations.
 //:
+//: 'muos_barray_add()' and 'muos_barray_sub()' are generic operations for adding/subtracting
+//: 2 barrays.
 //:
-//:
-//:
-//:
-#define muos_barray_add_imm(dst, imm, shift)
-#define muos_barray_add(dst, src)
-#define muos_barray_sub_imm(dst, imm, shift)
-#define muos_barray_sub(dst, src)
+#define muos_barray_add_uint8(dst, src, bshift) muos_barray_add_uint8_ (dst, sizeof(dst), src, bshift)
+#define muos_barray_sub_uint8(dst, src, bshift) muos_barray_sub_uint8_ (dst, sizeof(dst), src, bshift)
+#define muos_barray_add(dst, src) muos_barray_add_ (dst, sizeof(dst), src, sizeof(src))
+#define muos_barray_sub(dst, src) muos_barray_sub_ (dst, sizeof(dst), src, sizeof(src))
 
-#if 0
 static inline void
-muos_barray_add_imm_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t pos)
+muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshift)
 {
+  if (bshift >= len)
+    return;
+
+  dst[bshift] += src;
+
+  if (dst[bshift] < src)
+    {
+      for (bshift++; bshift <= len; ++bshift)
+        {
+          if (++dst[bshift])
+            break;
+        }
+    }
 }
+
+
+static inline void
+muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshift)
+{
+  if (bshift >= len)
+    return;
+
+  uint8_t tmp = dst[bshift];
+  dst[bshift] -= src;
+
+  if (dst[bshift] > tmp)
+    {
+      for (bshift++; bshift <= len; ++bshift)
+        {
+          if (dst[bshift]--)
+            break;
+        }
+    }
+}
+
+
 
 static inline void
 muos_barray_add_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
 {
+  for (uint8_t i = 0; i <= slen; ++i)
+    {
+      if (src[i])
+        muos_barray_add_uint8_ (dst, dlen, src[i], i);
+    }
 }
 
 
-static inline bool
-muos_barray_sub_imm_ (muos_barray dst, uint8_t dlen, const uint8_t src, uint8_t pos)
-{
-}
 
-static inline bool
+static inline void
 muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
 {
+  for (uint8_t i = 0; i <= slen; ++i)
+    {
+      if (src[i])
+        muos_barray_sub_uint8_ (dst, dlen, src[i], i);
+    }
 }
-#endif
 
 
 #if 0 //PLANNED: not implemented yet
