@@ -234,15 +234,15 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 }
 
 
-
-
 //lib_barray_api:
-//: .Arithmetic
+//: .Arithmetic With Standard Types
 //: ----
-//: void muos_barray_add_uint8 (muos_barray dst, uint8_t uint8, uint8_t bshift)
-//: void muos_barray_add (muos_barray dst, const muos_barray src)
-//: void muos_barray_sub_uint8 (muos_barray dst, uint8_t uint8, uint8_t bshift)
-//: void muos_barray_sub (muos_barray dst, const muos_barray src)
+//: void muos_barray_add_uint8 (muos_barray dst, uint8_t src, uint8_t bshift)
+//: void muos_barray_sub_uint8 (muos_barray dst, uint8_t src, uint8_t bshift)
+//: void muos_barray_add_uint16 (muos_barray dst, uint16_t src)
+//: void muos_barray_sub_uint16 (muos_barray dst, uint16_t src)
+//: void muos_barray_add_uint32 (muos_barray dst, uint32_t src)
+//: void muos_barray_sub_uint32 (muos_barray dst, uint32_t src)
 //: ----
 //:
 //: +dst+::
@@ -250,20 +250,18 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 //: +src+::
 //:   Second operand for the operation which stays unchanged
 //: +bshift+::
-//:   byte shift (8 bits) applied to the uint8ediate or src operand
+//:   byte shift (8 bits) applied to the src operand
 //:
-//: 'muos_barray_add_uint8()' and 'muos_barray_sub_uint8()' add/substract an 8 byte value
-//: to an barray. The value can be shifted initially in 8 bit increments to extend the
-//: magnitude of the operation. These are the low level functions that should be preferred
-//: when the 'src' operand will fit into the uint8_t/shift. Esp for increment/decement operations.
-//:
-//: 'muos_barray_add()' and 'muos_barray_sub()' are generic operations for adding/subtracting
-//: 2 barrays.
+//: 'muos_barray_add_uint*()' and 'muos_barray_sub_uint*()' add/substract an C standard type
+//: values to an barray. For the '*uint8' variant the value can be left shifted in 8 bit
+//: increments to extend the magnitude of the operation.
 //:
 #define muos_barray_add_uint8(dst, src, bshift) muos_barray_add_uint8_ (dst, sizeof(dst), src, bshift)
 #define muos_barray_sub_uint8(dst, src, bshift) muos_barray_sub_uint8_ (dst, sizeof(dst), src, bshift)
-#define muos_barray_add(dst, src) muos_barray_add_ (dst, sizeof(dst), src, sizeof(src))
-#define muos_barray_sub(dst, src) muos_barray_sub_ (dst, sizeof(dst), src, sizeof(src))
+#define muos_barray_add_uint16(dst, src) muos_barray_add_uint16_ (dst, sizeof(dst), src)
+#define muos_barray_sub_uint16(dst, src) muos_barray_sub_uint16_ (dst, sizeof(dst), src)
+#define muos_barray_add_uint32(dst, src) muos_barray_add_uint32_ (dst, sizeof(dst), src)
+#define muos_barray_sub_uint32(dst, src) muos_barray_sub_uint32_ (dst, sizeof(dst), src)
 
 static inline void
 muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshift)
@@ -303,6 +301,59 @@ muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshif
     }
 }
 
+
+static inline void
+muos_barray_add_uint16_ (muos_barray dst, uint8_t len, uint16_t src)
+{
+  muos_barray_add_uint8_ (dst, len, src, 0);
+  muos_barray_add_uint8_ (dst, len, src>>8, 1);
+}
+
+static inline void
+muos_barray_sub_uint16_ (muos_barray dst, uint8_t len, uint16_t src)
+{
+  muos_barray_sub_uint8_ (dst, len, src, 0);
+  muos_barray_sub_uint8_ (dst, len, src>>8, 1);
+}
+
+
+static inline void
+muos_barray_add_uint32_ (muos_barray dst, uint8_t len, uint32_t src)
+{
+  muos_barray_add_uint8_ (dst, len, src, 0);
+  muos_barray_add_uint8_ (dst, len, src>>=8, 1);
+  muos_barray_add_uint8_ (dst, len, src>>=8, 2);
+  muos_barray_add_uint8_ (dst, len, src>>=8, 3);
+}
+
+
+static inline void
+muos_barray_sub_uint32_ (muos_barray dst, uint8_t len, uint32_t src)
+{
+  muos_barray_sub_uint8_ (dst, len, src, 0);
+  muos_barray_sub_uint8_ (dst, len, src>>=8, 1);
+  muos_barray_sub_uint8_ (dst, len, src>>=8, 2);
+  muos_barray_sub_uint8_ (dst, len, src>>=8, 3);
+}
+
+
+//lib_barray_api:
+//: .BArray Arithmetic
+//: ----
+//: void muos_barray_add (muos_barray dst, const muos_barray src)
+//: void muos_barray_sub (muos_barray dst, const muos_barray src)
+//: ----
+//:
+//: +dst+::
+//:   Destination barray for the operation which gets mutated.
+//: +src+::
+//:   Second operand for the operation which stays unchanged
+//:
+//: 'muos_barray_add()' and 'muos_barray_sub()' are generic operations for adding/subtracting
+//: 2 barrays.
+//:
+#define muos_barray_add(dst, src) muos_barray_add_ (dst, sizeof(dst), src, sizeof(src))
+#define muos_barray_sub(dst, src) muos_barray_sub_ (dst, sizeof(dst), src, sizeof(src))
 
 
 static inline void
