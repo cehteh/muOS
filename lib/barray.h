@@ -379,6 +379,77 @@ muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t 
 }
 
 
+
+//: .BArray Type Conversion
+//: ----
+//: uint8_t muos_barray_uint8(src)
+//: uint16_t muos_barray_uint16(src)
+//: uint32_t muos_barray_uint32(src)
+//: ----
+//:
+//: +src+::
+//:   Source barray
+//:
+//: Returns the barray integer value truncated to the destination C standard type.
+//:
+#define muos_barray_uint8(src) muos_barray_uint8_ (src)
+#define muos_barray_uint16(src) muos_barray_uint16_ (src, sizeof(src))
+#define muos_barray_uint32(src) muos_barray_uint32_ (src, sizeof(src))
+
+static inline uint8_t
+muos_barray_uint8_ (muos_barray src)
+{
+  return src[0];
+}
+
+static inline uint16_t
+muos_barray_uint16_ (muos_barray src, uint8_t len)
+{
+  union {
+    uint32_t u16;
+    uint32_t u8[2];
+  } ret;
+
+  if (len > 2) len = 2;
+
+  switch (len)
+    {
+    case 2:
+      ret.u8[0] = src[1];
+    case 1:
+      ret.u8[1] = src[0];
+    }
+
+  return ret.u16;
+}
+
+static inline uint32_t
+muos_barray_uint32_ (muos_barray src, uint8_t len)
+{
+  union {
+    uint32_t u32;
+    uint32_t u8[4];
+  } ret;
+
+  if (len > 4) len = 4;
+
+  switch (len)
+    {
+    case 4:
+      ret.u8[0] = src[3];
+    case 3:
+      ret.u8[1] = src[2];
+    case 2:
+      ret.u8[2] = src[1];
+    case 1:
+      ret.u8[3] = src[0];
+    }
+
+  return ret.u32;
+}
+
+
+
 #if 0 //PLANNED: not implemented yet
 // lib_barray_api:
 // : .Logic Operations
