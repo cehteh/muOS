@@ -237,8 +237,8 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 //lib_barray_api:
 //: .Arithmetic With Standard Types
 //: ----
-//: void muos_barray_add_uint8 (muos_barray dst, uint8_t src, uint8_t bshift)
-//: void muos_barray_sub_uint8 (muos_barray dst, uint8_t src, uint8_t bshift)
+//: void muos_barray_add_uint8 (muos_barray dst, uint8_t src, uint8_t l8shift)
+//: void muos_barray_sub_uint8 (muos_barray dst, uint8_t src, uint8_t l8shift)
 //: void muos_barray_add_uint16 (muos_barray dst, uint16_t src)
 //: void muos_barray_sub_uint16 (muos_barray dst, uint16_t src)
 //: void muos_barray_add_uint32 (muos_barray dst, uint32_t src)
@@ -249,33 +249,33 @@ muos_barray_is_lte_ (const muos_barray a, uint8_t alen, const muos_barray b, uin
 //:   Destination operand for the operation which gets mutated.
 //: +src+::
 //:   Second operand for the operation which stays unchanged
-//: +bshift+::
-//:   byte shift (8 bits) applied to the src operand
+//: +l8shift+::
+//:   left shift in bytes (8 bits) applied to the src operand
 //:
 //: 'muos_barray_add_uint*()' and 'muos_barray_sub_uint*()' add/substract an C standard type
 //: values to an barray. For the '*uint8' variant the value can be left shifted in 8 bit
 //: increments to extend the magnitude of the operation.
 //:
-#define muos_barray_add_uint8(dst, src, bshift) muos_barray_add_uint8_ (dst, sizeof(dst), src, bshift)
-#define muos_barray_sub_uint8(dst, src, bshift) muos_barray_sub_uint8_ (dst, sizeof(dst), src, bshift)
+#define muos_barray_add_uint8(dst, src, l8shift) muos_barray_add_uint8_ (dst, sizeof(dst), src, l8shift)
+#define muos_barray_sub_uint8(dst, src, l8shift) muos_barray_sub_uint8_ (dst, sizeof(dst), src, l8shift)
 #define muos_barray_add_uint16(dst, src) muos_barray_add_uint16_ (dst, sizeof(dst), src)
 #define muos_barray_sub_uint16(dst, src) muos_barray_sub_uint16_ (dst, sizeof(dst), src)
 #define muos_barray_add_uint32(dst, src) muos_barray_add_uint32_ (dst, sizeof(dst), src)
 #define muos_barray_sub_uint32(dst, src) muos_barray_sub_uint32_ (dst, sizeof(dst), src)
 
 static inline void
-muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshift)
+muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shift)
 {
-  if (bshift >= len)
+  if (l8shift >= len)
     return;
 
-  dst[bshift] += src;
+  dst[l8shift] += src;
 
-  if (dst[bshift] < src)
+  if (dst[l8shift] < src)
     {
-      for (bshift++; bshift <= len; ++bshift)
+      for (l8shift++; l8shift <= len; ++l8shift)
         {
-          if (++dst[bshift])
+          if (++dst[l8shift])
             break;
         }
     }
@@ -283,19 +283,19 @@ muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshif
 
 
 static inline void
-muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t bshift)
+muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shift)
 {
-  if (bshift >= len)
+  if (l8shift >= len)
     return;
 
-  uint8_t tmp = dst[bshift];
-  dst[bshift] -= src;
+  uint8_t tmp = dst[l8shift];
+  dst[l8shift] -= src;
 
-  if (dst[bshift] > tmp)
+  if (dst[l8shift] > tmp)
     {
-      for (bshift++; bshift <= len; ++bshift)
+      for (l8shift++; l8shift <= len; ++l8shift)
         {
-          if (dst[bshift]--)
+          if (dst[l8shift]--)
             break;
         }
     }
