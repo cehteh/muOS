@@ -382,67 +382,71 @@ muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t 
 
 //: .BArray Type Conversion
 //: ----
-//: uint8_t muos_barray_uint8(src)
-//: uint16_t muos_barray_uint16(src)
-//: uint32_t muos_barray_uint32(src)
+//: uint8_t muos_barray_uint8(src, r8shift)
+//: uint16_t muos_barray_uint16(src, r8shift)
+//: uint32_t muos_barray_uint32(src, r8shift)
 //: ----
 //:
 //: +src+::
 //:   Source barray
+//: +r8shift+::
+//:   right shift by bytes (8 bits) applied to the src operand
 //:
-//: Returns the barray integer value truncated to the destination C standard type.
+//: Returns the barray integer value shifted and truncated to the destination C standard type.
 //:
-#define muos_barray_uint8(src) muos_barray_uint8_ (src)
-#define muos_barray_uint16(src) muos_barray_uint16_ (src, sizeof(src))
-#define muos_barray_uint32(src) muos_barray_uint32_ (src, sizeof(src))
+#define muos_barray_uint8(src, r8shift) muos_barray_uint8_ (src, sizeof(src), r8shift)
+#define muos_barray_uint16(src, r8shift) muos_barray_uint16_ (src, sizeof(src), r8shift)
+#define muos_barray_uint32(src, r8shift) muos_barray_uint32_ (src, sizeof(src), r8shift)
 
 static inline uint8_t
-muos_barray_uint8_ (muos_barray src)
+muos_barray_uint8_ (muos_barray src, uint8_t len, uint8_t r8shift)
 {
-  return src[0];
+  if (len <= r8shift) return 0;
+
+  return src[r8shift];
 }
 
 static inline uint16_t
-muos_barray_uint16_ (muos_barray src, uint8_t len)
+muos_barray_uint16_ (muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
     uint32_t u16;
     uint32_t u8[2];
-  } ret;
+  } ret = { .u16 = 0 };
 
-  if (len > 2) len = 2;
+  if (len > 2+r8shift) len = 2+r8shift;
 
-  switch (len)
+  switch (len-r8shift)
     {
     case 2:
-      ret.u8[0] = src[1];
+      ret.u8[0] = src[1+r8shift];
     case 1:
-      ret.u8[1] = src[0];
+      ret.u8[1] = src[0+r8shift];
     }
 
   return ret.u16;
 }
 
 static inline uint32_t
-muos_barray_uint32_ (muos_barray src, uint8_t len)
+muos_barray_uint32_ (muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
     uint32_t u32;
     uint32_t u8[4];
-  } ret;
+  } ret = { .u32 = 0 };
 
-  if (len > 4) len = 4;
+  if (len > 4+r8shift) len = 4+r8shift;
 
-  switch (len)
+  switch (len-r8shift)
     {
     case 4:
-      ret.u8[0] = src[3];
+      ret.u8[0] = src[3+r8shift];
     case 3:
-      ret.u8[1] = src[2];
+      ret.u8[1] = src[2+r8shift];
     case 2:
-      ret.u8[2] = src[1];
+      ret.u8[2] = src[1+r8shift];
     case 1:
-      ret.u8[3] = src[0];
+      ret.u8[3] = src[0+r8shift];
     }
 
   return ret.u32;
