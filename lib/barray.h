@@ -84,7 +84,7 @@ typedef uint8_t muos_barray[];
 //:
 //: 'muos_barray_copy()' copies the barray (truncated or filled by zeros).
 //:
-#define muos_barray_clear(dst) for (uint8_t i = 0; i < sizeof(dst); ++i) dst[i] = 0; }
+#define muos_barray_clear(dst) for (uint8_t i = 0; i < sizeof(dst); ++i) { dst[i] = 0; }
 
 #define muos_barray_copy(dst, src)              \
   for (uint8_t i = 0; i < sizeof(dst); ++i)     \
@@ -413,7 +413,7 @@ muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t 
 #define muos_barray_uint32(src, r8shift) muos_barray_uint32_ (src, sizeof(src), r8shift)
 
 static inline uint8_t
-muos_barray_uint8_ (muos_barray src, uint8_t len, uint8_t r8shift)
+muos_barray_uint8_ (const muos_barray src, uint8_t len, uint8_t r8shift)
 {
   if (len <= r8shift) return 0;
 
@@ -421,7 +421,7 @@ muos_barray_uint8_ (muos_barray src, uint8_t len, uint8_t r8shift)
 }
 
 static inline uint16_t
-muos_barray_uint16_ (muos_barray src, uint8_t len, uint8_t r8shift)
+muos_barray_uint16_ (const muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
     uint32_t u16;
@@ -442,7 +442,7 @@ muos_barray_uint16_ (muos_barray src, uint8_t len, uint8_t r8shift)
 }
 
 static inline uint32_t
-muos_barray_uint32_ (muos_barray src, uint8_t len, uint8_t r8shift)
+muos_barray_uint32_ (const muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
     uint32_t u32;
