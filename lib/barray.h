@@ -69,17 +69,31 @@
 
 typedef uint8_t muos_barray[];
 
-//: .Whole Array Operations
+//: .BArray Initialization
 //: ----
 //: void muos_barray_clear (muos_barray dst)
+//: void muos_barray_copy (muos_barray dst, const muos_barray arc)
 //: ----
 //:
 //: +dst+::
-//:   barray to clear
+//:   target barray
+//: +src+::
+//:   source barray
 //:
-//: 'muos_barray_clear()' clears the entire array.
+//: 'muos_barray_clear()' clears the barray.
 //:
-#define muos_barray_clear(dst) do {for (uint8_t i = 0; i < sizeof(dst); ++i) dst[i] = 0; } while (0)
+//: 'muos_barray_copy()' copies the barray (truncated or filled by zeros).
+//:
+#define muos_barray_clear(dst) for (uint8_t i = 0; i < sizeof(dst); ++i) dst[i] = 0; }
+
+#define muos_barray_copy(dst, src)              \
+  for (uint8_t i = 0; i < sizeof(dst); ++i)     \
+    {                                           \
+      if (i < sizeof(src))                      \
+        dst[i] = src[i];                        \
+      else                                      \
+        dst[i] = 0;                             \
+    }
 
 
 //lib_barray_api:
