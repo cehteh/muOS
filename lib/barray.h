@@ -424,18 +424,19 @@ static inline uint16_t
 muos_barray_uint16_ (const muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
-    uint32_t u16;
-    uint32_t u8[2];
+    uint16_t u16;
+    uint8_t u8[2];
   } ret = { .u16 = 0 };
 
   if (len > 2+r8shift) len = 2+r8shift;
 
   switch (len-r8shift)
     {
+    default:
     case 2:
-      ret.u8[0] = src[1+r8shift];
+      ret.u8[1] = src[1+r8shift];
     case 1:
-      ret.u8[1] = src[0+r8shift];
+      ret.u8[0] = src[0+r8shift];
     }
 
   return ret.u16;
@@ -446,21 +447,22 @@ muos_barray_uint32_ (const muos_barray src, uint8_t len, uint8_t r8shift)
 {
   union {
     uint32_t u32;
-    uint32_t u8[4];
+    uint8_t u8[4];
   } ret = { .u32 = 0 };
 
   if (len > 4+r8shift) len = 4+r8shift;
 
   switch (len-r8shift)
     {
+    default:
     case 4:
-      ret.u8[0] = src[3+r8shift];
+      ret.u8[3] = src[3+r8shift];
     case 3:
-      ret.u8[1] = src[2+r8shift];
+      ret.u8[2] = src[2+r8shift];
     case 2:
-      ret.u8[2] = src[1+r8shift];
+      ret.u8[1] = src[1+r8shift];
     case 1:
-      ret.u8[3] = src[0+r8shift];
+      ret.u8[0] = src[0+r8shift];
     }
 
   return ret.u32;
