@@ -59,6 +59,8 @@ muos_tx_wait (intptr_t data);
 
 #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
+//PLANNED: remove io_lock functions, add priority to wait() a higher priority wait will then abort lower pri waits
+
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
 {
@@ -68,13 +70,20 @@ muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
     return muos_error_serial_status;
 
   struct muos_txwait waitdata = {hw, space};
+  muos_error ret;
 
-  muos_serial_status[hw].serial_tx_blocked = true;
-  muos_error ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
-  muos_serial_status[hw].serial_tx_blocked = false;
+  if (timeout)
+    {
+      muos_serial_status[hw].serial_tx_blocked = true;
+      ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
+      muos_serial_status[hw].serial_tx_blocked = false;
+    }
+  else
+    ret = muos_tx_wait((intptr_t)&waitdata)?muos_success:muos_warn_wait_timeout;
 
   return ret;
 }
+
 
 muos_error
 muos_output_lock (uint8_t hw)
@@ -108,9 +117,16 @@ muos_output_wait (muos_cbuffer_index space, muos_clock16 timeout)
   if (muos_serial_status[0].serial_tx_blocked)
     return muos_error_serial_status;
 
-  muos_serial_status[0].serial_tx_blocked = true;
-  muos_error ret = muos_wait (muos_tx_wait, space, timeout);
-  muos_serial_status[0].serial_tx_blocked = false;
+  muos_error ret;
+
+  if (timeout)
+    {
+      muos_serial_status[0].serial_tx_blocked = true;
+      muos_error ret = muos_wait (muos_tx_wait, space, timeout);
+      muos_serial_status[0].serial_tx_blocked = false;
+    }
+  else
+    ret = muos_tx_wait(space)?muos_success:muos_warn_wait_timeout;
 
   return ret;
 }
@@ -152,7 +168,7 @@ muos_tx_wait (intptr_t data)
 #else
 
 bool
-muos tx_wait (intptr_t space)
+muos_tx_wait (intptr_t space)
 {
   return muos_serial_tx_free () > space;
 }

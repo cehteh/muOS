@@ -131,12 +131,15 @@ struct muos_txwait
   muos_cbuffer_index space;
 };
 
+//TODO: docme   timeout=0 case
 muos_error
 muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout);
 
+//TODO: docme
 muos_error
 muos_output_lock (uint8_t hw);
 
+//TODO: docme
 muos_error
 muos_output_unlock (uint8_t hw);
 
