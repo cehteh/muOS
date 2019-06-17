@@ -54,7 +54,8 @@ typedef uint16_t muos_clpq_index;
 //: If possible do not invoke any recursive scheduler calls (muos_wait/muos_yield)
 //: from recurring jobs but delegate work that may wait to the hpq or bgq.
 //:
-typedef void (*muos_clpq_function)(muos_clock16 delayed);
+typedef void (*muos_clpq_function)(void);
+
 
 struct muos_clpq_entry
 {
@@ -78,12 +79,17 @@ extern muos_clpq_type muos_clpq;
 //: ----
 //: muos_clock muos_clpq_now (void)
 //: muos_clock32 muos_clpq32_now (void)
+//: muos_clock16 muos_clpq_delayed (void)
 //: ----
 //:
-//: The time the last CLPQ event was scheduled. This functon gives consistent time in
-//: a efficient way. The time is only updated on CLPQ scheduling. Also HPQ and BGQ
-//: entries can benefit from this, but not RTQ since that has higher priority than
-//: the CLPQ.
+//: 'muos_clpq_now*()' returns the time the last CLPQ event was scheduled.
+//: This functon gives consistent time in a efficient way. The time is only updated
+//: on CLPQ scheduling. Also HPQ and BGQ entries can benefit from this, but not the RTQ
+//: since that has higher priority than the CLPQ. The 32bit variant may roll over every
+//: once a while.
+//:
+//: 'muos_clpq_delayed()' Makes only sense within a clpq scheduled function, it returns
+//: the number of ticks the scheduler is behind the requested time.
 //:
 static inline muos_clock
 muos_clpq_now (void)
@@ -92,10 +98,13 @@ muos_clpq_now (void)
 }
 
 static inline muos_clock32
-muos_clpq32_now (void)
+muos_clpq_now32 (void)
 {
-  return muos_clpq.now;
+  return muos_barray_uint32 (muos_clpq.now.barray, 0);
 }
+
+muos_clock16
+muos_clpq_delayed (void);
 
 
 //clpq_api:
@@ -106,6 +115,12 @@ muos_clpq32_now (void)
 //:
 //: muos_error
 //: muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
+//:
+//: muos_error
+//: muos_clpq_after (muos_clock32 when, muos_clpq_function what)
+//:
+//: muos_error
+//: muos_clpq_repeat (muos_clock32 when)
 //: ----
 //:
 //: +when+::
@@ -113,9 +128,14 @@ muos_clpq32_now (void)
 //: +what+::
 //:   Function to push or NULL for a scheduler wakeup
 //:
-//: Pushes the function 'what' one the clpq to be sheduled at (or after)
-//: 'when'. Pushing is stable ordered when 2 functions are to be scheduled
-//: at the same time the order in which they where pushed is preserved.
+//: 'muos_clpq_at()/muos_clpq_at_isr()' Pushes the function 'what' one the clpq to
+//: be scheduled not before 'when'. Pushing is stable ordered when 2 functions are
+//: to be scheduled at the same time the order in which they where pushed is preserved.
+//:
+//: 'muos_clpq_after()' schedules 'what' to be executed after 'muos_clock_now()+when'
+//:
+//: 'muos_clpq_repeat()' may be called from a clpq scheduled function to repeat the same
+//: function after 'when' time. This gives consistent timing.
 //:
 //: returns::
 //: 'muos_success':::
@@ -126,11 +146,11 @@ muos_clpq32_now (void)
 //:   Programming error, 'what' is not a function.
 //:
 muos_error
-muos_clpq_at_isr (muos_clock when, muos_clpq_function what);
+muos_clpq_at_isr (muos_clock* when, muos_clpq_function what);
 
 
 static inline muos_error
-muos_clpq_at (muos_clock when, muos_clpq_function what)
+muos_clpq_at (muos_clock* when, muos_clpq_function what)
 {
   muos_error ret;
   muos_interrupt_disable ();
@@ -141,14 +161,21 @@ muos_clpq_at (muos_clock when, muos_clpq_function what)
 }
 
 
+
+muos_error
+muos_clpq_after (muos_clock32 when, muos_clpq_function what);
+
+muos_error
+muos_clpq_repeat (muos_clock32 when);
+
+
+
 //PLANNED:
 /*
 
 muos_error
 muos_clpq16_in (muos_clock16 when, muos_clpq_function what)
 
-muos_error
-muos_clpq32_in (muos_clock32 when, muos_clpq_function what)
 
 */
 
@@ -179,10 +206,10 @@ muos_clpq32_in (muos_clock32 when, muos_clpq_function what)
 //:
 
 bool
-muos_clpq_remove_isr (muos_clock when, muos_clpq_function what);
+muos_clpq_remove_isr (const muos_clock* when, muos_clpq_function what);
 
 static inline bool
-muos_clpq_remove (muos_clock when, muos_clpq_function what)
+muos_clpq_remove (const muos_clock* when, muos_clpq_function what)
 {
   bool ret;
   muos_interrupt_disable ();

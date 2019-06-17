@@ -21,10 +21,14 @@
 #include <muos/muos.h>
 #include <muos/clock.h>
 
+extern volatile muos_clock muos_clock_coarse;
+
+
 ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 {
   MUOS_DEBUG_INTR_ON;
-  muos_clock_coarse += (muos_clock)(1) << (sizeof(MUOS_CLOCK_REGISTER)*8);
+
+  muos_barray_add_uint8 (((muos_clock)muos_clock_coarse).barray, 1, sizeof(MUOS_CLOCK_REGISTER));
 
   //PLANNED: test not schedule on overflow, make it configurable
   muos_status.schedule = true;
@@ -40,6 +44,7 @@ ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
 
 #ifdef MUOS_CLOCK_CALIBRATE
 #error //TODO: new clock implementation, calibrate is untested
+#error //FIXME: new_timer/barray
 static muos_clock calibrate_last;
 static int32_t divert;
 

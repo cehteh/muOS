@@ -87,10 +87,12 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
       return muos_warn_sched_depth;
     }
 
-  //FIXME: new timer/clpq semantics
-  muos_clock start = muos_clock_now ();
+  //PLANNED: how to reduce memory footprint?
+  muos_clock wakeup;
+  muos_clock_now (&wakeup);
+  muos_clock_add16 (&wakeup, timeout);
 
-  MUOS_OK (muos_clpq_at (start + timeout, NULL));
+  MUOS_OK (muos_clpq_at (&wakeup, NULL));
 
   ++sched_depth_;
   muos_interrupt_disable ();
@@ -110,7 +112,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
                       if (fn && fn (param))
                         {
                           muos_interrupt_disable ();
-                          muos_clpq_remove_isr (start + timeout, 0);
+                          muos_clpq_remove_isr (&wakeup, NULL);
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_success;
@@ -118,9 +120,9 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 
                       muos_interrupt_disable (); // in case fn() enabled interrupts
 
-                      if (muos_clock_elapsed (muos_clock_now (), start) > timeout)
+                      if (muos_clock_since (&wakeup) > timeout)
                         {
-                          muos_clpq_remove_isr (start + timeout, NULL);
+                          muos_clpq_remove_isr (&wakeup, NULL);
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_warn_wait_timeout;

@@ -31,106 +31,36 @@ muos_clock_90init (void)
 }
 
 
-
-muos_clock
-muos_clock_now (void)
+void
+muos_clock_now (muos_clock* now)
 {
-  muos_clock counter;
   muos_hwclock hw;
+  uint8_t overflow = 0;
 
   muos_interrupt_disable ();
   hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_coarse
-    + (hw<((muos_hwclock)~0/2)?
-       (muos_clock)1<<(sizeof(muos_hwclock)*8)
-       :0);
+  if (hw<((muos_hwclock)~0/2))
+    overflow = MUOS_HW_CLOCK_OVERFLOW (MUOS_CLOCK_HW);
+
+  muos_barray_copy (now->barray, muos_clock_coarse.barray);
   muos_interrupt_enable ();
 
-  return counter + hw;
+  muos_barray_add_uint8 (now->barray, overflow, sizeof(MUOS_CLOCK_REGISTER));
+  muos_barray_add_uint8 (now->barray, hw, 0);  //FIXME: 16bit hwclock, muos_barray_add_uint16()
 }
 
 
-muos_clock
-muos_clock_now_isr (void)
+void
+muos_clock_now_isr (muos_clock* now)
 {
-  muos_clock counter;
-  muos_hwclock hw;
+  uint8_t overflow = 0;
+  muos_hwclock hw = MUOS_CLOCK_REGISTER;
 
-  hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_coarse
-    + (hw<((muos_hwclock)~0/2)?
-       (muos_clock)1<<(sizeof(muos_hwclock)*8)
-       :0);
+  if (hw<((muos_hwclock)~0/2))
+    overflow = MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW);
 
-  return counter + hw;
+  muos_barray_copy (now->barray, muos_clock_coarse.barray);
+
+  muos_barray_add_uint8 (now->barray, overflow, sizeof(MUOS_CLOCK_REGISTER));
+  muos_barray_add_uint8 (now->barray, hw, 0);  //FIXME: 16bit hwclock
 }
-
-
-
-
-muos_clock32
-muos_clock32_now (void)
-{
-  muos_clock32 counter;
-  muos_hwclock hw;
-
-  muos_interrupt_disable ();
-  hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_coarse
-    + (hw<((muos_hwclock)~0/2)?
-       (muos_clock)1<<(sizeof(muos_hwclock)*8)
-       :0);
-  muos_interrupt_enable ();
-
-  return counter + hw;
-}
-
-
-muos_clock32
-muos_clock32_now_isr (void)
-{
-  muos_clock32 counter;
-  muos_hwclock hw;
-
-  hw = MUOS_CLOCK_REGISTER;
-  counter = muos_clock_coarse
-    + (hw<((muos_hwclock)~0/2)?
-       (muos_clock)1<<(sizeof(muos_hwclock)*8)
-       :0);
-
-  return counter + hw;
-}
-
-
-
-
-
-
-
-muos_clock
-muos_clock_elapsed (muos_clock now, muos_clock start)
-{
-  if (now > start)
-    return now - start;
-  else
-    return start - now;
-}
-
-muos_clock32
-muos_clock32_elapsed (muos_clock32 now, muos_clock32 start)
-{
-  if (now > start)
-    return now - start;
-  else
-    return start - now;
-}
-
-muos_clock16
-muos_clock16_elapsed (muos_clock16 now, muos_clock16 start)
-{
-  if (now > start)
-    return now - start;
-  else
-    return start - now;
-}
-

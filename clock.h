@@ -22,6 +22,7 @@
 #define MUOS_CLOCK_H
 
 #include <stdbool.h>
+#include <muos/lib/barray.h>
 
 #ifdef MUOS_HW_HEADER
 #include MUOS_HW_HEADER
@@ -37,13 +38,13 @@
 
 //: .Clock Types
 //: ----
-//: typedef MUOS_CLOCK_TYPE muos_clock
-//: typedef uint32_t muos_clock32
-//: typedef uint16_t muos_clock16
+//: typedef muos_clock
+//: typedef muos_clock32
+//: typedef muos_clock16
 //: ----
 //:
 //: +muos_clock+::
-//:   The configureable uint32_t or uint64_t type used for the main clock implementation.
+//:   The configurable type using muos_barray for the main clock implementation.
 //: +muos_clock32+::
 //:   Clock type truncated to uint32_t for limited time ranges.
 //: +muos_clock16+::
@@ -55,7 +56,9 @@
 //: and are useful when only shorter time spans are required or overflows are handled
 //: properly in the software.
 //:
-typedef MUOS_CLOCK_TYPE muos_clock;
+typedef struct {
+  MUOS_BARRAY (barray, MUOS_CLOCK_SIZE*8);  //PLANNED: remove hwclock bytes
+} muos_clock;
 typedef uint32_t muos_clock32;
 typedef uint16_t muos_clock16;
 
@@ -73,9 +76,10 @@ typedef uint16_t muos_clock16;
 //:
 //: The clock runs on timer ticks. These macros convert time from second, ms, µs to ticks.
 //: Because this needs to result in a integer number of ticks, the result might be inexact
-//: and add a slight drift.
+//: and add some drift.
 //:
 //: The correct configuration of F_CPU is mandatory for these macros to work correctly.
+//:
 #define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALER)
 #define MUOS_CLOCK_MILLISECONDS(s) (MUOS_CLOCK_SECONDS(s)/1000)
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
@@ -85,7 +89,6 @@ typedef uint16_t muos_clock16;
 #define MUOS_CLOCK_OVERFLOW MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW)
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
-extern volatile muos_clock muos_clock_coarse;
 
 
 void
@@ -96,21 +99,21 @@ muos_clock_90init (void);
 //clock_api:
 //: .Query Time
 //: ----
-//: muos_clock muos_clock_now (void)
-//: muos_clock muos_clock_now_isr (void)
+//: void muos_clock_now (muos_clock* now)
+//: void muos_clock_now_isr (muos_clock* now)
 //: muos_clock32 muos_clock32_now (void)
 //: muos_clock32 muos_clock32_now_isr (void)
 //: ----
 //:
-//: Returns the current time as queried from the hardware.
+//: Queries the current time from the hardware.
 //: The clock32 functions return truncated time, overflows need to be
 //: handled by the software.
 //:
-muos_clock
-muos_clock_now (void);
+void
+muos_clock_now (muos_clock* now);
 
-muos_clock
-muos_clock_now_isr (void);
+void
+muos_clock_now_isr (muos_clock* now);
 
 
 muos_clock32
@@ -124,32 +127,81 @@ muos_clock32_now_isr (void);
 
 
 //clock_api:
-//: .Time difference between two timestamps
+//: .Timespan caclulations
 //: ----
-//: muos_clock muos_clock_elapsed (muos_clock end, muos_clock start)
-//: muos_clock32 muos_clock32_elapsed (muos_clock end, muos_clock start)
+//: muos_clock32 muos_clock_since (const muos_clock* start)
+//: muos_clock32 muos_clock32_elapsed (muos_clock32 end, muos_clock32 start)
+//: muos_clock16 muos_clock16_elapsed (muos_clock16 end, muos_clock16 start)
 //: ----
 //:
-//: +now+::
-//:   End of the timespan to be calculated
 //: +start+::
 //:   Begin of the timespan to to be calculated
+//: +end+::
+//:   End of the timespan to be calculated
 //:
-//: returns the time difference between 'end' and 'start'. The result is
-//: always positive or zero. Simple overflows on the arguments are respected.
-//: Thus the full range of 'muos_clock' is available.
+//: 'muos_clock_since()' returns the time between 'start' to 'muos_clock_now()'
+//:
+//: The two 'muos_clock*_elapsed()' return the time difference between 'end' and 'start'.
+//: The result is always positive or zero. Simple overflows on the arguments are respected.
 //:
 //: The *32 and *16 bit versions save memory, but it must be guaranteed that
 //: the time spans are short enough to fall into the respective range.
 //:
-muos_clock
-muos_clock_elapsed (muos_clock end, muos_clock start);
+static inline muos_clock32
+muos_clock_since (const muos_clock* start)
+{
+  muos_clock now;
+  muos_clock_now (&now);
 
-muos_clock32
-muos_clock32_elapsed (muos_clock32 end, muos_clock32 start);
+  muos_barray_sub (now.barray, start->barray);
 
-muos_clock16
-muos_clock16_elapsed (muos_clock16 end, muos_clock16 start);
+  return muos_barray_uint32 (now.barray, 0);
+}
+
+
+static inline muos_clock32
+muos_clock32_elapsed (muos_clock32 now, muos_clock32 start)
+{
+  if (now > start)
+    return now - start;
+  else
+    return start - now;
+}
+
+static inline muos_clock16
+muos_clock16_elapsed (muos_clock16 now, muos_clock16 start)
+{
+  if (now > start)
+    return now - start;
+  else
+    return start - now;
+}
+
+
+//: ----
+//: void muos_clock_add32 (muos_clock *dst, muos_clock32 src)
+//: void muos_clock_add16 (muos_clock *dst, muos_clock16 src)
+//: ----
+//:
+//: +dst+::
+//:   The time to be modified
+//: +src+::
+//:   Timespan to be added to 'dst'
+//:
+//: Adding a 32 or 16 bit time value to a muos_clock
+//:
+static inline void
+muos_clock_add32 (muos_clock *dst, muos_clock32 src)
+{
+  muos_barray_add_uint32 (dst->barray, src);
+}
+
+static inline void
+muos_clock_add16 (muos_clock *dst, muos_clock16 src)
+{
+  muos_barray_add_uint16 (dst->barray, src);
+}
+
 
 
 #ifdef MUOS_CLOCK_CALIBRATE
@@ -176,7 +228,7 @@ muos_clock16_elapsed (muos_clock16 end, muos_clock16 start);
 //: expect some drift remaining. The configuration specially includes a deadband for this. Otherwise
 //: when calibration tries to constantly change the frequency there would be very much jitter on the timing.
 void
-muos_clock_calibrate (const muos_clock now, const muos_clock32 sync);
+muos_clock_calibrate (const muos_clock* now, const muos_clock32 sync);
 #endif
 
 #endif
