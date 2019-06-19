@@ -35,6 +35,8 @@
 //PLANNED: instead disabling interrupts have a mutex and temp buffer for work queues
 //PLANNED: finer locking in mainloop instead interrupt disable, per queue
 //PLANNED: error_set hook for debugging
+//PLANNED: example sections in all API doc
+//PLANNED: find some way to get rid of most of the *_isr variants at compiletime
 
 volatile struct muos_status_flags muos_status;
 
@@ -79,6 +81,10 @@ muos_sched_depth (void)
   return sched_depth_;
 }
 
+#include <muos/io.h>
+void
+muos_clpq_dump (uint8_t what);
+
 muos_error
 muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 {
@@ -120,7 +126,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 
                       muos_interrupt_disable (); // in case fn() enabled interrupts
 
-                      if (muos_clock_since (&wakeup) > timeout)
+                      if (muos_clock_since_isr (&wakeup) > timeout)
                         {
                           muos_clpq_remove_isr (&wakeup, NULL);
                           muos_interrupt_enable ();
@@ -235,6 +241,10 @@ main()
   MUOS_HW_INIT;
 
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
+
+#if defined(MUOS_CLPQ_LENGTH) && MUOS_CLPQ_LENGTH>0
+  //PLANNED: clpq calibration
+#endif
 
 #ifdef MUOS_DEBUG
   muos_hw_debug_init ();

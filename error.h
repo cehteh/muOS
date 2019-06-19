@@ -71,6 +71,60 @@ extern volatile uint8_t muos_errors_pending_;
 #include MUOS_HW_HEADER
 #endif
 
+
+#ifdef MUOS_ERROR_CTX
+//error_api:
+//: .Error context
+//: ----
+//: #ifdef MUOS_ERROR_CTX
+//: uint16_t muos_error_ctx_line (void)
+//: const char __flash* muos_error_ctx_file (void)
+//: #endif
+//: ----
+//:
+//: When error contexts are enabled, then these functions can be used
+//: to query the context of the most recent error.
+//:
+uint16_t
+muos_error_ctx_line (void);
+
+const char __flash*
+muos_error_ctx_file (void);
+
+#endif
+
+
+//error_api:
+//: .Error context
+//: ----
+//: MUOS_ASSERT(flag, pred)
+//: MUOS_ASSERT_ISR(flag, pred)
+//: ----
+//:
+//: +flag+::
+//:   Flag to turn assertions on
+//: +pred+::
+//:   predicate to check
+//:
+//: When MUOS_ERROR_ASSERTS are enabled and 'flag' is true then
+//: these macros check +pred+, when it evaluates to 'false' then
+//: 'muos_error_assert' is flagged.
+//:
+//: When 'flag' is 'false' or  MUOS_ERROR_ASSERTS are not enabled
+//: these macros do nothing.
+//:
+//: 'flag' is ideally an constant expression then the compiler can
+//: optimize unused assertions completely out.
+//:
+#ifdef MUOS_ERROR_ASSERTS
+#define MUOS_ASSERT(flag, pred) do {if ((flag) && !(pred)){muos_error_set (muos_error_assert);}}while(0)
+#define MUOS_ASSERT_ISR(flag, pred) do {if ((flag) && !(pred)){muos_error_set_isr (muos_error_assert);}}while(0)
+#else
+#define MUOS_ASSERT(flag, pred)
+#define MUOS_ASSERT_ISR(flag, pred)
+#endif
+
+
 //error_api:
 //: .Query number of pending errors
 //: ----
@@ -110,20 +164,48 @@ muos_error_pending (void)
 //:
 //PLANNED: do we need a muos_error_again in case a error was already set?
 //:
+#ifdef MUOS_ERROR_CTX
+#define muos_error_set(err) muos_error_set_ (err, __LINE__, ({static const char __flash fileid[] = __FILE__; fileid;}))
+#define muos_error_set_isr(err) muos_error_set_isr_ (err, __LINE__, ({static const char __flash fileid[] = __FILE__; fileid;}))
+
+
 muos_error
-muos_error_set_isr (muos_error err);
+muos_error_set_isr_ (muos_error err, uint16_t line,  const char __flash* fileid);
 
 static inline muos_error
-muos_error_set (muos_error err)
+muos_error_set_ (muos_error err, uint16_t line,  const char __flash* fileid)
 {
   if (err)
     {
       muos_interrupt_disable ();
-      muos_error_set_isr (err);
+      muos_error_set_isr_ (err, line, fileid);
       muos_interrupt_enable ();
     }
   return err;
 }
+
+
+#else
+#define muos_error_set(err) muos_error_set_(err)
+#define muos_error_set_isr(err) muos_error_set_isr_(err)
+
+muos_error
+muos_error_set_isr_ (muos_error err);
+
+static inline muos_error
+muos_error_set_ (muos_error err)
+{
+  if (err)
+    {
+      muos_interrupt_disable ();
+      muos_error_set_isr_ (err);
+      muos_interrupt_enable ();
+    }
+  return err;
+}
+
+#endif
+
 
 
 
