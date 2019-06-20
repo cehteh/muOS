@@ -55,6 +55,11 @@ muos_cli (const char* line)
 
   line += strspn_P (line, PSTR(MUOS_CLI_DELIM));
 
+#ifdef MUOS_CLI_COMMENT
+  if (strncmp_P (line, PSTR(MUOS_CLI_COMMENT), sizeof(MUOS_CLI_COMMENT)-1) == 0)
+    return;
+#endif
+
   uint8_t len = strcspn_P (line, PSTR(MUOS_CLI_DELIM));
 
   const char* cont = line + len;
