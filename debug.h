@@ -126,6 +126,58 @@ muos_hw_debug_init (void);
 
 
 
+//debug_api:
+//: .Assertions
+//: ----
+//: MUOS_ASSERT(flag, pred)
+//: MUOS_ASSERT_ISR(flag, pred)
+//: MUOS_ASSURE(flag, expr, expect)
+//: MUOS_ASSURE_ISR(flag, expr, expect)
+//: ----
+//:
+//: +flag+::
+//:   Flag to turn assertion on
+//: +pred+::
+//:   predicate to check
+//: +expr+::
+//:   expression to evaluate
+//: +expect+::
+//:   comparison that should yield true from 'expr'
+//:
+//: 'MUOS_ASSERT()'/'MUOS_ASSERT_ISR()'::
+//:   When MUOS_DEBUG_ASSERTIONS are enabled and 'flag' is true then
+//:   these macros check 'pred', when it evaluates to 'false' then
+//:   'muos_error_assert' is set. 'pred' must be side effect free.
+//:
+//:   'flag' is ideally an constant expression then the compiler can
+//:   optimize unused assertions completely out.
+//:
+//: 'MUOS_ASSURE()'/'MUOS_ASSURE_ISR()'::
+//:   Evaluate 'expr'. When MUOS_DEBUG_ASSERTIONS is enabled and 'flag' ist true,
+//:   then compare the result with 'expect' and set 'muos_error_assert' when false.
+//:
+//:   When MUOS_DEBUG_ASSERTS are disabled or 'flag' is false, 'expr' is still
+//:   evaluated but no error is set.
+//:
+//:   Asssure does not yield a result, assignments should be written within the +expr+.
+//:
+//:   'expect' should include an comparison operator eg.:
+//:
+//:     MUOS_ASSURE (true, foo = something(), > 0);
+//:
+#ifdef MUOS_DEBUG_ASSERTIONS
+#define MUOS_ASSERT(flag, pred) do {if ((flag) && !(pred)){muos_error_set (muos_error_assert);}}while(0)
+#define MUOS_ASSERT_ISR(flag, pred) do {if ((flag) && !(pred)){muos_error_set_isr (muos_error_assert);}}while(0)
+#define MUOS_ASSURE(flag, expr, expect) do {if (!((expr) expect) && flag){muos_error_set (muos_error_assert);}}while(0)
+#define MUOS_ASSURE_ISR(flag, expr, expect) do {if (!((expr) expect) && flag){muos_error_set_isr (muos_error_assert);}}while(0)
+#else
+#define MUOS_ASSERT(flag, pred)
+#define MUOS_ASSERT_ISR(flag, pred)
+#define MUOS_ASSURE(flag, expr, expect) do { expr; }while(0)
+#define MUOS_ASSURE_ISR(flag, expr, expect) do { expr; }while(0)
+#endif
+
+
 
 
 

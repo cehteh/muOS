@@ -206,8 +206,8 @@ Errors can be flagged and checked, checking for an error automatically
 clears the flag. There is also a function to check if an error flag is
 set without clearing it.
 
-The error handling subsystem also includes some debug helpers enabling
-assertions and tracking file and line number of the most recent error.
+The error handling can track file and line number of the most recent
+error.
 
 ==== Error codes
 
@@ -231,6 +231,3 @@ PIPADOC:@error_config
 
 
 //== User Application
-
-
-

@@ -95,37 +95,6 @@ muos_error_ctx_file (void);
 
 
 //error_api:
-//: .Error context
-//: ----
-//: MUOS_ASSERT(flag, pred)
-//: MUOS_ASSERT_ISR(flag, pred)
-//: ----
-//:
-//: +flag+::
-//:   Flag to turn assertions on
-//: +pred+::
-//:   predicate to check
-//:
-//: When MUOS_ERROR_ASSERTS are enabled and 'flag' is true then
-//: these macros check +pred+, when it evaluates to 'false' then
-//: 'muos_error_assert' is flagged.
-//:
-//: When 'flag' is 'false' or  MUOS_ERROR_ASSERTS are not enabled
-//: these macros do nothing.
-//:
-//: 'flag' is ideally an constant expression then the compiler can
-//: optimize unused assertions completely out.
-//:
-#ifdef MUOS_ERROR_ASSERTS
-#define MUOS_ASSERT(flag, pred) do {if ((flag) && !(pred)){muos_error_set (muos_error_assert);}}while(0)
-#define MUOS_ASSERT_ISR(flag, pred) do {if ((flag) && !(pred)){muos_error_set_isr (muos_error_assert);}}while(0)
-#else
-#define MUOS_ASSERT(flag, pred)
-#define MUOS_ASSERT_ISR(flag, pred)
-#endif
-
-
-//error_api:
 //: .Query number of pending errors
 //: ----
 //: uint8_t muos_error_pending (void)
@@ -285,5 +254,6 @@ muos_error_clearall (void)
 const char __flash*
 muos_error_str (muos_error err);
 #endif
+
 
 #endif

@@ -1,7 +1,8 @@
 === Debug
 
-Subsystem for using few GPIOs as debug outputs for mµOS internals and user
-defined channels.
+Debug helpers consisting of definitons for using a few GPIOs as debug
+outputs for mµOS internals and user defined channels and debug helpers
+enabling assertions.
 
 ==== API
 
@@ -10,5 +11,3 @@ PIPADOC:=debug_api
 ==== configuration
 
 PIPADOC:@debug_config
-
-
