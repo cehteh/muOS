@@ -28,6 +28,10 @@
 #include <muos/bgq.h>
 #include <muos/txqueue.h>
 
+#ifndef MUOS_IO_DEBUG_RESERVE
+#define MUOS_IO_DEBUG_RESERVE 0
+#endif
+
 struct fmtconfig_type pfmtconfig[MUOS_SERIAL_NUM];
 struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
@@ -69,7 +73,7 @@ muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
   if (muos_serial_status[hw].serial_tx_blocked)
     return muos_error_serial_status;
 
-  struct muos_txwait waitdata = {hw, space};
+  struct muos_txwait waitdata = {hw, space + MUOS_IO_DEBUG_RESERVE};
   muos_error ret;
 
   if (timeout)
@@ -122,11 +126,11 @@ muos_output_wait (muos_cbuffer_index space, muos_clock16 timeout)
   if (timeout)
     {
       muos_serial_status[0].serial_tx_blocked = true;
-      muos_error ret = muos_wait (muos_tx_wait, space, timeout);
+      muos_error ret = muos_wait (muos_tx_wait, space + MUOS_IO_DEBUG_RESERVE, timeout);
       muos_serial_status[0].serial_tx_blocked = false;
     }
   else
-    ret = muos_tx_wait(space)?muos_success:muos_warn_wait_timeout;
+    ret = muos_tx_wait(space + MUOS_IO_DEBUG_RESERVE)?muos_success:muos_warn_wait_timeout;
 
   return ret;
 }
