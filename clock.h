@@ -63,6 +63,33 @@ typedef uint32_t muos_clock32;
 typedef uint16_t muos_clock16;
 
 
+
+//: .Clock Type Conversion
+//: ----
+//: muos_clock16 muos_clock_clock16 (const muos_clock* src)
+//: muos_clock32 muos_clock_clock32 (const muos_clock* src)
+//: ----
+//:
+//: +src+::
+//:   time to be converted
+//:
+//: These functions convert a full 'muos_clock' into a truncated 16 or 32 bit clock type.
+//:
+static inline muos_clock16
+muos_clock_clock16 (const muos_clock* src)
+{
+  return muos_barray_uint16 (src->barray, 0);
+}
+
+static inline muos_clock32
+muos_clock_clock32 (const muos_clock* src)
+{
+  return muos_barray_uint32 (src->barray, 0);
+}
+
+
+
+
 //clock_api:
 //: .Time calculation macros
 //: ----
@@ -101,8 +128,6 @@ muos_clock_90init (void);
 //: ----
 //: void muos_clock_now (muos_clock* now)
 //: void muos_clock_now_isr (muos_clock* now)
-//: muos_clock32 muos_clock32_now (void)
-//: muos_clock32 muos_clock32_now_isr (void)
 //: ----
 //:
 //: Queries the current time from the hardware.
@@ -116,18 +141,65 @@ void
 muos_clock_now_isr (muos_clock* now);
 
 
-muos_clock32
-muos_clock32_now (void);
-
-muos_clock32
-muos_clock32_now_isr (void);
-
-
 
 
 
 //clock_api:
-//: .Timespan caclulations
+//: .Timespan calculations
+//: ----
+//: void muos_clock_add (muos_clock *dst, const muos_clock* src)
+//: void muos_clock_sub (muos_clock *dst, const muos_clock* src)
+//: void muos_clock_add32 (muos_clock *dst, muos_clock32 src)
+//: void muos_clock_add16 (muos_clock *dst, muos_clock16 src)
+//: void muos_clock_sub32 (muos_clock *dst, muos_clock32 src)
+//: void muos_clock_sub16 (muos_clock *dst, muos_clock16 src)
+//: ----
+//:
+//: +dst+::
+//:   The time to be modified
+//: +src+::
+//:   Timespan to be added/substracted to 'dst'
+//:
+//: Adding or substracting a full, 32 or 16 bit time value to a muos_clock
+//:
+static inline void
+muos_clock_add (muos_clock *dst, const muos_clock* src)
+{
+  muos_barray_add (dst->barray, src->barray);
+}
+
+static inline void
+muos_clock_sub (muos_clock *dst, const muos_clock* src)
+{
+  muos_barray_sub (dst->barray, src->barray);
+}
+
+
+static inline void
+muos_clock_add32 (muos_clock *dst, muos_clock32 src)
+{
+  muos_barray_add_uint32 (dst->barray, src);
+}
+
+static inline void
+muos_clock_add16 (muos_clock *dst, muos_clock16 src)
+{
+  muos_barray_add_uint16 (dst->barray, src);
+}
+
+
+static inline void
+muos_clock_sub32 (muos_clock *dst, muos_clock32 src)
+{
+  muos_barray_sub_uint32 (dst->barray, src);
+}
+
+static inline void
+muos_clock_sub16 (muos_clock *dst, muos_clock16 src)
+{
+  muos_barray_sub_uint16 (dst->barray, src);
+}
+
 //: ----
 //: muos_clock32 muos_clock_since (const muos_clock* start)
 //: muos_clock32 muos_clock32_elapsed (muos_clock32 end, muos_clock32 start)
@@ -152,6 +224,18 @@ muos_clock_since (const muos_clock* start)
 {
   muos_clock now;
   muos_clock_now (&now);
+
+  muos_clock_sub (&now, start);
+
+  return muos_clock_clock32 (&now);
+}
+
+
+static inline muos_clock32
+muos_clock_since_isr (const muos_clock* start)
+{
+  muos_clock now;
+  muos_clock_now_isr (&now);
 
   muos_barray_sub (now.barray, start->barray);
 
@@ -178,29 +262,6 @@ muos_clock16_elapsed (muos_clock16 now, muos_clock16 start)
 }
 
 
-//: ----
-//: void muos_clock_add32 (muos_clock *dst, muos_clock32 src)
-//: void muos_clock_add16 (muos_clock *dst, muos_clock16 src)
-//: ----
-//:
-//: +dst+::
-//:   The time to be modified
-//: +src+::
-//:   Timespan to be added to 'dst'
-//:
-//: Adding a 32 or 16 bit time value to a muos_clock
-//:
-static inline void
-muos_clock_add32 (muos_clock *dst, muos_clock32 src)
-{
-  muos_barray_add_uint32 (dst->barray, src);
-}
-
-static inline void
-muos_clock_add16 (muos_clock *dst, muos_clock16 src)
-{
-  muos_barray_add_uint16 (dst->barray, src);
-}
 
 
 
