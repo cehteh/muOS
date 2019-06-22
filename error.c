@@ -28,8 +28,9 @@ volatile uint8_t muos_errors_pending_;
 volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
 
 #ifdef MUOS_ERROR_CTX
+static const char __flash empty[] = "";
 static uint16_t ctx_line;
-static const char __flash* ctx_fileid;
+static const char __flash* ctx_file = empty;
 
 uint16_t
 muos_error_ctx_line (void)
@@ -40,7 +41,7 @@ muos_error_ctx_line (void)
 const char __flash*
 muos_error_ctx_file (void)
 {
-  return ctx_fileid;
+  return ctx_file;
 }
 #endif
 
@@ -72,7 +73,7 @@ muos_error_str (muos_error err)
 
 #ifdef MUOS_ERROR_CTX
 muos_error
-muos_error_set_isr_ (muos_error err, uint16_t line, const char __flash* fileid)
+muos_error_set_isr_ (muos_error err, uint16_t line, const char __flash* file)
 {
   if (err && !(muos_errors_[err/8] & 1<<(err%8)))
       {
@@ -80,7 +81,7 @@ muos_error_set_isr_ (muos_error err, uint16_t line, const char __flash* fileid)
         muos_barray_setbit (muos_errors_, err);
         ++muos_errors_pending_;
         ctx_line = line;
-        ctx_fileid = fileid;
+        ctx_file = file;
       }
   return err;
 }

@@ -134,20 +134,20 @@ muos_error_pending (void)
 //PLANNED: do we need a muos_error_again in case a error was already set?
 //:
 #ifdef MUOS_ERROR_CTX
-#define muos_error_set(err) muos_error_set_ (err, __LINE__, ({static const char __flash fileid[] = __FILE__; fileid;}))
-#define muos_error_set_isr(err) muos_error_set_isr_ (err, __LINE__, ({static const char __flash fileid[] = __FILE__; fileid;}))
+#define muos_error_set(err) muos_error_set_ (err, __LINE__, ({static const char __flash file[] = __FILE__; file;}))
+#define muos_error_set_isr(err) muos_error_set_isr_ (err, __LINE__, ({static const char __flash file[] = __FILE__; file;}))
 
 
 muos_error
-muos_error_set_isr_ (muos_error err, uint16_t line,  const char __flash* fileid);
+muos_error_set_isr_ (muos_error err, uint16_t line,  const char __flash* file);
 
 static inline muos_error
-muos_error_set_ (muos_error err, uint16_t line,  const char __flash* fileid)
+muos_error_set_ (muos_error err, uint16_t line,  const char __flash* file)
 {
   if (err)
     {
       muos_interrupt_disable ();
-      muos_error_set_isr_ (err, line, fileid);
+      muos_error_set_isr_ (err, line, file);
       muos_interrupt_enable ();
     }
   return err;
