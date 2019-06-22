@@ -22,6 +22,7 @@
 
 #include <muos/clpq.h>
 #include <muos/clock.h>
+#include <muos/debug.h>
 #include <muos/error.h>
 
 #include <string.h>
@@ -169,6 +170,7 @@ muos_clpq_after (muos_clock32 when, muos_clpq_function what)
   return muos_clpq_at (&then, what);
 }
 
+
 muos_error
 muos_clpq_repeat (muos_clock32 when)
 {
@@ -181,6 +183,7 @@ muos_clpq_repeat (muos_clock32 when)
 
   return muos_clpq_at (&at, clpq_what);
 }
+
 
 muos_error
 muos_clpq_at_isr (muos_clock* when, muos_clpq_function what)
@@ -202,7 +205,7 @@ muos_clpq_at_isr (muos_clock* when, muos_clpq_function what)
       ++segments;
     }
 
-  const muos_clock16 when16 = muos_barray_uint16 (when->barray, 0);
+  const muos_clock16 when16 = muos_clock_clock16 (when);
 
   if (!segments)
     {
@@ -303,15 +306,15 @@ muos_clpq_at_isr (muos_clock* when, muos_clpq_function what)
 bool
 muos_clpq_remove_isr (const muos_clock* when, muos_clpq_function what)
 {
-  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
-    return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
+  MUOS_ASSERT(true, !(what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS));
 
-  muos_clpq_segment segments = clpq_segment (when) - clpq_segment (&muos_clpq.now);
+  muos_clpq_segment segments = clpq_segment (&muos_clpq.now) - clpq_segment (when);
 
-  const muos_clock16 when16 = muos_barray_uint16 (when->barray, 0);
+  const muos_clock16 when16 = muos_clock_clock16 (when);
 
   if (!segments)
     {
+
       muos_clpq_index i = muos_clpq.used;
       for (; i; --i)
         {
@@ -418,6 +421,7 @@ muos_clpq_schedule_isr (void)
           --muos_clpq.used;
 
           clpq_what = muos_clpq.entries[muos_clpq.used].what;
+
           if (clpq_what)
             {
               clpq_delay = muos_clock16_elapsed (now16, muos_clpq.entries[muos_clpq.used].when);
@@ -426,6 +430,7 @@ muos_clpq_schedule_isr (void)
               clpq_what ();
               muos_interrupt_disable ();
             }
+
           return true;
         }
     }
