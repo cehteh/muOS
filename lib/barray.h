@@ -287,7 +287,7 @@ muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shi
 
   if (dst[l8shift] < src)
     {
-      for (l8shift++; l8shift <= len; ++l8shift)
+      for (l8shift++; l8shift < len; ++l8shift)
         {
           if (++dst[l8shift])
             break;
@@ -307,7 +307,7 @@ muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shi
 
   if (dst[l8shift] > tmp)
     {
-      for (l8shift++; l8shift <= len; ++l8shift)
+      for (l8shift++; l8shift < len; ++l8shift)
         {
           if (dst[l8shift]--)
             break;
@@ -373,7 +373,7 @@ muos_barray_sub_uint32_ (muos_barray dst, uint8_t len, uint32_t src)
 static inline void
 muos_barray_add_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
 {
-  for (uint8_t i = 0; i <= slen; ++i)
+  for (uint8_t i = 0; i < slen; ++i)
     {
       if (src[i])
         muos_barray_add_uint8_ (dst, dlen, src[i], i);
@@ -385,7 +385,7 @@ muos_barray_add_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t 
 static inline void
 muos_barray_sub_ (muos_barray dst, uint8_t dlen, const muos_barray src, uint8_t slen)
 {
-  for (uint8_t i = 0; i <= slen; ++i)
+  for (uint8_t i = 0; i < slen; ++i)
     {
       if (src[i])
         muos_barray_sub_uint8_ (dst, dlen, src[i], i);
