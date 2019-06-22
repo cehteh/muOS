@@ -150,7 +150,8 @@ muos_sched_depth (void);
 
 #endif // MUOS_SCHED_DEPTH
 
-//TODO: document me
-#define MUOS_ATOMIC_READ(dest, source) do {dest = source;} while (dest != source)
+//TODO: needs volatile cast
+//#define MUOS_ATOMIC_READ(dest, source) do {dest = source;} while (dest != source)
+
 
 #endif

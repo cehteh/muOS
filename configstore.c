@@ -139,6 +139,7 @@ struct muos_configstore_frame
   struct muos_configstore_data userdata;
   // uint32_t generation; only used for journaled
   // uint8_t xor;
+  //PLANNED: bitmap instead generation
   uint16_t crc; //PLANNED: on the fly
 };
 
@@ -177,7 +178,7 @@ muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8
 
 
   //TODO: not hidden
-  //TODO: not RPROT || auth 
+  //TODO: not RPROT || auth
 
   void* value = muos_configstore_value (id, index);
 

@@ -119,6 +119,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
                         {
                           muos_interrupt_disable ();
                           muos_clpq_remove_isr (&wakeup, NULL);
+
                           muos_interrupt_enable ();
                           --sched_depth_;
                           return muos_success;
@@ -129,8 +130,10 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
                       if (muos_clock_since_isr (&wakeup) > timeout)
                         {
                           muos_clpq_remove_isr (&wakeup, NULL);
+
                           muos_interrupt_enable ();
                           --sched_depth_;
+
                           return muos_warn_wait_timeout;
                         }
 

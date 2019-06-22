@@ -24,13 +24,23 @@
 //#include <muos/muos.h>
 #include <muos/clpq.h>
 
+//FIXME: probe the the latencies
 
 // This is the time between setting compmatch for wakeup and going to sleep
 #define MUOS_CLOCK_LATENCY (32U/MUOS_CLOCK_PRESCALER)
 
 
 // The time a schedule loop takes
-#define MUOS_CLOCK_BUSYLATENCY (64U/MUOS_CLOCK_PRESCALER)
+#define MUOS_CLOCK_BUSYLATENCY (128U/MUOS_CLOCK_PRESCALER)
+
+
+
+
+
+//static uint16_t clock_latency;
+//static uint16_t busy_latency;
+
+
 
 
 //TODO: return when already compmatch or disable compmatch when time is too short
