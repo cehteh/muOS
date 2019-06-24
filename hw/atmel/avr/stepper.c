@@ -20,8 +20,8 @@
 
 #ifdef MUOS_STEPPER
 
-#ifndef MUOS_SCHED_DEPTH
-#error steppers need MUOS_SCHED_DEPTH
+#ifndef MUOS_WAIT_DEPTH
+#error steppers need MUOS_WAIT_DEPTH
 #endif
 
 #define MUOS_HW_STEPPER_H

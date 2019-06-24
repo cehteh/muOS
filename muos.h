@@ -64,7 +64,7 @@ extern volatile struct muos_status_flags
 } muos_status;
 
 
-#ifdef MUOS_SCHED_DEPTH
+#ifdef MUOS_WAIT_DEPTH
 //muos_api:
 //: .Wait for some condition come true
 //: ----
@@ -105,7 +105,7 @@ extern volatile struct muos_status_flags
 //: Because of stack limits entering the mainloop recursively is limited. One should always
 //: expect that a wait can return instantly with 'muos_warn_sched_depth'.
 //:
-//: 'muos_wait()' is only available when MUOS_SCHED_DEPTH is defined.
+//: 'muos_wait()' is only available when MUOS_WAIT_DEPTH is defined.
 //:
 //: .Returns
 //:   'muos_success':: the wait condition got met
@@ -116,8 +116,9 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout);
 
 muos_error
 muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep);
+#endif
 
-
+#ifdef MUOS_YIELD_DEPTH
 //muos_api:
 //: .Enter Mainloop recursively, scheduling other jobs
 //: ----
@@ -134,7 +135,7 @@ muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t 
 //: Yielding is applicable when one has code which loops for some extended time but shall
 //: not stall the work to be done *and* this code will never be called recursively.
 //:
-//: 'muos_yield()' is only available when MUOS_SCHED_DEPTH is defined.
+//: 'muos_yield()' is only available when MUOS_YIELD_DEPTH is defined.
 //:
 //: .Returns
 //:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
@@ -142,13 +143,16 @@ muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t 
 //PLANNED: add priority, which queues to schedule
 muos_error
 muos_yield (uint8_t count);
+#endif
 
+
+
+#if defined(MUOS_YIELD_DEPTH) || defined(MUOS_WAIT_DEPTH)
 // undocumented, will be replaced
 uint8_t
 muos_sched_depth (void);
+#endif
 
-
-#endif // MUOS_SCHED_DEPTH
 
 //TODO: needs volatile cast
 //#define MUOS_ATOMIC_READ(dest, source) do {dest = source;} while (dest != source)

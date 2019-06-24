@@ -38,6 +38,7 @@
 //PLANNED: example sections in all API doc
 //PLANNED: find some way to get rid of most of the *_isr variants at compiletime
 
+
 volatile struct muos_status_flags muos_status;
 
 
@@ -72,119 +73,9 @@ void muos_die (void)
 }
 
 
-#ifdef MUOS_SCHED_DEPTH
-static uint8_t sched_depth_;
-
-uint8_t
-muos_sched_depth (void)
+static bool
+yield_loop (uint8_t count)
 {
-  return sched_depth_;
-}
-
-#include <muos/io.h>
-void
-muos_clpq_dump (uint8_t what);
-
-muos_error
-muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
-{
-  if (sched_depth_ >= MUOS_SCHED_DEPTH)
-    {
-      return muos_warn_sched_depth;
-    }
-
-  //PLANNED: how to reduce memory footprint?
-  muos_clock wakeup;
-  muos_clock_now (&wakeup);
-  muos_clock_add16 (&wakeup, timeout);
-
-  MUOS_OK (muos_clpq_at (&wakeup, NULL));
-
-  ++sched_depth_;
-  muos_interrupt_disable ();
-
-  while (1)
-    {
-      do
-        {
-          do
-            {
-              do
-                {
-                  do
-                    {
-                      //TODO: docme, predicate is called with interrupts disabled
-
-                      if (fn && fn (param))
-                        {
-                          muos_interrupt_disable ();
-                          muos_clpq_remove_isr (&wakeup, NULL);
-
-                          muos_interrupt_enable ();
-                          --sched_depth_;
-                          return muos_success;
-                        }
-
-                      muos_interrupt_disable (); // in case fn() enabled interrupts
-
-                      if (muos_clock_since_isr (&wakeup) > timeout)
-                        {
-                          muos_clpq_remove_isr (&wakeup, NULL);
-
-                          muos_interrupt_enable ();
-                          --sched_depth_;
-
-                          return muos_warn_wait_timeout;
-                        }
-
-#ifdef MUOS_ERRORFN
-                      if (muos_error_pending ())
-                        {
-                          MUOS_ERRORFN ();
-                          muos_interrupt_disable ();
-                        }
-#endif
-                      MUOS_DEBUG_SWITCH_TOGGLE;
-                    }
-                  //FIXME: rename all *schedule to *schedule_isr
-                  while (muos_rtq_schedule ());
-                }
-               while (muos_clpq_schedule_isr ());
-            }
-          while (muos_hpq_schedule ());
-        }
-      while (muos_bgq_schedule ());
-
-      muos_sleep ();
-    }
-}
-
-muos_error
-muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
-{
-  while (rep--)
-    {
-      muos_error err = muos_wait (fn, param, timeout);
-      if (err != muos_warn_wait_timeout)
-        return err;
-    }
-  return muos_warn_wait_timeout;
-}
-
-
-
-muos_error
-muos_yield (uint8_t count)
-{
-  if (sched_depth_ >= MUOS_SCHED_DEPTH)
-    {
-      return muos_warn_sched_depth;
-    }
-
-  ++sched_depth_;
-  ++count;
-  muos_interrupt_disable ();
-
   do
     {
       do
@@ -202,22 +93,110 @@ muos_yield (uint8_t count)
                   muos_interrupt_disable ();
 
                   MUOS_DEBUG_SWITCH_TOGGLE;
-                  --count;
+
+                  if (!count--)
+                    return true;
                 }
-              while (count && muos_rtq_schedule ());
+              while (muos_rtq_schedule ());
             }
-          while (count && muos_clpq_schedule_isr ());
+          while (muos_clpq_schedule_isr ());
         }
-      while (count && muos_hpq_schedule ());
+      while (muos_hpq_schedule ());
     }
-  while (count && muos_bgq_schedule ());
+  while (muos_bgq_schedule ());
+
+  return false;
+}
+
+
+#if defined(MUOS_YIELD_DEPTH) || defined(MUOS_WAIT_DEPTH)
+static uint8_t sched_depth_;
+uint8_t
+muos_sched_depth (void)
+{
+  return sched_depth_;
+}
+#endif
+
+
+#ifdef MUOS_YIELD_DEPTH
+muos_error
+muos_yield (uint8_t count)
+{
+  if (sched_depth_ >= MUOS_YIELD_DEPTH)
+    {
+      return muos_warn_sched_depth;
+    }
+
+  ++sched_depth_;
+  muos_interrupt_disable ();
+
+  yield_loop (count);
 
   muos_interrupt_enable ();
   --sched_depth_;
 
   return muos_success;
 }
-#endif // MUOS_SCHED_DEPTH
+
+#endif
+
+
+#include <muos/io.h>
+void
+muos_clpq_dump (uint8_t what);
+
+
+
+#ifdef MUOS_WAIT_DEPTH
+
+muos_error
+muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
+{
+  if (sched_depth_ >= MUOS_WAIT_DEPTH)
+    {
+      return muos_warn_sched_depth;
+    }
+  ++sched_depth_;
+
+  muos_clock wakeup;
+  muos_clock_now (&wakeup);
+  muos_clock_add16 (&wakeup, timeout);
+
+  muos_error ret = muos_clpq_at (&wakeup, NULL);
+
+  if (ret == muos_success)
+    while (1)
+      {
+        if (fn && fn (param))
+          break;
+
+        if (muos_clock_is_expired (&wakeup))
+          {
+            ret = muos_warn_wait_timeout;
+            break;
+          }
+
+        yield_loop (1);
+      }
+
+  --sched_depth_;
+
+  return ret;
+}
+
+muos_error
+muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
+{
+  while (rep--)
+    {
+      muos_error err = muos_wait (fn, param, timeout);
+      if (err != muos_warn_wait_timeout)
+        return err;
+    }
+  return muos_warn_wait_timeout;
+}
+#endif
 
 
 
@@ -264,34 +243,11 @@ main()
   muos_init ();
 #endif
 
+  muos_interrupt_enable ();
+
   while (1)
     {
-      do
-        {
-          do
-            {
-              do
-                {
-                  do
-                    {
-#ifdef MUOS_ERRORFN
-                      if (muos_error_pending ())
-                        {
-                          MUOS_ERRORFN ();
-                          muos_interrupt_disable ();
-                        }
-#endif
-                      MUOS_DEBUG_SWITCH_TOGGLE;
-                    }
-                  while (muos_rtq_schedule ());
-                }
-              while (muos_clpq_schedule_isr ());
-            }
-          while (muos_hpq_schedule ());
-        }
-      while (muos_bgq_schedule ());
-
+      while (yield_loop (255));
       muos_sleep ();
     }
 }
-
