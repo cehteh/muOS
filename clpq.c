@@ -302,76 +302,52 @@ muos_clpq_at_isr (muos_clock* when, muos_clpq_function what)
   Removing Jobs
 
  */
-
 bool
 muos_clpq_remove_isr (const muos_clock* when, muos_clpq_function what)
 {
   MUOS_ASSERT(true, !(what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS));
 
-  muos_clpq_segment segments = clpq_segment (&muos_clpq.now) - clpq_segment (when);
+  muos_clpq_index i;
 
+  // skip barriers
+  muos_clpq_segment segments = clpq_segment (when) - clpq_segment (&muos_clpq.now) ;
+
+  for (i = muos_clpq.used; i && segments; --i)
+    {
+      uint8_t barrier = clpq_barrier (muos_clpq.entries[i-1].what);
+      if (barrier > segments)
+        return false;
+
+      segments -= barrier;
+    }
+
+  if (!i)
+    return false;
+
+  // find entry
   const muos_clock16 when16 = muos_clock_clock16 (when);
 
-  if (!segments)
+  for (; i; --i)
     {
-
-      muos_clpq_index i = muos_clpq.used;
-      for (; i; --i)
-        {
-          if (muos_clpq.entries[i-1].when == when16 && muos_clpq.entries[i-1].what == what)
-            break;
-        }
-
-      if (!i)
-        return false;
-
-      //TODO: memmove?
-      for (; i < muos_clpq.used; ++i)
-        {
-          muos_clpq.entries[i-1] = muos_clpq.entries[i];
-        }
-
-      --muos_clpq.used;
+      if (muos_clpq.entries[i-1].when == when16 && muos_clpq.entries[i-1].what == what)
+        break;
     }
-  else
+
+  if (!i)
+    return false;
+
+  // remove
+  for (; i < muos_clpq.used; ++i)
     {
-      // remove with barriers
-
-      //TODO: when removing last, remove all preceeding barriers
-      //TODO: when exponential, then merge barriers
-
-      uint8_t barrier = 0;
-      muos_clpq_index i = muos_clpq.used;
-
-      for (; i && segments; --i)
-        {
-          barrier = clpq_barrier (muos_clpq.entries[i-1].what);
-          if (barrier > segments)
-            return false;
-
-          segments -= barrier;
-        }
-
-      if (!i)
-        return false;
-
-      for (; i; --i)
-        {
-          if (muos_clpq.entries[i-1].when == when16 && muos_clpq.entries[i-1].what == what)
-            break;
-        }
-
-      if (!i)
-        return false;
-
-      //TODO: memmove?
-      for (; i < muos_clpq.used; ++i)
-        {
-          muos_clpq.entries[i-1] = muos_clpq.entries[i];
-        }
-
-      --muos_clpq.used;
+      muos_clpq.entries[i-1] = muos_clpq.entries[i];
     }
+
+  --muos_clpq.used;
+
+  //TODO: remove/merge excess barriers (optional)
+#ifdef MUOS_CLPQ_EXPONENTIAL
+  // ... dito
+#endif
 
   return true;
 }
