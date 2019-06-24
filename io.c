@@ -57,31 +57,40 @@ muos_io_20init (void)
 /*
   Blocking io
  */
+
+static muos_io_lock lock_cnt;
+
+
 bool
 muos_tx_wait (intptr_t data);
 
 
 #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 
-//PLANNED: remove io_lock functions, add priority to wait() a higher priority wait will then abort lower pri waits
+
+static muos_io_lock lock_cur[MUOS_SERIAL_NUM];
 
 muos_error
-muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
+muos_output_lock (uint8_t hw, muos_io_lock* who, muos_cbuffer_index space, muos_clock16 timeout)
 {
   MUOS_IO_HWCHECK;
 
-  if (muos_serial_status[hw].serial_tx_blocked)
-    return muos_error_serial_status;
+  if (who)
+    {
+      if (!*who)
+        *who = ++lock_cnt?lock_cnt:++lock_cnt;
+
+      if (lock_cur[hw] && lock_cur[hw] != *who)
+        return muos_warn_io_locked;
+
+      lock_cur[hw] = *who;
+    }
 
   struct muos_txwait waitdata = {hw, space + MUOS_IO_DEBUG_RESERVE};
   muos_error ret;
 
   if (timeout)
-    {
-      muos_serial_status[hw].serial_tx_blocked = true;
-      ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
-      muos_serial_status[hw].serial_tx_blocked = false;
-    }
+    ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
   else
     ret = muos_tx_wait((intptr_t)&waitdata)?muos_success:muos_warn_wait_timeout;
 
@@ -89,69 +98,59 @@ muos_output_wait (uint8_t hw, muos_cbuffer_index space, muos_clock16 timeout)
 }
 
 
+
 muos_error
-muos_output_lock (uint8_t hw)
+muos_output_unlock (uint8_t hw, muos_io_lock* who)
 {
   MUOS_IO_HWCHECK;
 
-  if (muos_serial_status[hw].serial_tx_blocked)
+  if (who && lock_cur[hw] == *who)
+    *who = lock_cur[hw] = 0;
+
+  if (lock_cur[hw])
     return muos_error_serial_status;
 
-  muos_serial_status[hw].serial_tx_blocked = true;
-  return muos_success;
-}
-
-muos_error
-muos_output_unlock (uint8_t hw)
-{
-  MUOS_IO_HWCHECK;
-
-  if (!muos_serial_status[hw].serial_tx_blocked)
-    return muos_error_serial_status;
-
-  muos_serial_status[hw].serial_tx_blocked = false;
   return muos_success;
 }
 
 #else
 
+static muos_io_lock lock_cur;
+
 muos_error
-muos_output_wait (muos_cbuffer_index space, muos_clock16 timeout)
+muos_output_lock (muos_io_lock* who, muos_cbuffer_index space, muos_clock16 timeout)
 {
-  if (muos_serial_status[0].serial_tx_blocked)
-    return muos_error_serial_status;
+  if (who)
+    {
+      if (!*who)
+        *who = ++lock_cnt?lock_cnt:++lock_cnt;
+
+      if (lock_cur && lock_cur != *who)
+        return muos_warn_io_locked;
+
+      lock_cur = *who;
+    }
 
   muos_error ret;
 
   if (timeout)
-    {
-      muos_serial_status[0].serial_tx_blocked = true;
-      muos_error ret = muos_wait (muos_tx_wait, space + MUOS_IO_DEBUG_RESERVE, timeout);
-      muos_serial_status[0].serial_tx_blocked = false;
-    }
+    ret = muos_wait (muos_tx_wait, space + MUOS_IO_DEBUG_RESERVE, timeout);
   else
     ret = muos_tx_wait(space + MUOS_IO_DEBUG_RESERVE)?muos_success:muos_warn_wait_timeout;
 
   return ret;
 }
 
-muos_error
-muos_output_lock (void)
-{
-  if (muos_serial_status[0].serial_tx_blocked)
-    return muos_error_serial_status;
-
-  muos_serial_status[0].serial_tx_blocked = true;
-  return muos_success;
-}
 
 muos_error
-muos_output_unlock (void)
+muos_output_unlock (muos_io_lock* who)
 {
-  if (!muos_serial_status[0].serial_tx_blocked)
+  if (who && lock_cur == *who)
+    *who = lock_cur = 0;
+
+  if (lock_cur)
     return muos_error_serial_status;
 
-  muos_serial_status[0].serial_tx_blocked = false;
   return muos_success;
 }
 

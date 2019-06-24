@@ -35,6 +35,7 @@ typedef bool (*muos_serial_rxcallback_type)(uint8_t hw);
 typedef bool (*muos_serial_rxcallback_type)(void);
 #endif
 
+//PLANNED: check barray performance/size here
 extern volatile struct muos_serial_flags
 {
   uint8_t serial_rx_dosync:1;
@@ -44,8 +45,6 @@ extern volatile struct muos_serial_flags
   uint8_t lineedit_ovwr:1;
   uint8_t lineedit_echo:1;
   uint8_t txqueue_pending:1;
-  uint8_t serial_tx_blocked:1;
-  uint8_t serial_rx_blocked:1;
   //Error flags
   uint8_t error_tx_overflow:1;
   uint8_t error_rx_underflow:1;

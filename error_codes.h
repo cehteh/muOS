@@ -12,9 +12,8 @@
     MUOS_ERROR(error_serial_status) /*: {ERRORDEF} serial port flagged an async error */                \
     MUOS_ERROR(error_serial_config) /*: {ERRORDEF} error in serial configuration parameters */          \
     MUOS_ERROR(error_tx_overflow) /*: {ERRORDEF} To much data to send */                                \
-    MUOS_ERROR(error_tx_blocked) /*: {ERRORDEF} tx is blocked by another job */                         \
-    MUOS_ERROR(error_rx_blocked) /*: {ERRORDEF} rx is blocked by another job */                         \
     MUOS_ERROR(error_rx_underflow) /*: {ERRORDEF} read while no data available */                       \
+    MUOS_ERROR(warn_io_locked) /*: {ERRORDEF} io is locked by another job */                            \
     MUOS_ERROR(error_txqueue_overflow) /*: {ERRORDEF} To much data to send (TXQUEUE) */                 \
     MUOS_ERROR(error_sm_state) /*: {ERRORDEF} state transition not possible */                          \
     MUOS_ERROR(error_eeprom_busy) /*: {ERRORDEF} eeprom busy */                                         \
