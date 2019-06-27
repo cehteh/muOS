@@ -237,10 +237,31 @@ muos_clock_since_isr (const muos_clock* start)
   muos_clock now;
   muos_clock_now_isr (&now);
 
-  muos_barray_sub (now.barray, start->barray);
+  muos_clock_sub (&now, start);
 
-  return muos_barray_uint32 (now.barray, 0);
+  return muos_clock_clock32 (&now);
 }
+
+
+
+static inline bool
+muos_clock_is_expired (muos_clock* when)
+{
+  muos_clock now;
+  muos_clock_now (&now);
+
+  return muos_barray_is_lte (when->barray, now.barray);
+}
+
+static inline bool
+muos_clock_is_expired_isr (muos_clock* when)
+{
+  muos_clock now;
+  muos_clock_now_isr (&now);
+
+  return muos_barray_is_lte (when->barray, now.barray);
+}
+
 
 
 static inline muos_clock32
