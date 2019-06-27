@@ -76,6 +76,7 @@ void muos_die (void)
 static bool
 yield_loop (uint8_t count)
 {
+  muos_interrupt_disable ();
   do
     {
       do
@@ -90,14 +91,18 @@ yield_loop (uint8_t count)
                       MUOS_ERRORFN ();
                     }
 #endif
-                  muos_interrupt_disable ();
 
-                  MUOS_DEBUG_SWITCH_TOGGLE;
+                 muos_interrupt_disable ();
+
+                 MUOS_DEBUG_SWITCH_TOGGLE;
 
                   if (!count--)
-                    return true;
+                    {
+                      muos_interrupt_enable ();
+                      return true;
+                    }
                 }
-              while (muos_rtq_schedule ());
+              while (muos_rtq_schedule ());  //FIXME: rename schedule to scheduler_isr
             }
           while (muos_clpq_schedule_isr ());
         }
@@ -105,6 +110,7 @@ yield_loop (uint8_t count)
     }
   while (muos_bgq_schedule ());
 
+  muos_interrupt_enable ();
   return false;
 }
 
@@ -129,11 +135,7 @@ muos_yield (uint8_t count)
     }
 
   ++sched_depth_;
-  muos_interrupt_disable ();
-
   yield_loop (count);
-
-  muos_interrupt_enable ();
   --sched_depth_;
 
   return muos_success;
@@ -169,7 +171,10 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
     while (1)
       {
         if (fn && fn (param))
-          break;
+          {
+            muos_clpq_remove (&wakeup, NULL);  //FIXME: there is a race when the clpq_schedule removed the wakeup
+            break;
+          }
 
         if (muos_clock_is_expired (&wakeup))
           {
@@ -179,6 +184,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
 
         yield_loop (1);
       }
+
 
   --sched_depth_;
 
