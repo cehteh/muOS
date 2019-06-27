@@ -27,8 +27,6 @@
 
 #include <string.h>
 
-//PLANNED: wrapper for recurring jobs
-//PLANNED: implement minimal uint8_t array math lib (inc/compare/xor etc)
 //PLANNED: wrap all clock math in functions for above conversion
 
 #include <muos/io.h>
@@ -163,8 +161,7 @@ muos_error
 muos_clpq_after (muos_clock32 when, muos_clpq_function what)
 {
   muos_clock then;
-
-  muos_clock_now (&then);
+  muos_clpq_now (&then);
   muos_clock_add32 (&then, when);
 
   return muos_clpq_at (&then, what);
@@ -188,8 +185,7 @@ muos_clpq_repeat (muos_clock32 when)
 muos_error
 muos_clpq_at_isr (muos_clock* when, muos_clpq_function what)
 {
-  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
-    return muos_error_error;  /* programmers error, should never happen, but better safe than sorry */
+  MUOS_ASSERT (true, !(what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS));
 
   if (muos_barray_is_lt (when->barray, muos_clpq.now.barray))
     {

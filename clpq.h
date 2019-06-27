@@ -27,7 +27,7 @@
 #include <muos/clock.h>
 
 
-#if MUOS_CLPQ_LENGTH < 256
+#if MUOS_CLPQ_LENGTH < 255
 typedef uint8_t muos_clpq_index;
 #else
 typedef uint16_t muos_clpq_index;
@@ -77,10 +77,15 @@ extern muos_clpq_type muos_clpq;
 //clpq_api:
 //: .Event time
 //: ----
-//: muos_clock muos_clpq_now (void)
+//: muos_clock muos_clpq_now (muos_clock* now)
 //: muos_clock32 muos_clpq32_now (void)
 //: muos_clock16 muos_clpq_delayed (void)
+//: bool muos_clpq_is_expired (muos_clock* when)
 //: ----
+//:
+//: Each clpq scheduling keeps the time. This time can be efficiently
+//: queried because no hardware access or locks are needed and gives
+//: a stable timestamp throughout the whole job.
 //:
 //: 'muos_clpq_now*()' returns the time the last CLPQ event was scheduled.
 //: This functon gives consistent time in a efficient way. The time is only updated
@@ -91,10 +96,16 @@ extern muos_clpq_type muos_clpq;
 //: 'muos_clpq_delayed()' Makes only sense within a clpq scheduled function, it returns
 //: the number of ticks the scheduler is behind the requested time.
 //:
-static inline muos_clock
-muos_clpq_now (void)
+//: 'muos_clpq_delayed()' Makes only sense within a clpq scheduled function, it returns
+//: the number of ticks the scheduler is behind the requested time.
+//:
+//: 'muos_clpq_is_expired (muos_clock* when)' compares the current 'clpq_now()' time with
+//: the given 'when' timestamp. When 'now >= when' it returns 'true' and 'false' otherwise.
+//:
+static inline void
+muos_clpq_now (muos_clock* now)
 {
-  return muos_clpq.now;
+  muos_barray_copy (now->barray, muos_clpq.now.barray);
 }
 
 static inline muos_clock32
@@ -105,6 +116,14 @@ muos_clpq_now32 (void)
 
 muos_clock16
 muos_clpq_delayed (void);
+
+
+static inline bool
+muos_clpq_is_expired (muos_clock* when)
+{
+  return muos_barray_is_lt (when->barray, muos_clpq.now.barray);
+}
+
 
 
 //clpq_api:
@@ -132,7 +151,7 @@ muos_clpq_delayed (void);
 //: be scheduled not before 'when'. Pushing is stable ordered when 2 functions are
 //: to be scheduled at the same time the order in which they where pushed is preserved.
 //:
-//: 'muos_clpq_after()' schedules 'what' to be executed after 'muos_clock_now()+when'
+//: 'muos_clpq_after()' schedules 'what' to be executed after 'muos_clpq_now()+when'
 //:
 //: 'muos_clpq_repeat()' may be called from a clpq scheduled function to repeat the same
 //: function after 'when' time. This gives consistent timing.
