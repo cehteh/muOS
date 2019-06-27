@@ -372,7 +372,7 @@ void txqueue_CSI MUOS_IO_HWPARAM()
 bool
 muos_tx_wait (intptr_t data)
 {
-  return muos_txqueue_free (((struct muos_txwait*)data)->hw) > ((struct muos_txwait*)data)->space;
+  return muos_txqueue_free (((struct muos_txwait*)data)->hw) >= ((struct muos_txwait*)data)->space;
 }
 
 #else
@@ -380,7 +380,7 @@ muos_tx_wait (intptr_t data)
 bool
 muos_tx_wait (intptr_t space)
 {
-  return muos_serial_tx_free () > space;
+  return muos_serial_tx_free () >= space;
 }
 
 #endif
@@ -775,7 +775,7 @@ muos_txqueue_output_uint32 MUOS_IO_HWPARAM(uint32_t n)
     }
 
   fmtconfig[MUOS_IO_HWINDEX] = pfmtconfig[MUOS_IO_HWINDEX];
-  
+
   if (!ret)
     muos_txqueue_start MUOS_IO_HWARG();
 
@@ -1030,7 +1030,3 @@ muos_txqueue_output_ctrl MUOS_IO_HWPARAM(uint8_t, uint8_t, uint8_t)
 
 
 #endif
-
-
-
-

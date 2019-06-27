@@ -121,7 +121,6 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 #endif
 
 
-
 #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
 #define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
 
@@ -133,6 +132,7 @@ struct muos_txwait
   uint8_t hw;
   muos_cbuffer_index space;
 };
+
 
 //TODO: docme   timeout=0 case
 muos_error

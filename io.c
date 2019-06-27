@@ -165,7 +165,7 @@ muos_output_unlock (muos_io_lock* who)
 bool
 muos_tx_wait (intptr_t data)
 {
-  return muos_serial_tx_free (((struct muos_txwait*)data)->hw) > ((struct muos_txwait*)data)->space;
+  return muos_serial_tx_free (((struct muos_txwait*)data)->hw) >= ((struct muos_txwait*)data)->space;
 }
 
 #else
@@ -173,7 +173,7 @@ muos_tx_wait (intptr_t data)
 bool
 muos_tx_wait (intptr_t space)
 {
-  return muos_serial_tx_free () > space;
+  return muos_serial_tx_free () >= space;
 }
 
 #endif
