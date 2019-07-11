@@ -203,7 +203,7 @@ muos_configstore_output_value MUOS_IO_HWPARAM(enum muos_configstore_id id, uint8
       return muos_output_cstr MUOS_IO_HWARG((const char*) value);
 
     default:
-      return muos_error_error; /*will never happen*/
+      return muos_fatal_error; /*will never happen*/
     }
 }
 
@@ -275,7 +275,7 @@ muos_configstore_set (char* var, uint8_t index, char* val)
       strcpy (dest, val);
       break;
     default:
-      return muos_error_error; /*will never happen*/
+      return muos_fatal_error; /*will never happen*/
     }
   return muos_success;
 }
@@ -467,4 +467,3 @@ muos_configstore_save (muos_configstore_callback cb)
 }
 
 #endif
-

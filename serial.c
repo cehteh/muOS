@@ -69,7 +69,7 @@ muos_error
 muos_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsync, muos_serial_rxcallback_type callback)
 {
   if (hw >= MUOS_SERIAL_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   MUOS_OK (muos_hw_serial_start (hw, baud, config, rxsync));
   muos_serial_status[hw].lineedit_echo = true;  //PLANNED: configurable
@@ -98,7 +98,7 @@ muos_error
 muos_serial_tx_byte (uint8_t hw, uint8_t b)
 {
   if (hw >= MUOS_SERIAL_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   muos_error ret = muos_success;
 

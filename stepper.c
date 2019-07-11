@@ -134,7 +134,7 @@ muos_error
 muos_stepper_wait (uint8_t hw, enum muos_stepper_arming_state maxstate, uint16_t timeout_sec)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   struct waitdata wd = {hw, maxstate};
 
@@ -226,7 +226,7 @@ muos_error
 muos_stepper_set_zero (uint8_t hw, int32_t offset)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD)
     return muos_error_stepper_state;
@@ -282,7 +282,7 @@ muos_stepper_move_raw (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ON)
     return muos_error_stepper_state;
@@ -329,7 +329,7 @@ muos_stepper_move_cal (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_HOLD
       || !muos_steppers_config_lock)
@@ -381,7 +381,7 @@ muos_stepper_move_rel (uint8_t hw,
                        muos_queue_function done)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
       || !muos_steppers_config_lock)
@@ -423,7 +423,7 @@ muos_error
 muos_stepper_speed_set (uint8_t hw, uint16_t speed)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_SLOW_REL || !muos_steppers_config_lock)
     return muos_error_stepper_state;
@@ -473,7 +473,7 @@ muos_stepper_slope_prep (uint8_t hw,
                          uint16_t steps_out)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (!slope)
     {
@@ -536,7 +536,7 @@ muos_error
 muos_stepper_slope_commit (uint8_t hw, int32_t position, bool rev_actions, bool cont)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   // dont commit on non zerored stepper
   if (muos_steppers[hw].state < MUOS_STEPPER_HOLD)
@@ -576,7 +576,7 @@ muos_error
 muos_stepper_move_start (uint8_t hw, muos_queue_function slope_gen)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (muos_steppers[hw].state != MUOS_STEPPER_ARMED
       || !muos_steppers_config_lock)
@@ -629,7 +629,7 @@ muos_stepper_distance (uint8_t hw, int32_t position)
 {
   if (hw >= MUOS_STEPPER_NUM)
     {
-      muos_error_set (muos_error_nodev);
+      muos_error_set (muos_fatal_nodev);
       return 0;
     }
 
@@ -644,7 +644,7 @@ muos_stepper_end_distance (uint8_t hw, int32_t position)
 {
   if (hw >= MUOS_STEPPER_NUM)
     {
-      muos_error_set (muos_error_nodev);
+      muos_error_set (muos_fatal_nodev);
       return 0;
     }
 
@@ -666,7 +666,7 @@ muos_error
 muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t max_speed)
 {
   if (hw >= MUOS_STEPPER_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   struct muos_stepper_slope* slope = muos_stepper_slope_get (hw);
 
@@ -742,4 +742,3 @@ muos_stepper_not_moving (intptr_t hw)
 
 
 #endif
-

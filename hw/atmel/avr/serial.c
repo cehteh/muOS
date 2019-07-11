@@ -121,7 +121,7 @@ muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsyn
       /* UCSR0B |= _BV(UCSZ02); */
       /* UCSR0C |= _BV(UCSZ01) | _BV(UCSZ00); */
     default:
-      return muos_error_serial_config;
+      return muos_fatal_serial_config;
     }
 
   switch (config[1])
@@ -135,7 +135,7 @@ muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsyn
       ucsrc |= _BV(UPM01);
       break;
     default:
-      return muos_error_serial_config;
+      return muos_fatal_serial_config;
     }
 
   switch (config[2])
@@ -146,12 +146,12 @@ muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsyn
       ucsrc = _BV(USBS0);
       break;
     default:
-      return muos_error_serial_config;
+      return muos_fatal_serial_config;
     }
 
   uint16_t ubrr = muos_avr_baudcalc (baud, MUOS_SERIAL_BAUDTOL);
   if (ubrr == 0xffff)
-    return muos_error_serial_config;
+    return muos_fatal_serial_config;
 
 #define UART(hw, txsize, rxsize)                                        \
   case hw:                                                              \

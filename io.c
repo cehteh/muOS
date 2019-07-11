@@ -469,14 +469,14 @@ muos_error
 muos_output_cstr_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
 muos_output_mem_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -484,7 +484,7 @@ muos_output_int16_R MUOS_IO_HWPARAM()
 {
 
   MUOS_IO_HWCHECK;
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -492,7 +492,7 @@ muos_output_uint16_R MUOS_IO_HWPARAM()
 {
 
   MUOS_IO_HWCHECK;
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -500,7 +500,7 @@ muos_output_int32_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -508,7 +508,7 @@ muos_output_uint32_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -516,7 +516,7 @@ muos_output_int64_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -524,7 +524,7 @@ muos_output_uint64_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -532,7 +532,7 @@ muos_output_float_R MUOS_IO_HWPARAM()
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 #endif
 
@@ -585,7 +585,7 @@ muos_output_ifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -593,7 +593,7 @@ muos_output_ffmt MUOS_IO_HWPARAM(char)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -601,7 +601,7 @@ muos_output_pcase MUOS_IO_HWPARAM(char)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -609,7 +609,7 @@ muos_output_pbase MUOS_IO_HWPARAM(uint8_t)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 
@@ -618,7 +618,7 @@ muos_output_pifmt MUOS_IO_HWPARAM(uint8_t, uint8_t)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 muos_error
@@ -626,7 +626,7 @@ muos_output_pffmt MUOS_IO_HWPARAM(char)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 
@@ -635,7 +635,7 @@ muos_output_ctrl MUOS_IO_HWPARAM(uint8_t, uint8_t, uint8_t)
 {
   MUOS_IO_HWCHECK;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 

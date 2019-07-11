@@ -109,7 +109,7 @@ enum muos_sm_state
 muos_sm_prev (uint8_t sm)
 {
   if (sm >= MUOS_SM_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   return statemachine[sm].prev;
 }
@@ -118,7 +118,7 @@ enum muos_sm_state
 muos_sm_get (uint8_t sm)
 {
   if (sm >= MUOS_SM_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   return statemachine[sm].current;
 }
@@ -149,7 +149,7 @@ muos_error
 muos_sm_change (uint8_t sm, enum muos_sm_state params[4])
 {
   if (sm >= MUOS_SM_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (statemachine[sm].current == STATE_NONE
       || statemachine[sm].current == params[0]
@@ -196,7 +196,7 @@ muos_error
 muos_sm_next (uint8_t sm)
 {
   if (sm >= MUOS_SM_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (statemachine[sm].current == STATE_NONE
       || statemachine[sm].current == statemachine[sm].params[0]
@@ -242,7 +242,7 @@ muos_sm_init (uint8_t sm, enum muos_sm_state params[4])
 #endif
 {
   if (sm >= MUOS_SM_NUM)
-    return muos_error_nodev;
+    return muos_fatal_nodev;
 
   if (statemachine[sm].current != STATE_NONE
       || params[0] >= MUOS_SM_MAXSTATE)
@@ -279,4 +279,3 @@ muos_sm_ready (intptr_t sm)
 
   return statemachine[sm].current != STATE_NONE;
 }
-

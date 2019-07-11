@@ -509,7 +509,7 @@ muos_txqueue_output_mem MUOS_IO_HWPARAM(const uint8_t* mem, uint8_t len)
   (void) mem;
   (void) len;
 
-  return muos_error_error;
+  return muos_fatal_error;
 }
 #endif
 

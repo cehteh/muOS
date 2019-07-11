@@ -36,6 +36,28 @@
 
 //PLANNED: error log
 
+
+
+
+
+
+//TODO: docme error classes, expansions etc
+
+//error_api:
+//: .Error Classes
+//:
+//:
+//: MUOS_INFO()::
+//:   informational flag only (debugging)
+//: MUOS_WARN()::
+//:   expected failure like a timeout or failed test
+//: MUOS_ERROR()::
+//:   unexpected error that should be handleable
+//: MUOS_FATAL()::
+//:   fatal (programming) error that cant be handled
+//:
+//:
+
 //error_api:
 //: .Error Check Macro
 //: ----
@@ -58,10 +80,39 @@
 typedef enum
   {
     muos_success,
-#define MUOS_ERROR(name) muos_##name,
+
+#define MUOS_INFO(name, ...) muos_info_##name,
+#define MUOS_WARN(...)
+#define MUOS_ERROR(...)
+#define MUOS_FATAL(...)
     MUOS_ERRORS
+    muos_info_,
+    muos_info__ = muos_info_ - 1,
+#undef MUOS_INFO
+#define MUOS_INFO(...)
+#undef MUOS_WARN
+#define MUOS_WARN(name, ...) muos_warn_##name,
+    MUOS_ERRORS
+    muos_warn_,
+    muos_warn__ = muos_warn_ - 1,
+#undef MUOS_WARN
+#define MUOS_WARN(...)
 #undef MUOS_ERROR
-    muos_errors_end,
+#define MUOS_ERROR(name, ...) muos_error_##name,
+    MUOS_ERRORS
+    muos_error_,
+    muos_error__ = muos_error_ - 1,
+#undef MUOS_ERROR
+#define MUOS_ERROR(...)
+#undef MUOS_FATAL
+#define MUOS_FATAL(name, ...) muos_fatal_##name,
+    MUOS_ERRORS
+    muos_fatal_,
+#undef MUOS_INFO
+#undef MUOS_WARN
+#undef MUOS_ERROR
+#undef MUOS_FATAL
+    muos_errors_end = muos_fatal_,
   } muos_error;
 
 extern volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
@@ -92,6 +143,9 @@ const char __flash*
 muos_error_ctx_file (void);
 
 #endif
+
+
+//PLANNED: error class and error-class string
 
 
 //error_api:

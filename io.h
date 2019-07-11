@@ -111,7 +111,7 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 #define MUOS_IO_HWPARAM(...) (const uint8_t hw, ## __VA_ARGS__)
 #define MUOS_IO_HWARG(...) (hw, ## __VA_ARGS__)
 #define MUOS_IO_HWINDEX  hw
-#define MUOS_IO_HWCHECK  if (hw >= MUOS_SERIAL_NUM) return muos_error_nodev
+#define MUOS_IO_HWCHECK  if (hw >= MUOS_SERIAL_NUM) return muos_fatal_nodev
 //FIXME: insert HWCHECK where approbiate
 #else
 #define MUOS_IO_HWPARAM(...) (__VA_ARGS__)
@@ -223,7 +223,7 @@ muos_output_mem MUOS_IO_HWPARAM(const uint8_t* mem, uint8_t len)
   //PLANNED: not implemented
   (void) mem;
   (void) len;
-  return muos_error_error;
+  return muos_fatal_error;
 }
 #endif
 

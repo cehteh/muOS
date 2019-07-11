@@ -535,7 +535,7 @@ muos_stepper_move_abs (uint8_t hw, int32_t position, uint16_t speed);
 //: 'muos_stepper_end_distance()' returns the distance from the end position of the
 //: current slope-movement to +position+.
 //:
-//: On error these functions return 0 and set 'muos_error_nodev' when the +hw+ parameter
+//: On error these functions return 0 and set 'muos_fatal_nodev' when the +hw+ parameter
 //: was out of range. 'muos_stepper_end_distance()' also sets 'muos_error_stepper_state'
 //: when no slope-movement is in progress.
 //:

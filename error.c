@@ -24,6 +24,8 @@
 
 #include <stddef.h>
 
+//PLANNED: counters per error class, configurable
+
 volatile uint8_t muos_errors_pending_;
 volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
 
@@ -46,18 +48,46 @@ muos_error_ctx_file (void)
 #endif
 
 #ifdef MUOS_ERROR_STR
+#define MUOS_INFO(name, ...) static const char __flash muos_info_##name##_str[] = #name;
+#define MUOS_WARN(name, ...) static const char __flash muos_warn_##name##_str[] = #name;
 #define MUOS_ERROR(name, ...) static const char __flash muos_error_##name##_str[] = #name;
+#define MUOS_FATAL(name, ...) static const char __flash muos_fatal_##name##_str[] = #name;
 static const char __flash muos_success_str[] = "muos_success";
 MUOS_ERRORS
+#undef MUOS_INFO
+#undef MUOS_WARN
 #undef MUOS_ERROR
+#undef MUOS_FATAL
 
 static
 const char __flash * const __flash muos_error_names[] =
   {
    muos_success_str,
+
+#define MUOS_INFO(name, ...) muos_info_##name##_str,
+#define MUOS_WARN(...)
+#define MUOS_ERROR(...)
+#define MUOS_FATAL(...)
+   MUOS_ERRORS
+#undef MUOS_INFO
+#define MUOS_INFO(...)
+#undef MUOS_WARN
+#define MUOS_WARN(name, ...) muos_warn_##name##_str,
+   MUOS_ERRORS
+#undef MUOS_WARN
+#define MUOS_WARN(...)
+#undef MUOS_ERROR
 #define MUOS_ERROR(name, ...) muos_error_##name##_str,
    MUOS_ERRORS
 #undef MUOS_ERROR
+#define MUOS_ERROR(...)
+#undef MUOS_FATAL
+#define MUOS_FATAL(name, ...) muos_fatal_##name##_str,
+   MUOS_ERRORS
+#undef MUOS_INFO
+#undef MUOS_WARN
+#undef MUOS_ERROR
+#undef MUOS_FATAL
   };
 
 
@@ -65,7 +95,7 @@ const char __flash*
 muos_error_str (muos_error err)
 {
   if (err >= muos_errors_end)
-    return muos_error_error_error_str;
+    return muos_fatal_error_str;
 
   return muos_error_names[err];
 }

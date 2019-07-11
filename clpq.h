@@ -161,7 +161,7 @@ muos_clpq_is_expired (muos_clock* when)
 //:   Everything ok.
 //: 'muos_error_clpq_overflow':::
 //:   The clpq is full.
-//: 'muos_error_error':::
+//: 'muos_fatal_error':::
 //:   Programming error, 'what' is not a function.
 //:
 muos_error

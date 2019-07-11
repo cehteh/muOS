@@ -40,7 +40,7 @@ typedef muos_hwclock (*muos_hpt_function) (uintptr_t);
 static inline muos_error
 muos_hpt_register (muos_hwclock when, muos_hpt_function what)
 {
-  return muos_error_error;
+  return muos_fatal_error;
 }
 
 #endif
