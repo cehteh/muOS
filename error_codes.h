@@ -1,6 +1,7 @@
-#define MUOS_ERRORS                                                                                     \
+#define MUOS_ERRORS                                                                               \
   MUOS_FATAL(error) /*: {ERRORDEF} unspecified error */                                           \
     MUOS_FATAL(assert) /*: {ERRORDEF} assertion failed */                                         \
+    MUOS_FATAL(stack_overflow) /*: {ERRORDEF} stack overflow */                                   \
     MUOS_WARN(sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */                   \
     MUOS_WARN(wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                               \
     MUOS_ERROR(clpq_overflow) /*: {ERRORDEF} clock priority queue full */                         \

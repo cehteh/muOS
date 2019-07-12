@@ -20,6 +20,7 @@
 
 #include <muos/muos.h>
 #include <muos/clock.h>
+#include <muos/stck.h>
 
 extern volatile muos_clock muos_clock_coarse;
 
@@ -29,6 +30,11 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
   MUOS_DEBUG_INTR_ON;
 
   muos_barray_add_uint8 (((muos_clock)muos_clock_coarse).barray, 1, sizeof(MUOS_CLOCK_REGISTER));
+
+#if defined(MUOS_STCK) && defined(MUOS_STCK_AUTO)
+  if (!muos_stck_check (MUOS_STCK_AUTO))
+    muos_error_set_isr (muos_fatal_stack_overflow);
+#endif
 
   //PLANNED: test not schedule on overflow, make it configurable
   muos_status.schedule = true;

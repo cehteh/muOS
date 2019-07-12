@@ -28,6 +28,7 @@
 #include <muos/serial.h>
 #include <muos/stepper.h>
 #include <muos/cppm.h>
+#include <muos/stck.h>
 
 //PLANNED: stash muos_now_ away on recursive mainloops
 //PLANNED: make ERRORFN optional
@@ -85,6 +86,11 @@ yield_loop (uint8_t count)
             {
               do
                 {
+#if defined(MUOS_STCK) && defined(MUOS_STCK_AUTO)
+                  if (!muos_stck_check (MUOS_STCK_AUTO))
+                    muos_error_set_isr (muos_fatal_stack_overflow);
+#endif
+
 #ifdef MUOS_ERRORFN
                   if (muos_error_pending ())
                     {
@@ -227,6 +233,10 @@ int __attribute__((OS_main))
 main()
 {
   MUOS_HW_INIT;
+
+#ifdef MUOS_STCK
+  muos_stck_init ();
+#endif // MUOS_STCK
 
   //TODO: how to init all muos structures .. #define MUOS_EXPLICIT_INIT
 
