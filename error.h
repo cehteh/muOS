@@ -75,44 +75,55 @@
 //error_api:
 //: .The type used for error codes
 //: ----
-//: typedef enum \{...\} muos_error
+//: typedef enum \{
+//:   muos_success = 0,
+//:   ... /* infos */
+//:   muos_info_end,
+//:   ... /* warnings */
+//:   muos_warn_end,
+//:   ... /* errors */
+//:   muos_error_end,
+//:   ... /* fatal errors */
+//:   muos_fatal_end,
+//:   muos_errors_end = muos_fatal_end,
+//: \} muos_error
 //: ----
+//:
 typedef enum
   {
     muos_success,
-
 #define MUOS_INFO(name, ...) muos_info_##name,
 #define MUOS_WARN(...)
 #define MUOS_ERROR(...)
 #define MUOS_FATAL(...)
     MUOS_ERRORS
-    muos_info_,
-    muos_info__ = muos_info_ - 1,
+    muos_info_end,
+    muos_info__ = muos_info_end - 1,
 #undef MUOS_INFO
 #define MUOS_INFO(...)
 #undef MUOS_WARN
 #define MUOS_WARN(name, ...) muos_warn_##name,
     MUOS_ERRORS
-    muos_warn_,
-    muos_warn__ = muos_warn_ - 1,
+    muos_warn_end,
+    muos_warn__ = muos_warn_end - 1,
 #undef MUOS_WARN
 #define MUOS_WARN(...)
 #undef MUOS_ERROR
 #define MUOS_ERROR(name, ...) muos_error_##name,
     MUOS_ERRORS
-    muos_error_,
-    muos_error__ = muos_error_ - 1,
+    muos_error_end,
+    muos_error__ = muos_error_end - 1,
 #undef MUOS_ERROR
 #define MUOS_ERROR(...)
 #undef MUOS_FATAL
 #define MUOS_FATAL(name, ...) muos_fatal_##name,
     MUOS_ERRORS
-    muos_fatal_,
+    muos_fatal_end,
+    muos_errors_end = muos_fatal_end,
 #undef MUOS_INFO
 #undef MUOS_WARN
 #undef MUOS_ERROR
 #undef MUOS_FATAL
-    muos_errors_end = muos_fatal_,
   } muos_error;
 
 extern volatile MUOS_BARRAY(muos_errors_, muos_errors_end);
