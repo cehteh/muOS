@@ -76,6 +76,18 @@ muos_hw_stepper_init (void);
 typedef const __flash char muos_flash_cstr[];
 
 
+#define MUOS_COALESCE_PSTR(s)                                                   \
+  __extension__({                                                               \
+      static const char r[]                                                     \
+        __attribute__((section(".progmem.data.str1.1,\"aMS\",@progbits,1;")))   \
+        = s;                                                                    \
+      r;                                                                        \
+    })
+
+
+#define MUOS_COALESCE_PSTR_FILE MUOS_COALESCE_PSTR(__FILE__)
+
+
 static inline void
 muos_interrupt_enable ()
 {

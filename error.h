@@ -199,8 +199,8 @@ muos_error_pending (void)
 //PLANNED: do we need a muos_error_again in case a error was already set?
 //:
 #ifdef MUOS_ERROR_CTX
-#define muos_error_set(err) muos_error_set_ (err, __LINE__, ({static const char __flash file[] = __FILE__; file;}))
-#define muos_error_set_isr(err) muos_error_set_isr_ (err, __LINE__, ({static const char __flash file[] = __FILE__; file;}))
+#define muos_error_set(err) muos_error_set_ (err, __LINE__, MUOS_COALESCE_PSTR_FILE)
+#define muos_error_set_isr(err) muos_error_set_isr_ (err, __LINE__, MUOS_COALESCE_PSTR_FILE)
 
 
 muos_error

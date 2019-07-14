@@ -122,7 +122,7 @@ extern struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
 
 #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
-#define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_PSTR(s))
+#define muos_output_cstr_P(hw, s) muos_output_fstr (hw, MUOS_COALESCE_PSTR(s))
 
 //TODO: docme
 typedef uint8_t muos_io_lock;
@@ -144,7 +144,7 @@ muos_error
 muos_output_unlock (uint8_t hw, muos_io_lock* who);
 
 #else
-#define muos_output_cstr_P(s) muos_output_fstr (MUOS_PSTR(s))
+#define muos_output_cstr_P(s) muos_output_fstr (MUOS_COALESCE_PSTR(s))
 
 muos_error
 muos_output_lock (muos_cbuffer_index space, muos_io_lock* who, muos_clock16 timeout);

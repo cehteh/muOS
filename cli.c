@@ -53,17 +53,17 @@ muos_cli (const char* line)
   if (muos_serial_status[0].lineedit_echo)
     muos_output_nl (0); //FIXME: linedit should support prompt/newline
 
-  line += strspn_P (line, PSTR(MUOS_CLI_DELIM));
+  line += strspn_P (line, MUOS_COALESCE_PSTR(MUOS_CLI_DELIM));
 
 #ifdef MUOS_CLI_COMMENT
-  if (strncmp_P (line, PSTR(MUOS_CLI_COMMENT), sizeof(MUOS_CLI_COMMENT)-1) == 0)
+  if (strncmp_P (line, MUOS_COALESCE_PSTR(MUOS_CLI_COMMENT), sizeof(MUOS_CLI_COMMENT)-1) == 0)
     return;
 #endif
 
-  uint8_t len = strcspn_P (line, PSTR(MUOS_CLI_DELIM));
+  uint8_t len = strcspn_P (line, MUOS_COALESCE_PSTR(MUOS_CLI_DELIM));
 
   const char* cont = line + len;
-  cont += strspn_P (cont, PSTR(MUOS_CLI_DELIM));
+  cont += strspn_P (cont, MUOS_COALESCE_PSTR(MUOS_CLI_DELIM));
 
   if (len)
     {
@@ -100,7 +100,7 @@ muos_cli_arg_int32 (const char** cont)
       else
         {
           *cont = end;
-          *cont += strspn_P (*cont, PSTR(MUOS_CLI_DELIM));
+          *cont += strspn_P (*cont, MUOS_COALESCE_PSTR(MUOS_CLI_DELIM));
         }
       return r;
     }

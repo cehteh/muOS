@@ -76,11 +76,11 @@ utf8del (void)
 static void
 utf8line_redraw MUOS_IO_HWPARAM()
 {
-  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("?25l\r"));
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("?25l\r"));
   muos_output_cstrn MUOS_IO_HWARG(buffer, cursor);
-  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("s"));
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("s"));
   muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
-  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
+  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("K\x1b[u\x1b[?25h"));
 }
 #endif
 
@@ -135,7 +135,7 @@ muos_lineedit MUOS_IO_HWPARAM()
 #else
               used = cursor;
               if (muos_serial_status[MUOS_IO_HWINDEX].lineedit_echo)
-                muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K"));
+                muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("K"));
 #endif
             }
           pending = 0;
@@ -174,7 +174,7 @@ muos_lineedit MUOS_IO_HWPARAM()
               cursor = 0;
               *buffer = 0;
               if (muos_serial_status[MUOS_IO_HWINDEX].lineedit_echo)
-                muos_output_fstr MUOS_IO_HWARG(MUOS_PSTR("\r\x1b[K"));
+                muos_output_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("\r\x1b[K"));
             }
 #endif
 
@@ -244,9 +244,9 @@ muos_lineedit MUOS_IO_HWPARAM()
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
               if (muos_serial_status[MUOS_IO_HWINDEX].lineedit_echo)
                 {
-                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("s\x1b[?25l"));
+                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("s\x1b[?25l"));
                   muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
-                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
+                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("K\x1b[u\x1b[?25h"));
                 }
 #endif
 
@@ -372,9 +372,9 @@ muos_lineedit MUOS_IO_HWPARAM()
               memmove (buffer+cursor, buffer+cursor+1, used-cursor+1);
               if (muos_serial_status[MUOS_IO_HWINDEX].lineedit_echo)
                 {
-                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("D\x1b[s\x1b[?25l"));
+                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("D\x1b[s\x1b[?25l"));
                   muos_output_cstr MUOS_IO_HWARG(buffer+cursor);
-                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_PSTR("K\x1b[u\x1b[?25h"));
+                  muos_output_csi_fstr MUOS_IO_HWARG(MUOS_COALESCE_PSTR("K\x1b[u\x1b[?25h"));
                 }
 #endif
             }
