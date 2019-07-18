@@ -25,7 +25,7 @@
 
 #include <muos/muos.h>
 #include <muos/clock.h>
-
+#include <muos/debug.h>
 
 #if MUOS_CLPQ_LENGTH < 255
 typedef uint8_t muos_clpq_index;
@@ -66,6 +66,7 @@ struct muos_clpq_entry
 typedef struct
 {
   muos_clock now;
+  bool sync;
   muos_clpq_index used;
   struct muos_clpq_entry entries[MUOS_CLPQ_LENGTH];
 } muos_clpq_type;
@@ -73,12 +74,11 @@ typedef struct
 extern muos_clpq_type muos_clpq;
 
 
-
 //clpq_api:
 //: .Event time
 //: ----
 //: muos_clock muos_clpq_now (muos_clock* now)
-//: muos_clock32 muos_clpq32_now (void)
+//: muos_clock32 muos_clpq_now32 (void)
 //: muos_clock16 muos_clpq_delayed (void)
 //: bool muos_clpq_is_expired (muos_clock* when)
 //: ----
@@ -130,10 +130,10 @@ muos_clpq_is_expired (muos_clock* when)
 //: .Scheduling a function call
 //: ----
 //: muos_error
-//: muos_clpq_at (muos_clock when, muos_clpq_function what)
+//: muos_clpq_at (muos_clock when, muos_clpq_function what, bool unique)
 //:
 //: muos_error
-//: muos_clpq_at_isr (muos_clock when, muos_clpq_function what)
+//: muos_clpq_at_isr (muos_clock when, muos_clpq_function what, bool unique)
 //:
 //: muos_error
 //: muos_clpq_after (muos_clock32 when, muos_clpq_function what)
@@ -146,34 +146,45 @@ muos_clpq_is_expired (muos_clock* when)
 //:   Time when the event should be scheduled
 //: +what+::
 //:   Function to push or NULL for a scheduler wakeup
+//: +unique+::
+//:   If necessary adjust/increment time to make the job unique
 //:
 //: 'muos_clpq_at()/muos_clpq_at_isr()' Pushes the function 'what' one the clpq to
 //: be scheduled not before 'when'. Pushing is stable ordered when 2 functions are
 //: to be scheduled at the same time the order in which they where pushed is preserved.
+//: When uniqe operation is requested, then 'when' gets incremented when there is already
+//: a 'what' scheduled at 'when'. This allows to use timestamps as unique identifier on
+//: the cost of a few ticks delay. Additionally when the time lies in the past it gets
+//: adjusted to 'now' when unique is true. Otherwise an error would be returned.
+//: Thus, when 'unique' is true, 'when' may become modified.
 //:
 //: 'muos_clpq_after()' schedules 'what' to be executed after 'muos_clpq_now()+when'
 //:
 //: 'muos_clpq_repeat()' may be called from a clpq scheduled function to repeat the same
-//: function after 'when' time. This gives consistent timing.
+//: function after 'when' time. This gives consistent timing. In case the designated
+//: time has already passed, the time gets incremented by 'when' to skip expired repetitions.
 //:
 //: returns::
 //: 'muos_success':::
 //:   Everything ok.
 //: 'muos_error_clpq_overflow':::
-//:   The clpq is full.
+//:   The clpq has not enough capacity to add the request.
+//: 'muos_error_clpq_past':::
+//:   Can't schedule something in the past.
 //: 'muos_fatal_error':::
-//:   Programming error, 'what' is not a function.
+//:   Programming error. 'what' is not a function or
+//:   'clpq_repeat()' called from outside of a clpq scheduled function.
 //:
 muos_error
-muos_clpq_at_isr (muos_clock* when, muos_clpq_function what);
+muos_clpq_at_isr (muos_clock* when, muos_clpq_function what, bool unique);
 
 
 static inline muos_error
-muos_clpq_at (muos_clock* when, muos_clpq_function what)
+muos_clpq_at (muos_clock* when, muos_clpq_function what, bool unique)
 {
   muos_error ret;
   muos_interrupt_disable ();
-  ret = muos_clpq_at_isr (when, what);
+  ret = muos_clpq_at_isr (when, what, unique);
   muos_interrupt_enable ();
 
   return ret;
@@ -187,16 +198,6 @@ muos_clpq_after (muos_clock32 when, muos_clpq_function what);
 muos_error
 muos_clpq_repeat (muos_clock32 when);
 
-
-
-//PLANNED:
-/*
-
-muos_error
-muos_clpq16_in (muos_clock16 when, muos_clpq_function what)
-
-
-*/
 
 
 //clpq_api:
@@ -240,29 +241,6 @@ muos_clpq_remove (const muos_clock* when, muos_clpq_function what)
 
 
 
-
-//PLANNED: clpq_api:
-// :
-// : .Reschedule an event
-// : ----
-// : void muos_repeat (
-// :        const struct muos_spriq_entry* event,
-// :        muos_spriq_priority when
-// : )
-// : ----
-// :
-// :
-//:  +event+::
-// :   the event pointer passed which get passed into queued functions
-// : +when+::
-// :   time when to repeat this event
-// :
-// static inline void
-// muos_clpq_repeat (const struct muos_spriq_entry* event, muos_spriq_priority when)
-// {
-//   FIXME: new clpq
-//   muos_error_set (muos_clpq_at (event->when, when, event->fn));
-// }
 bool
 muos_clpq_schedule_isr (void);
 

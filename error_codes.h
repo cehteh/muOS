@@ -5,7 +5,7 @@
     MUOS_WARN(sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */                   \
     MUOS_WARN(wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                               \
     MUOS_ERROR(clpq_overflow) /*: {ERRORDEF} clock priority queue full */                         \
-    MUOS_ERROR(clpq_repeat) /*: {ERRORDEF} can not repeat */                                      \
+    MUOS_ERROR(clpq_past) /*: {ERRORDEF} time lies in the past */                                 \
     MUOS_ERROR(rtq_overflow) /*: {ERRORDEF} realtime priority queue full */                       \
     MUOS_ERROR(hpq_overflow) /*: {ERRORDEF} high priority queue full */                           \
     MUOS_ERROR(bgq_overflow) /*: {ERRORDEF} background priority queue full */                     \
