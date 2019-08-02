@@ -96,6 +96,7 @@ typedef uint8_t muos_barray[];
     }
 
 
+
 //lib_barray_api:
 //: .Single Bit Operations
 //: ----
@@ -287,7 +288,7 @@ muos_barray_add_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shi
 
   if (dst[l8shift] < src)
     {
-      for (l8shift++; l8shift < len; ++l8shift)
+      for (++l8shift; l8shift < len; ++l8shift)
         {
           if (++dst[l8shift])
             break;
@@ -307,7 +308,7 @@ muos_barray_sub_uint8_ (muos_barray dst, uint8_t len, uint8_t src, uint8_t l8shi
 
   if (dst[l8shift] > tmp)
     {
-      for (l8shift++; l8shift < len; ++l8shift)
+      for (++l8shift; l8shift < len; ++l8shift)
         {
           if (dst[l8shift]--)
             break;
@@ -435,6 +436,7 @@ muos_barray_uint16_ (const muos_barray src, uint8_t len, uint8_t r8shift)
     default:
     case 2:
       ret.u8[1] = src[1+r8shift];
+      /* FALLTHRU */
     case 1:
       ret.u8[0] = src[0+r8shift];
     }
@@ -457,10 +459,13 @@ muos_barray_uint32_ (const muos_barray src, uint8_t len, uint8_t r8shift)
     default:
     case 4:
       ret.u8[3] = src[3+r8shift];
+      /* FALLTHRU */
     case 3:
       ret.u8[2] = src[2+r8shift];
+      /* FALLTHRU */
     case 2:
       ret.u8[1] = src[1+r8shift];
+      /* FALLTHRU */
     case 1:
       ret.u8[0] = src[0+r8shift];
     }
