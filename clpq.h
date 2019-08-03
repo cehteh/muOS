@@ -130,10 +130,10 @@ muos_clpq_is_expired (muos_clock* when)
 //: .Scheduling a function call
 //: ----
 //: muos_error
-//: muos_clpq_at (muos_clock when, muos_clpq_function what, bool unique)
+//: muos_clpq_at (const muos_clock* when, muos_clpq_function what, bool unique)
 //:
 //: muos_error
-//: muos_clpq_at_isr (muos_clock when, muos_clpq_function what, bool unique)
+//: muos_clpq_at_isr (const muos_clock* when, muos_clpq_function what, bool unique)
 //:
 //: muos_error
 //: muos_clpq_after (muos_clock32 when, muos_clpq_function what)
@@ -147,16 +147,13 @@ muos_clpq_is_expired (muos_clock* when)
 //: +what+::
 //:   Function to push or NULL for a scheduler wakeup
 //: +unique+::
-//:   If necessary adjust/increment time to make the job unique
+//:   Request that the when/what must be unique
 //:
 //: 'muos_clpq_at()/muos_clpq_at_isr()' Pushes the function 'what' one the clpq to
 //: be scheduled not before 'when'. Pushing is stable ordered when 2 functions are
 //: to be scheduled at the same time the order in which they where pushed is preserved.
-//: When uniqe operation is requested, then 'when' gets incremented when there is already
-//: a 'what' scheduled at 'when'. This allows to use timestamps as unique identifier on
-//: the cost of a few ticks delay. Additionally when the time lies in the past it gets
-//: adjusted to 'now' when unique is true. Otherwise an error would be returned.
-//: Thus, when 'unique' is true, 'when' may become modified.
+//: When uniqe operation is requested the function fails when a there is already a
+//: when/what pair scheduled with the same parameters.
 //:
 //: 'muos_clpq_after()' schedules 'what' to be executed after 'muos_clpq_now()+when'
 //:
@@ -167,6 +164,8 @@ muos_clpq_is_expired (muos_clock* when)
 //: returns::
 //: 'muos_success':::
 //:   Everything ok.
+//: 'muos_error_clpq_nounique':::
+//:   Cant insert uniquely.
 //: 'muos_error_clpq_overflow':::
 //:   The clpq has not enough capacity to add the request.
 //: 'muos_error_clpq_past':::
@@ -176,11 +175,11 @@ muos_clpq_is_expired (muos_clock* when)
 //:   'clpq_repeat()' called from outside of a clpq scheduled function.
 //:
 muos_error
-muos_clpq_at_isr (muos_clock* when, muos_clpq_function what, bool unique);
+muos_clpq_at_isr (const muos_clock* when, muos_clpq_function what, bool unique);
 
 
 static inline muos_error
-muos_clpq_at (muos_clock* when, muos_clpq_function what, bool unique)
+muos_clpq_at (const muos_clock* when, muos_clpq_function what, bool unique)
 {
   muos_error ret;
   muos_interrupt_disable ();

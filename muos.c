@@ -150,7 +150,6 @@ muos_yield (uint8_t count)
 #endif
 
 
-#include <muos/io.h>
 void
 muos_clpq_dump (uint8_t what);
 
@@ -171,26 +170,29 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
   muos_clock_now (&wakeup);
   muos_clock_add16 (&wakeup, timeout);
 
-  muos_error ret = muos_clpq_at (&wakeup, NULL);
+  muos_error ret;
+  while ((ret = muos_clpq_at (&wakeup, NULL, true)) == muos_error_clpq_nounique)
+    muos_clock_add8 (&wakeup, 1);
 
   if (ret == muos_success)
-    while (1)
-      {
-        if (fn && fn (param))
-          {
-            muos_clpq_remove (&wakeup, NULL);  //FIXME: there is a race when the clpq_schedule removed the wakeup
-            break;
-          }
+    {
+      while (1)
+        {
+          if (fn && fn (param))
+            {
+              muos_clpq_remove (&wakeup, NULL);
+              break;
+            }
 
-        if (muos_clock_is_expired (&wakeup))
-          {
-            ret = muos_warn_wait_timeout;
-            break;
-          }
+          if (muos_clock_is_expired (&wakeup))
+            {
+              ret = muos_warn_wait_timeout;
+              break;
+            }
 
-        yield_loop (1);
-      }
-
+          yield_loop (1);
+        }
+    }
 
   --sched_depth_;
 

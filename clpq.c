@@ -188,20 +188,14 @@ muos_clpq_repeat (muos_clock32 when)
 
 
 muos_error
-muos_clpq_at_isr (muos_clock* when, muos_clpq_function what, bool unique)
+muos_clpq_at_isr (const muos_clock* when, muos_clpq_function what, bool unique)
 {
   CLPQ_ASSERT (!(what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS));
 
   // 'when' already passed
   if (muos_clock_is_lt (when, &muos_clpq.now))
-    {
-      if (unique)
-        muos_clock_copy (when, &muos_clpq.now);
-      else
-        return muos_error_clpq_past;
-    }
+    return muos_error_clpq_past;
 
-  //FIXME: segment calc is wrong for times > 64k
   muos_clpq_segment segments = clpq_segmentdiff (&muos_clpq.now, when);
 
   // increment segments when there are expired jobs
@@ -241,43 +235,41 @@ muos_clpq_at_isr (muos_clock* when, muos_clpq_function what, bool unique)
       return muos_error_clpq_overflow;
     }
 
-  //move and insert barriers
-#ifdef MUOS_CLPQ_EXPONENTIAL
-  //TODO: insert exponential barriers
-#else
-
-  if (muos_clpq.used-i)
-    {
-      memmove (&muos_clpq.entries[i+segments+1],
-               &muos_clpq.entries[i], sizeof (struct muos_clpq_entry) * (muos_clpq.used-i));
-    }
-
-  for (; segments; --segments)
-    {
-      muos_clpq.entries[i+segments] = (struct muos_clpq_entry){0, (muos_clpq_function)0x1};
-      ++muos_clpq.used;
-    }
-#endif
-
   //find position for entry
   const muos_clock16 when16 = muos_clock_clock16 (when);
 
   muos_clpq_index seg_start = i;
 
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //FIXME: unique handling, barrier overflow case? maybe decrement then
-
   for (; i; --i)
     {
+      if (unique)
+        {
+          if (muos_clpq.entries[i-1].when == when16
+              && muos_clpq.entries[i-1].what == what)
+            return muos_error_clpq_nounique;
+        }
+
       if (muos_clpq.entries[i-1].when > when16
           || clpq_barrier (muos_clpq.entries[i-1].what))
         break;
     }
+
+#ifdef MUOS_CLPQ_EXPONENTIAL
+  //TODO: insert exponential barriers
+#else
+  //move and insert barriers
+  if (muos_clpq.used-seg_start)
+    {
+      memmove (&muos_clpq.entries[seg_start+segments+1],
+               &muos_clpq.entries[seg_start], sizeof (struct muos_clpq_entry) * (muos_clpq.used-seg_start));
+    }
+
+  for (; segments; --segments)
+    {
+      muos_clpq.entries[seg_start+segments] = (struct muos_clpq_entry){0, (muos_clpq_function)0x1};
+      ++muos_clpq.used;
+    }
+#endif
 
   // move and insert job
   if (seg_start-i)
