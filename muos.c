@@ -30,6 +30,8 @@
 #include <muos/cppm.h>
 #include <muos/stck.h>
 
+#include <stdlib.h>
+
 //PLANNED: stash muos_now_ away on recursive mainloops
 //PLANNED: make ERRORFN optional
 //PLANNED: ignoremask for ERRORFN for errors handled elsewhere
@@ -39,11 +41,10 @@
 //PLANNED: example sections in all API doc
 //PLANNED: find some way to get rid of most of the *_isr variants at compiletime
 
+volatile bool muos_schedule;
 
-volatile struct muos_status_flags muos_status;
-
-
-void
+#ifdef MUOS_SCHED_SLEEP
+static void
 muos_sleep (void)
 {
   if (muos_hw_clpq_set_compmatch ())
@@ -53,30 +54,37 @@ muos_sleep (void)
       // muos_hw_sleep () enables interrupts while sleeping
       do
           muos_hw_sleep ();
-      while (!muos_status.schedule);
-      muos_status.schedule = false;
+      while (!muos_schedule);
+      muos_schedule = false;
       muos_hw_sleep_done ();
     }
-  else
-    {
-      // busywait for timespans which are to small for compmatch
-      muos_interrupt_enable ();
-      //FIXME: new clpq while (MUOS_CLOCK_REGISTER < (typeof(MUOS_CLOCK_REGISTER)) muos_clpq.descriptor.spriq[0].when);
-      muos_interrupt_disable ();
-    }
 }
+#endif // MUOS_SCHED_SLEEP
+
 
 //PLANNED: document and implement
 void muos_die (void)
 {
   muos_interrupt_disable ();
-  muos_hw_shutdown ();
+  muos_hw_shutdown (); //FIXME: let it fallthrough
+  abort ();
 }
 
 
-static bool
-yield_loop (uint8_t count)
+#if defined(MUOS_YIELD_DEPTH) || defined(MUOS_WAIT_DEPTH)
+static uint8_t sched_depth_;
+uint8_t
+muos_sched_depth (void)
 {
+  return sched_depth_;
+}
+#endif
+
+
+static void
+schedule (void)
+{
+  MUOS_DEBUG_BUSY_ON;
   muos_interrupt_disable ();
   do
     {
@@ -102,11 +110,7 @@ yield_loop (uint8_t count)
 
                  MUOS_DEBUG_SWITCH_TOGGLE;
 
-                  if (!count--)
-                    {
-                      muos_interrupt_enable ();
-                      return true;
-                    }
+                 //PLANNED: how to ensure that lower pri queues don't stall?
                 }
               while (muos_rtq_schedule ());  //FIXME: rename schedule to scheduler_isr
             }
@@ -117,19 +121,7 @@ yield_loop (uint8_t count)
   while (muos_bgq_schedule ());
 
   muos_interrupt_enable ();
-  return false;
 }
-
-
-#if defined(MUOS_YIELD_DEPTH) || defined(MUOS_WAIT_DEPTH)
-static uint8_t sched_depth_;
-uint8_t
-muos_sched_depth (void)
-{
-  return sched_depth_;
-}
-#endif
-
 
 #ifdef MUOS_YIELD_DEPTH
 muos_error
@@ -141,18 +133,14 @@ muos_yield (uint8_t count)
     }
 
   ++sched_depth_;
-  yield_loop (count);
+  while (count--)
+    schedule ();
   --sched_depth_;
 
   return muos_success;
 }
 
 #endif
-
-
-void
-muos_clpq_dump (uint8_t what);
-
 
 
 #ifdef MUOS_WAIT_DEPTH
@@ -190,7 +178,7 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
               break;
             }
 
-          yield_loop (1);
+          schedule ();
         }
     }
 
@@ -229,8 +217,6 @@ muos_init (void)
 }
 
 
-
-
 int __attribute__((OS_main))
 main()
 {
@@ -265,7 +251,10 @@ main()
 
   while (1)
     {
-      while (yield_loop (255));
+      schedule ();
+
+#ifdef MUOS_SCHED_SLEEP
       muos_sleep ();
+#endif // MUOS_SCHED_SLEEP
     }
 }

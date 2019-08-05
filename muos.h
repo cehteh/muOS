@@ -24,6 +24,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+//PLANNED: make a 'autoconfig.h' that defines derrived configurations that are dependant on other mixed configs
+
+
 #include <muos/debug.h>
 
 #include <muos/error.h>
@@ -32,9 +35,6 @@
 //PLANNED: making workqueues pure queues without push-front, then userland functions can pop arguments without starting with interrupts disabled
 //PLANNED: api to purge work queues (state reset)
 //PLANNED: for all xxx() which have xxx_isr() make 3 variants:  xxx() does automatic locking xxx_locked() and xxx_unlocked() (needs better names)
-
-void
-muos_sleep (void);
 
 
 extern void
@@ -55,14 +55,7 @@ void muos_die (void);
 
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT
 
-// stash some status bits together
-//TODO: use GPIO register
-extern volatile struct muos_status_flags
-{
-  uint8_t schedule:1;
-  uint8_t clpq_parity:1; // odd/even mark for the current clpq segment
-} muos_status;
-
+extern volatile bool muos_schedule;
 
 #ifdef MUOS_WAIT_DEPTH
 //muos_api:
