@@ -31,7 +31,7 @@ muos_hpq_push_isr (muos_queue_function f, bool schedule)
     return muos_error_hpq_overflow;
 
   muos_queue_push (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f);
-  muos_status.schedule |= schedule;
+  muos_schedule |= schedule;
   return muos_success;
 }
 
@@ -42,7 +42,7 @@ muos_hpq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
     return muos_error_hpq_overflow;
 
   muos_queue_push_arg (&muos_hpq.descriptor, MUOS_HPQ_LENGTH, f, a);
-  muos_status.schedule |= schedule;
+  muos_schedule |= schedule;
   return muos_success;
 }
 
@@ -77,7 +77,3 @@ muos_hpq_pop (void)
 }
 
 #endif
-
-
-
-

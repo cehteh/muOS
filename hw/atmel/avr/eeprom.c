@@ -116,6 +116,7 @@ ISR(ISRNAME_EEPROM_READY)
   EEDR = *memory;
   EECR |= (1<<EEMPE);
   EECR |= (1<<EEPE);
+  MUOS_DEBUG_INTR_OFF;
   return;
 
  done:
@@ -130,6 +131,7 @@ ISR(ISRNAME_EEPROM_READY)
       muos_error_set_isr (muos_hpq_push_isr (callback, true));
 #endif
     }
+  MUOS_DEBUG_INTR_OFF;
 }
 
 
@@ -256,5 +258,3 @@ muos_hw_eeprom_access (enum muos_eeprom_mode mode,
 
   return muos_success;
 }
-
-

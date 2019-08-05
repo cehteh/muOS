@@ -118,7 +118,6 @@ muos_hw_sleep (void)
 #if MUOS_DEBUG_INTR != MUOS_DEBUG_BUSY
   MUOS_DEBUG_INTR_OFF;
 #endif
-  MUOS_DEBUG_BUSY_ON;
 }
 
 static inline void

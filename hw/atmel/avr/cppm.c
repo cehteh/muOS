@@ -107,6 +107,7 @@ ISR(ISRNAME_CAPTURE(MUOS_CPPM_CAPTURE))
           muos_error_set_isr (muos_error_cppm_hpq_callback);
 #endif
     }
+  MUOS_DEBUG_INTR_OFF;
 }
 
 

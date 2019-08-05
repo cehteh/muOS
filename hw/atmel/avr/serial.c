@@ -196,6 +196,7 @@ muos_hw_serial_start (uint8_t hw, uint32_t baud, const char config[3], int rxsyn
       {                                                                 \
         UCSR##hw##B &= ~_BV(UDRIE##hw);                                 \
       }                                                                 \
+    MUOS_DEBUG_INTR_OFF;                                                \
 }
 
 MUOS_SERIAL_HW;
@@ -264,6 +265,7 @@ MUOS_SERIAL_HW;
               }                                                                                         \
           }                                                                                             \
       }                                                                                                 \
+    MUOS_DEBUG_INTR_OFF;                                                                                \
   }
 
 

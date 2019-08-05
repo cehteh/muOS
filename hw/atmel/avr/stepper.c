@@ -475,6 +475,7 @@ stepper_isr (uint8_t hw)
     muos_steppers[hw].position +=                                                       \
       (dirpol^!(PORT##dirport & _BV(PORT##dirport##dirpin)))?+1:-1;                     \
     stepper_isr (hw);                                                                   \
+    MUOS_DEBUG_INTR_OFF;                                                                \
   }
 
 
@@ -488,6 +489,7 @@ stepper_isr (uint8_t hw)
                                                %sizeof(muos_stepper_table_##table)] & mask;     \
     PORT##port = (PORT##port & ~mask) | value;                                                  \
     stepper_isr (hw);                                                                           \
+    MUOS_DEBUG_INTR_OFF;                                                                        \
   }
 
 
