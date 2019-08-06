@@ -22,6 +22,7 @@
 
 volatile muos_clock muos_clock_coarse;
 
+// starting the clock
 void
 muos_clock_90init (void)
 {
@@ -63,4 +64,19 @@ muos_clock_now_isr (muos_clock* now)
 
   muos_barray_add_uint8 (now->barray, overflow, sizeof(MUOS_CLOCK_REGISTER));
   muos_barray_add_uint8 (now->barray, hw, 0);  //FIXME: 16bit hwclock
+}
+
+
+muos_clock16
+muos_clock_now16_isr (void)
+{
+  uint8_t overflow = 0;
+  muos_hwclock hw = MUOS_CLOCK_REGISTER;
+
+  if (hw<((muos_hwclock)~0/2))
+    overflow = MUOS_HW_CLOCK_OVERFLOW(MUOS_CLOCK_HW);
+
+  return muos_barray_uint16 (((muos_clock)muos_clock_coarse).barray, 0)
+    + hw
+    + (overflow<<(8*sizeof(MUOS_CLOCK_REGISTER)));
 }

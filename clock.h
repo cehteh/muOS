@@ -39,7 +39,6 @@
 typedef typeof(MUOS_CLOCK_REGISTER) muos_hwclock;
 
 
-
 void
 muos_clock_90init (void);
 
@@ -50,11 +49,12 @@ muos_clock_90init (void);
 //: ----
 //: void muos_clock_now (muos_clock* now)
 //: void muos_clock_now_isr (muos_clock* now)
+//: muos_clock16 muos_clock_now16_isr (void)
 //: ----
 //:
-//: Queries the current time from the hardware.
-//: The clock32 functions return truncated time, overflows need to be
-//: handled by the software.
+//: Queries the current time from the hardware and
+//: stores it in 'now' or returns a 16bit truncated
+//: result.
 //:
 void
 muos_clock_now (muos_clock* now);
@@ -63,27 +63,27 @@ void
 muos_clock_now_isr (muos_clock* now);
 
 
+muos_clock16
+muos_clock_now16_isr (void);
 
 
 
 //: ----
 //: muos_clock32 muos_clock_since (const muos_clock* start)
-//: muos_clock32 muos_clock32_elapsed (muos_clock32 end, muos_clock32 start)
-//: muos_clock16 muos_clock16_elapsed (muos_clock16 end, muos_clock16 start)
+//: muos_clock32 muos_clock_since_isr (const muos_clock* start)
+//: bool muos_clock_is_expired (const muos_clock* when)
+//: bool muos_clock_is_expired_isr (const muos_clock* when)
 //: ----
 //:
 //: +start+::
 //:   Begin of the timespan to to be calculated
-//: +end+::
-//:   End of the timespan to be calculated
+//: +when+::
+//:   Timestamp for the expire time
 //:
-//: 'muos_clock_since()' returns the time between 'start' to 'muos_clock_now()'
+//: 'muos_clock_since*()' returns the time between 'start' to 'muos_clock_now()'.
 //:
-//: The two 'muos_clock*_elapsed()' return the time difference between 'end' and 'start'.
-//: The result is always positive or zero. Simple overflows on the arguments are respected.
+//: 'muos_clock_is_expired*()' check whenever 'muos_clock_now()' is past 'when' or not.
 //:
-//: The *32 and *16 bit versions save memory, but it must be guaranteed that
-//: the time spans are short enough to fall into the respective range.
 //:
 static inline muos_clock32
 muos_clock_since (const muos_clock* start)
@@ -111,7 +111,7 @@ muos_clock_since_isr (const muos_clock* start)
 
 
 static inline bool
-muos_clock_is_expired (muos_clock* when)
+muos_clock_is_expired (const muos_clock* when)
 {
   muos_clock now;
   muos_clock_now (&now);
@@ -120,14 +120,13 @@ muos_clock_is_expired (muos_clock* when)
 }
 
 static inline bool
-muos_clock_is_expired_isr (muos_clock* when)
+muos_clock_is_expired_isr (const muos_clock* when)
 {
   muos_clock now;
   muos_clock_now_isr (&now);
 
   return muos_barray_is_lte (when->barray, now.barray);
 }
-
 
 
 
