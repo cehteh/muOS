@@ -271,7 +271,7 @@ txtest (intptr_t n)
 //muos_cbuffer_index
 //PLANNED: muos_serial_tx_avail (void)
 //{
-//  return MUOS_CBUFFER_FREE(muos_txbuffer); 
+//  return MUOS_CBUFFER_FREE(muos_txbuffer);
 //}
 
 static bool

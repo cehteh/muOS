@@ -32,6 +32,8 @@
 #define MUOS_IO_DEBUG_RESERVE 0
 #endif
 
+//FIXME: check that tx buffer/txqueue size = 255 (maximum) works, suspected off by one error
+
 struct fmtconfig_type pfmtconfig[MUOS_SERIAL_NUM];
 struct fmtconfig_type fmtconfig[MUOS_SERIAL_NUM];
 
@@ -85,6 +87,8 @@ muos_output_lock (uint8_t hw, muos_io_lock* who, muos_cbuffer_index space, muos_
 
       lock_cur[hw] = *who;
     }
+
+  //PLANNED: auto unlocking, _nl releases/decrements lock
 
   struct muos_txwait waitdata = {hw, space + MUOS_IO_DEBUG_RESERVE};
   muos_error ret;

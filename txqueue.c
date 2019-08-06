@@ -28,6 +28,9 @@
 
 #include <muos/bgq.h>
 
+
+//FIXME: check that tx buffer/txqueue size = 255 (maximum) works, suspected off by one error
+
 #define SERIAL(hw, txqsize)                     \
   MUOS_CBUFFERDEF(muos_txqueue##hw, txqsize);
 

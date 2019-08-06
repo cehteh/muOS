@@ -30,10 +30,14 @@
 
 //FIXME: format docs
 
+//stck_api:
+//: void muos_stck_init (void)::
+//: initializes the stack checker and puts canarys on the stack.
+//: can be used to reset/reinitialize it again
 void
 muos_stck_init (void);
 
-
+//TODO: platform specific code -> should go to hw
 static inline char*
 muos_stck_brk (void)
 {
@@ -62,7 +66,7 @@ muos_stck_ok (char* addr)
 
 
 //stck_api:
-//: check that reserved space *was* available at any time on the stack
+//: fast check that reserved space *was* available at any time on the stack
 static inline bool
 muos_stck_check (size_t reserved)
 {

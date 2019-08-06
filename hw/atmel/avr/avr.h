@@ -112,12 +112,12 @@ static inline void
 muos_hw_sleep (void)
 {
   MUOS_DEBUG_BUSY_OFF;
-  sei ();
-  sleep_cpu ();
-  cli ();
 #if MUOS_DEBUG_INTR != MUOS_DEBUG_BUSY
   MUOS_DEBUG_INTR_OFF;
 #endif
+  sei ();
+  sleep_cpu ();
+  cli ();
 }
 
 static inline void

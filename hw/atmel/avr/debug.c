@@ -63,4 +63,3 @@ muos_hw_debug_init (void)
   MUOS_DEBUG_C3_OFF;
   MUOS_DEBUG_C4_OFF;
 }
-

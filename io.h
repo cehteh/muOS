@@ -28,13 +28,19 @@
 #include <muos/error.h>
 
 
-
 //PLANNED: #define MUOS_IO .. if undefined then avr-libc stdio, check size requirement if it makes sense
 
 struct fmtconfig_type {
   uint8_t base:6;
   uint8_t upcase:1;
   uint8_t eng:1;
+  //PLANNED: sign:2; opt, mandatory, left/right/begin/end
+  //PLANNED: whole size instead flt_int
+  //PLANNED: leading/fract zeros
+  //PLANNED: number format 1000,0 1.000,0 1,000.0 1´000.0 etc
+  //PLANNED: left/right/center aligned
+  //PLANNED: space char redef
+  //PLANNED: overfill indicator "too lon~"
   uint8_t flt_int:4;
   uint8_t flt_frac:4;
 };
