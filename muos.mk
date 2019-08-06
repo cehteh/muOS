@@ -17,17 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-SOURCES += $(wildcard muos/*.c)
-SOURCES += $(wildcard muos/lib/*.c)
-SOURCES += $(wildcard muos/hw/$(PLATFORM)/*.c)
+SOURCES += $(wildcard $(MUOS_DIR)/*.c)
+SOURCES += $(wildcard $(MUOS_DIR)/lib/*.c)
+SOURCES += $(wildcard $(MUOS_DIR)/hw/$(PLATFORM)/*.c)
 
-HEADERS += $(wildcard muos/*.h)
-HEADERS += $(wildcard muos/lib/*.h)
-HEADERS += $(wildcard muos/hw/$(PLATFORM)/*.h)
+HEADERS += $(wildcard $(MUOS_DIR)/*.h)
+HEADERS += $(wildcard $(MUOS_DIR)/lib/*.h)
+HEADERS += $(wildcard $(MUOS_DIR)/hw/$(PLATFORM)/*.h)
 
-TXTS += $(wildcard muos/doc/*.txt) $(wildcard muos/doc/*.pdoc) muos/doc/pipadoc_config.lua VERSION
+TXTS += $(wildcard $(MUOS_DIR)/doc/*.txt) $(wildcard $(MUOS_DIR)/doc/*.pdoc) $(MUOS_DIR)/doc/pipadoc_config.lua VERSION
 # Makefiles can include documentation too
-MAKEFILE_DOCS += Makefile muos/muos.mk $(wildcard muos/prg_*.mk) $(widcard muos/hw/*.mk)
+MAKEFILE_DOCS += Makefile $(MUOS_DIR)/muos.mk $(wildcard $(MUOS_DIR)/prg_*.mk) $(widcard $(MUOS_DIR)/hw/*.mk)
 
 OBJECTS += $(SOURCES:.c=.o)
 
@@ -38,7 +38,7 @@ CCFLAGS += -std=gnu99
 DEPFLAGS += $(CCFLAGS) -M -MP -MT $*.o
 
 # Preprocessor Flags
-CPPFLAGS += -I . -D'MUOS_HW_HEADER=<muos/hw/$(PLATFORM)/$(MCU).h>'
+CPPFLAGS += -I $(MUOS_DIR)/.. -D'MUOS_HW_HEADER=<$(MUOS_DIR)/hw/$(PLATFORM)/$(MCU).h>'
 
 # Compile Flags
 CFLAGS += $(CCFLAGS) $(CPPFLAGS)
@@ -71,8 +71,10 @@ endif
 .PHONY: clean depclean program
 FORCE:
 
-include muos/prg_$(PROGRAMMER).mk
-include muos/hw/$(PLATFORM).mk
+ifdef PROGRAMMER
+include $(MUOS_DIR)/prg_$(PROGRAMMER).mk
+endif
+include $(MUOS_DIR)/hw/$(PLATFORM).mk
 -include $(SOURCES:.c=.d)
 
 
@@ -102,13 +104,13 @@ depclean:
 
 #TODO: document init system
 #PLANNED: make a complete header? not including drivers from muos.c
-muos/init.inc: $(filter-out muos/muos.c,$(SOURCES)) $(HEADERS)
+$(MUOS_DIR)/init.inc: $(filter-out $(MUOS_DIR)/muos.c,$(SOURCES)) $(HEADERS)
 	$(PRINTFMT) $@ INIT_INC
 	sed -e 's/^\(muos_.*_\([0-9]\+\)init\).*[^;]$$/\2 \1/p;d' $(SOURCES) $(HEADERS) |\
 	sort -u |\
 	sed -e 's/^[0-9]* \(\(muos_.*\)_[0-9]*.*\)/#ifdef \U\2\n\tMUOS_INIT\L(\1);\n#endif/p;d' > $@
 
-muos/muos.c: muos/init.inc
+$(MUOS_DIR)/muos.c: $(MUOS_DIR)/init.inc
 
 
 asm: $(MAIN).asm
@@ -180,7 +182,7 @@ endif
 muos_manual.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PIPADOC
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -188,7 +190,7 @@ endif
 muos_issues.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ ISSUES
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t ISSUES -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t ISSUES -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -196,7 +198,7 @@ endif
 fixme: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ FIXME
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t FIXME -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t FIXME -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -204,7 +206,7 @@ endif
 todo: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ TODO
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t TODO -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t TODO -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -214,7 +216,7 @@ endif
 planned: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PLANNED
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -222,7 +224,7 @@ endif
 planned_gitbranch: FORCE $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ PLANNED
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) | { grep -A 5 -i '^[^ ]*$(GITBRANCH).*::'; true; } 1>&2
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t PLANNED -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) | { grep -A 5 -i '^[^ ]*$(GITBRANCH).*::'; true; } 1>&2
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -234,7 +236,7 @@ show_issues: $(if $(filter master, $(GITBRANCH)), fixme, $(if $(filter devel, $(
 ../README: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ README
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t README -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t README -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >../README
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
@@ -242,25 +244,25 @@ endif
 index.txt: $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS)
 ifneq ("$(LUA)","")
 	$(PRINTFMT) $@ WEBPAGE
-	$(LUA) muos/doc/pipadoc.lua $(PIPADOCFLAGS) -t WEB -c muos/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
+	$(LUA) $(MUOS_DIR)/doc/pipadoc.lua $(PIPADOCFLAGS) -t WEB -c $(MUOS_DIR)/doc/pipadoc_config.lua $(TXTS) $(SOURCES) $(HEADERS) $(MAKEFILE_DOCS) >$@
 else
 	$(PRINTFMT) $@ "LUA NOT AVAILABLE"
 endif
 
 VERSION: FORCE
-	echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" |\
+	echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd $(MUOS_DIR); git describe --tags --dirty --always)" |\
 	cmp - $@ 2>/dev/null >/dev/null ||\
-	{ echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd muos; git describe --tags --dirty --always)" > $@; $(PRINTFMT) $@ VERSION;}
+	{ echo ":version:       $$(git describe --tags --dirty --always)\n:muos_version:  $$(cd $(MUOS_DIR); git describe --tags --dirty --always)" > $@; $(PRINTFMT) $@ VERSION;}
 
 version.h: FORCE
 	{													\
 		echo "#define VERSION \"$$(git describe --tags --dirty --always)\"";				\
-		echo "#define MUOS_VERSION \"$$(cd muos; git describe --tags --dirty --always)\"";		\
+		echo "#define MUOS_VERSION \"$$(cd $(MUOS_DIR); git describe --tags --dirty --always)\"";		\
 	} | cmp - $@ 2>/dev/null >/dev/null ||									\
 	{													\
 		{												\
 			echo "#define VERSION \"$$(git describe --tags --dirty --always)\"";			\
-			echo "#define MUOS_VERSION \"$$(cd muos; git describe --tags --dirty --always)\"";	\
+			echo "#define MUOS_VERSION \"$$(cd $(MUOS_DIR); git describe --tags --dirty --always)\"";	\
 		} > $@;												\
 		$(PRINTFMT) $@ VERSION_H;									\
 	}
@@ -273,7 +275,7 @@ gitpush: FORCE
 	git push -q --tags --force public;	\
 	git push -q --all --force github;	\
 	git push -q --tags --force github;
-	cd muos;				\
+	cd $(MUOS_DIR);				\
 	git push -q --all --force public;	\
 	git push -q --tags --force public;	\
 	git push -q --all --force github;	\
@@ -283,3 +285,4 @@ publish: doc gitpush FORCE
 	$(PRINTFMT) $@ PUBLISH
 	rsync *.html muos_*.pdf www.pipapo.org:/var/local/www_muos/
 
+#EOF
