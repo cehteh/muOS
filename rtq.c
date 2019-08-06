@@ -31,7 +31,7 @@ muos_rtq_push_isr (muos_queue_function f, bool schedule)
     return muos_error_rtq_overflow;
 
   muos_queue_push (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f);
-  muos_schedule |= schedule;
+  muos_ready |= schedule;
   return muos_success;
 }
 
@@ -42,7 +42,7 @@ muos_rtq_push_arg_isr (muos_queue_function f, intptr_t a, bool schedule)
     return muos_error_rtq_overflow;
 
   muos_queue_push_arg (&muos_rtq.descriptor, MUOS_RTQ_LENGTH, f, a);
-  muos_schedule |= schedule;
+  muos_ready |= schedule;
   return muos_success;
 }
 

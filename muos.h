@@ -55,7 +55,7 @@ void muos_die (void);
 
 //#define MUOS_EXPLICIT_INIT MUOS_NOINIT
 
-extern volatile bool muos_schedule;
+extern volatile bool muos_ready;
 
 #ifdef MUOS_WAIT_DEPTH
 //muos_api:

@@ -37,7 +37,7 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
 #endif
 
   //PLANNED: test not schedule on overflow, make it configurable
-  muos_status.schedule = true;
+  muos_ready = true;
   MUOS_DEBUG_INTR_OFF;
 }
 

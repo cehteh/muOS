@@ -41,7 +41,7 @@
 //PLANNED: example sections in all API doc
 //PLANNED: find some way to get rid of most of the *_isr variants at compiletime
 
-volatile bool muos_schedule;
+volatile bool muos_ready;
 
 //PLANNED: document and implement
 void muos_die (void)
@@ -108,7 +108,6 @@ sched_loop (muos_wait_fn fn, void* param, bool sleep)
   while (muos_bgq_schedule ());
 
 #ifdef MUOS_SCHED_SLEEP
-#error //FIXME: sched sleep implementation is incomplete
   if (sleep && muos_hw_clpq_wake_isr ())
     {
       //TODO: select sleep mode depending on active hardware (adc, usart)
@@ -118,8 +117,8 @@ sched_loop (muos_wait_fn fn, void* param, bool sleep)
           // muos_hw_sleep () enables interrupts while sleeping
           muos_hw_sleep ();
         }
-      while (!muos_schedule);
-      muos_schedule = false;
+      while (!muos_ready);
+      muos_ready = false;
       muos_hw_sleep_done ();
     }
 #else
