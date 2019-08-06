@@ -21,75 +21,99 @@
 
 #if MUOS_CLPQ_LENGTH > 0
 
-//#include <muos/muos.h>
 #include <muos/clpq.h>
 
-//FIXME: probe the the latencies
-
-// This is the time between setting compmatch for wakeup and going to sleep
-#define MUOS_CLOCK_LATENCY (32U/MUOS_CLOCK_PRESCALER)
+#include <stddef.h>
 
 
-// The time a schedule loop takes
-#define MUOS_CLOCK_BUSYLATENCY (128U/MUOS_CLOCK_PRESCALER)
+#ifdef MUOS_SCHED_SLEEP
 
-
-
-
-
-//static uint16_t clock_latency;
-//static uint16_t busy_latency;
-
-
-
-
-//TODO: return when already compmatch or disable compmatch when time is too short
-/*
-//TODO: new implementation
-
-    - must be in current hw_count range
-    - not too soon (time to set compmatch)
-    - wakeup earlier
-    - compmatch can wrap!
-    - dont forget to reschedule when a new event was added before the first one
-
-    also
-    when - now
-        < hw range
-           else no compmatch
-        > compset time
-     -> compmatch
-   */
-
-
-bool
-muos_hw_clpq_set_compmatch (void)
+ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
 {
- 
-#if 0 //FIXME: new impl
-  if (!muos_clpq.descriptor.used)
+  // compmatch is one-shot
+  MUOS_DEBUG_INTR_ON;
+  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
+  muos_ready = true;
+  MUOS_DEBUG_INTR_OFF;
+}
+
+
+
+static muos_clock16 clpq_compmatch_latency;
+
+
+// return 'true' to signal to go to sleep and false for busy loop
+bool
+muos_hw_clpq_wake_isr (void)
+{
+  // can always sleep
+  if (!muos_clpq.used)
     return true;
- muos_spriq_priority at = muos_clpq.descriptor.spriq[muos_clpq.descriptor.used - 1].when -
-    (muos_clock_count_ << (sizeof(MUOS_CLOCK_REGISTER) * 8));
 
-  muos_spriq_priority now = MUOS_CLOCK_REGISTER;
+  if (clpq_barrier (muos_clpq.entries[muos_clpq.used-1].what))
+    return true;
 
-  if (at < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_BUSYLATENCY)
-    {
-      if (at > MUOS_CLOCK_LATENCY + now
-          && now < ((typeof(MUOS_CLOCK_REGISTER)) ~0) - MUOS_CLOCK_LATENCY)
-        {
-          MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, at);
-        }
-      else
-        return false;
-    }
-  else
-    {
-      MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-    }
-#endif
+  // time from now to next
+  muos_clock16 now16 = muos_clock_now16_isr ();
+  muos_clock16 next = muos_clpq.entries[muos_clpq.used-1].when - now16;
+
+  if (next <= clpq_compmatch_latency)
+    return false;
+
+  if (next >= (muos_hwclock)~0)
+    return true;
+
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, (uint8_t)muos_clpq.entries[muos_clpq.used-1].when);
+
   return true;
 }
+
+#endif // MUOS_SCHED_SLEEP
+
+
+void
+muos_clpq_95init (void)
+{
+#ifdef MUOS_SCHED_SLEEP
+  muos_clock16 bench_latency = 0;
+  muos_clock now;
+
+  uint8_t i;
+
+  for (i = 0; i < 8 && bench_latency < 32767; ++i)
+    {
+      muos_interrupt_disable ();
+      muos_clock_now_isr (&now);
+      bench_latency += muos_clock_since_isr (&now);
+      muos_interrupt_enable ();
+    }
+
+  bench_latency = (bench_latency+i-1) / i; // round up
+
+  muos_clock16 compmatch_latency = 0;
+
+  muos_clock test;
+  muos_clock_now (&test);
+  muos_clock_add16 (&test, 172);
+
+  if (muos_error_set (muos_clpq_at (&test, NULL, false)) != muos_success)
+    return;
+
+  for (i = 0; i < 8 && compmatch_latency < 32767; ++i)
+    {
+      muos_interrupt_disable ();
+      muos_clock_now_isr (&now);
+      muos_hw_clpq_wake_isr ();
+      compmatch_latency += muos_clock_since_isr (&now);
+      compmatch_latency -= bench_latency;
+      muos_interrupt_enable ();
+    }
+
+  muos_clpq_remove (&test, NULL);
+
+  clpq_compmatch_latency = (compmatch_latency+i-1)/i; // round up
+#endif
+}
+
 
 #endif

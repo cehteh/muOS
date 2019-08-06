@@ -245,7 +245,27 @@ muos_clpq_schedule_isr (void);
 
 
 bool
-muos_hw_clpq_set_compmatch (void);
+muos_hw_clpq_wake_isr (void);
+
+
+/*
+
+  Tools
+
+*/
+
+static inline uint8_t
+clpq_barrier (muos_clpq_function what)
+{
+  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
+    return (uintptr_t)what;
+
+  return 0;
+}
+
+
+
+
 
 #endif
 #endif

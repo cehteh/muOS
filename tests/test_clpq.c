@@ -188,6 +188,7 @@ main (int argc, char* argv[])
   (void) argc; (void) argv;
   printf("# Test start...\n\n");
 
+
   clpq_dumpp ("empty");
 
   muos_clpq_after (10, blink);
@@ -198,6 +199,23 @@ main (int argc, char* argv[])
 
   muos_clpq_after (500000, live);
   clpq_dumpp ("initialized");
+
+  printf ("uniq test\n");
+
+  muos_clock uniq;
+  muos_clock_now_isr (&uniq);
+  muos_clock_add16 (&uniq, 10000);
+
+  muos_clpq_at (&uniq, NULL, true);
+  clpq_dumpp ("uniq 1");
+
+  muos_clpq_at (&uniq, NULL, true);
+  clpq_dumpp ("uniq fail");
+
+  muos_error ret;
+  while ((ret = muos_clpq_at (&uniq, NULL, true)) == muos_error_clpq_nounique)
+    muos_clock_add8 (&uniq, 1);
+  clpq_dumpp ("uniq 2");
 
   printf ("Clock ticking...\n");
 

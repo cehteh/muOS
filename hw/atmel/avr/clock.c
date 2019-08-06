@@ -41,13 +41,6 @@ ISR(ISRNAME_OVERFLOW(MUOS_CLOCK_HW))
   MUOS_DEBUG_INTR_OFF;
 }
 
-ISR(ISRNAME_COMPMATCH(MUOS_CLOCK_HW))
-{
-  // compmatch is one-shot
-  MUOS_DEBUG_INTR_ON;
-  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE (MUOS_CLOCK_HW);
-  muos_status.schedule = true;
-}
 
 #ifdef MUOS_CLOCK_CALIBRATE
 #error //TODO: new clock implementation, calibrate is untested

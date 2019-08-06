@@ -27,12 +27,11 @@
 
 #include <string.h>
 
-//PLANNED: wrap all clock math in functions for above conversion
 //PLANNED: incremental barriers instead exponential
 //PLANNED: tagged barriers, the 'what' in the following entry defines the timeout
 
 #ifndef MUOS_CLPQ_DEBUG
-#define MUOS_CLPQ_DEBUG 1
+#define MUOS_CLPQ_DEBUG 0
 #endif
 
 #define CLPQ_ASSERT(pred) MUOS_ASSERT(MUOS_CLPQ_DEBUG, pred)
@@ -105,12 +104,13 @@ muos_clpq_type muos_clpq;
 static muos_clock16 clpq_delay;
 static muos_clpq_function clpq_what;
 
+
+
 /*
 
   Tools
 
 */
-
 
 static inline bool
 clpq_segment_sync (const muos_clock* when)
@@ -118,15 +118,6 @@ clpq_segment_sync (const muos_clock* when)
   return muos_barray_getbit (when->barray, 16);
 }
 
-
-static inline uint8_t
-clpq_barrier (muos_clpq_function what)
-{
-  if (what && (uintptr_t)what <= MUOS_CLPQ_BARRIERS)
-    return (uintptr_t)what;
-
-  return 0;
-}
 
 
 static inline muos_clpq_segment
@@ -142,7 +133,6 @@ muos_clpq_delayed (void)
 {
   return clpq_delay;
 }
-
 
 
 
