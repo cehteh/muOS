@@ -62,7 +62,7 @@ static muos_io_lock lock_cnt;
 
 
 bool
-muos_tx_wait (intptr_t data);
+muos_tx_wait (void* data);
 
 
 #if MUOS_SERIAL_NUM > 1 || defined(MUOS_SERIAL_FORCE_HW)
@@ -90,9 +90,9 @@ muos_output_lock (uint8_t hw, muos_io_lock* who, muos_cbuffer_index space, muos_
   muos_error ret;
 
   if (timeout)
-    ret = muos_wait (muos_tx_wait, (intptr_t)&waitdata, timeout);
+    ret = muos_wait (muos_tx_wait, &waitdata, timeout);
   else
-    ret = muos_tx_wait((intptr_t)&waitdata)?muos_success:muos_warn_wait_timeout;
+    ret = muos_tx_wait(&waitdata)?muos_success:muos_warn_wait_timeout;
 
   return ret;
 }

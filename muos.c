@@ -43,25 +43,6 @@
 
 volatile bool muos_schedule;
 
-#ifdef MUOS_SCHED_SLEEP
-static void
-muos_sleep (void)
-{
-  if (muos_hw_clpq_set_compmatch ())
-    {
-      //TODO: select sleep mode depending on active hardware (adc, usart)
-      muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
-      // muos_hw_sleep () enables interrupts while sleeping
-      do
-          muos_hw_sleep ();
-      while (!muos_schedule);
-      muos_schedule = false;
-      muos_hw_sleep_done ();
-    }
-}
-#endif // MUOS_SCHED_SLEEP
-
-
 //PLANNED: document and implement
 void muos_die (void)
 {
@@ -81,8 +62,8 @@ muos_sched_depth (void)
 #endif
 
 
-static void
-schedule (void)
+static bool
+sched_loop (muos_wait_fn fn, void* param, bool sleep)
 {
   MUOS_DEBUG_BUSY_ON;
   muos_interrupt_disable ();
@@ -94,6 +75,12 @@ schedule (void)
             {
               do
                 {
+                  if (fn && fn (param))
+                    {
+                      muos_interrupt_enable ();
+                      return true;
+                    }
+
 #if defined(MUOS_STCK) && defined(MUOS_STCK_AUTO)
                   if (!muos_stck_check (MUOS_STCK_AUTO))
                     muos_error_set_isr (muos_fatal_stack_overflow);
@@ -120,21 +107,50 @@ schedule (void)
     }
   while (muos_bgq_schedule ());
 
+#ifdef MUOS_SCHED_SLEEP
+#error //FIXME: sched sleep implementation is incomplete
+  if (sleep && muos_hw_clpq_wake_isr ())
+    {
+      //TODO: select sleep mode depending on active hardware (adc, usart)
+      muos_hw_sleep_prepare (MUOS_SCHED_SLEEP);
+      do
+        {
+          // muos_hw_sleep () enables interrupts while sleeping
+          muos_hw_sleep ();
+        }
+      while (!muos_schedule);
+      muos_schedule = false;
+      muos_hw_sleep_done ();
+    }
+#else
+  (void) sleep;
+#endif // MUOS_SCHED_SLEEP
+
   muos_interrupt_enable ();
+  return false;
 }
 
 #ifdef MUOS_YIELD_DEPTH
+
+static bool
+yield_countdown (void* count)
+{
+  return *(uint8_t*)count--;
+}
+
+
 muos_error
 muos_yield (uint8_t count)
 {
+  //TODO: add 'sleep' parameter
+
   if (sched_depth_ >= MUOS_YIELD_DEPTH)
     {
       return muos_warn_sched_depth;
     }
 
   ++sched_depth_;
-  while (count--)
-    schedule ();
+  sched_loop (yield_countdown, &count, true);
   --sched_depth_;
 
   return muos_success;
@@ -145,8 +161,35 @@ muos_yield (uint8_t count)
 
 #ifdef MUOS_WAIT_DEPTH
 
+struct wait_data
+{
+  muos_wait_fn fn;
+  void* param;
+  muos_clock wakeup;
+  muos_error ret;
+};
+
+static bool
+wait_predicate (void* data)
+{
+  if (((struct wait_data*)data)->fn && ((struct wait_data*)data)->fn (((struct wait_data*)data)->param))
+    {
+      muos_clpq_remove (&((struct wait_data*)data)->wakeup, NULL);
+      return true;
+    }
+
+  if (muos_clock_is_expired (&((struct wait_data*)data)->wakeup))
+    {
+      ((struct wait_data*)data)->ret = muos_warn_wait_timeout;
+      return true;
+    }
+
+  return false;
+}
+
+
 muos_error
-muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
+muos_wait (muos_wait_fn fn, void* param, muos_clock16 timeout)
 {
   if (sched_depth_ >= MUOS_WAIT_DEPTH)
     {
@@ -154,41 +197,28 @@ muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
     }
   ++sched_depth_;
 
-  muos_clock wakeup;
-  muos_clock_now (&wakeup);
-  muos_clock_add16 (&wakeup, timeout);
+  struct wait_data data;
+  data.fn = fn;
+  data.param = param;
 
-  muos_error ret;
-  while ((ret = muos_clpq_at (&wakeup, NULL, true)) == muos_error_clpq_nounique)
-    muos_clock_add8 (&wakeup, 1);
+  muos_clock_now (&data.wakeup);
+  muos_clock_add16 (&data.wakeup, timeout);
 
-  if (ret == muos_success)
+  while ((data.ret = muos_clpq_at (&data.wakeup, NULL, true)) == muos_error_clpq_nounique)
+    muos_clock_add8 (&data.wakeup, 1);
+
+  if (data.ret == muos_success)
     {
-      while (1)
-        {
-          if (fn && fn (param))
-            {
-              muos_clpq_remove (&wakeup, NULL);
-              break;
-            }
-
-          if (muos_clock_is_expired (&wakeup))
-            {
-              ret = muos_warn_wait_timeout;
-              break;
-            }
-
-          schedule ();
-        }
+      while (!sched_loop (wait_predicate, &data, true));
     }
 
   --sched_depth_;
 
-  return ret;
+  return data.ret;
 }
 
 muos_error
-muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
+muos_wait_poll (muos_wait_fn fn, void* param, muos_clock16 timeout, uint32_t rep)
 {
   while (rep--)
     {
@@ -250,11 +280,5 @@ main()
   muos_interrupt_enable ();
 
   while (1)
-    {
-      schedule ();
-
-#ifdef MUOS_SCHED_SLEEP
-      muos_sleep ();
-#endif // MUOS_SCHED_SLEEP
-    }
+    sched_loop (NULL, NULL, true);
 }

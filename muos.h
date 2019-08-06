@@ -48,7 +48,7 @@ MUOS_ERRORFN (void);
 
 #define MUOS_NOINIT __attribute__ ((section (".noinit")))
 
-typedef bool (*muos_wait_fn)(intptr_t);
+typedef bool (*muos_wait_fn)(void*);
 
 void muos_die (void);
 
@@ -61,13 +61,13 @@ extern volatile bool muos_schedule;
 //muos_api:
 //: .Wait for some condition come true
 //: ----
-//: typedef bool (*muos_wait_fn)(intptr_t)
+//: typedef bool (*muos_wait_fn)(void*)
 //:
 //: muos_error
-//: muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout)
+//: muos_wait (muos_wait_fn fn, void* param, muos_clock16 timeout)
 //:
 //: muos_error
-//: muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep)
+//: muos_wait_poll (muos_wait_fn fn, void* param, muos_clock16 timeout, uint32_t rep)
 //: ----
 //: +fn+::
 //:   function checking for some condition, must return 'false' while the condition
@@ -105,10 +105,10 @@ extern volatile bool muos_schedule;
 //:   'muos_warn_sched_depth':: depth limit for recursive mainloops hit
 //:   'muos_warn_wait_timeout':: timed out
 muos_error
-muos_wait (muos_wait_fn fn, intptr_t param, muos_clock16 timeout);
+muos_wait (muos_wait_fn fn, void* param, muos_clock16 timeout);
 
 muos_error
-muos_wait_poll (muos_wait_fn fn, intptr_t param, muos_clock16 timeout, uint32_t rep);
+muos_wait_poll (muos_wait_fn fn, void* param, muos_clock16 timeout, uint32_t rep);
 #endif
 
 #ifdef MUOS_YIELD_DEPTH
