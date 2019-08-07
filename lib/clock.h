@@ -42,7 +42,12 @@
 //:
 //: The correct configuration of F_CPU is mandatory for these macros to work correctly.
 //:
-#define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALER)
+
+#define MUOS_CLOCK_PRESCALE_(tm, cm, type, prescale) prescale
+#define MUOS_CLOCK_PRESCALE(hw) \
+  MUOS_CLOCK_PRESCALE_ hw
+
+#define MUOS_CLOCK_SECONDS(s) (((uint64_t)s)*F_CPU/MUOS_CLOCK_PRESCALE(MUOS_CLOCK_HW))
 #define MUOS_CLOCK_MILLISECONDS(s) (MUOS_CLOCK_SECONDS(s)/1000)
 #define MUOS_CLOCK_MICROSECONDS(s) (MUOS_CLOCK_MILLISECONDS(s)/1000)
 #define MUOS_CLOCK_NANOSECONDS(s) (MUOS_CLOCK_MICROSECONDS(s)/1000)

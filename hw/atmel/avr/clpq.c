@@ -63,7 +63,8 @@ muos_hw_clpq_wake_isr (void)
   if (next >= (muos_hwclock)~0)
     return true;
 
-  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW, (uint8_t)muos_clpq.entries[muos_clpq.used-1].when);
+  MUOS_HW_CLOCK_ISR_COMPMATCH_REG (MUOS_CLOCK_HW) = muos_clpq.entries[muos_clpq.used-1].when;
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE (MUOS_CLOCK_HW);
 
   return true;
 }

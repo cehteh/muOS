@@ -26,64 +26,78 @@
 
 #include <muos/error.h>
 
-#define ISRNAME_OVERFLOW_(hw, _) TIMER##hw##_OVF_vect
+/*
+  ISR names
+*/
+
+#define ISRNAME_OVERFLOW_(tm, cm, type, prescale) TIMER##tm##_OVF_vect
 #define ISRNAME_OVERFLOW(hw) ISRNAME_OVERFLOW_ hw
 
-#define ISRNAME_COMPMATCH_(tmhw,cmhw) TIMER##tmhw##_COMP##cmhw##_vect
+#define ISRNAME_COMPMATCH_(tm, cm, type, prescale) TIMER##tm##_COMP##cm##_vect
 #define ISRNAME_COMPMATCH(hw) ISRNAME_COMPMATCH_ hw
 
 #define ISRNAME_EEPROM_READY EE_READY_vect
 
-#define MUOS_HW_CLOCK_REGISTER_(hw, _) TCNT##hw
+/*
+  CLOCK defs
+*/
+
+
+#define MUOS_HW_CLOCK_TM_(tm, cm, type, prescale) tm
+#define MUOS_HW_CLOCK_TM(hw) MUOS_HW_CLOCK_TM_ hw
+
+#define MUOS_HW_CLOCK_CM_(tm, cm, type, prescale) cm
+#define MUOS_HW_CLOCK_CM(hw) MUOS_HW_CLOCK_CM_ hw
+
+#define MUOS_HW_CLOCK_TYPE_(tm, cm, type, prescale) type
+#define MUOS_HW_CLOCK_TYPE(hw) MUOS_HW_CLOCK_TYPE_ hw
+
+
+#define MUOS_HW_CLOCK_REGISTER_(tm, cm, type, prescale) TCNT##tm
 #define MUOS_HW_CLOCK_REGISTER(hw) MUOS_HW_CLOCK_REGISTER_ hw
 
-#define MUOS_HW_CLOCK_OVERFLOW_(hw, _) (!!(TIFR##hw & _BV(TOV##hw)))
+#define MUOS_HW_CLOCK_OVERFLOW_(tm, cm, type, prescale) (!!(TIFR##tm & _BV(TOV##tm)))
 #define MUOS_HW_CLOCK_OVERFLOW(hw) MUOS_HW_CLOCK_OVERFLOW_ hw
 
 
-#define MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)  \
-  TCCR##hw##B = MUOS_HW_CLOCK##hw##_DIV##prescale
-
-#define MUOS_HW_CLOCK_PRESCALE_SET_(hw, prescale)   \
-  MUOS_HW_CLOCK_PRESCALE_SET__(hw, prescale)
-
-#define MUOS_HW_CLOCK_PRESCALE_SET(hw, prescale)                \
-  MUOS_HW_CLOCK_PRESCALE_SET_(MUOS_PP_FIRST hw, prescale)
 
 
-#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE__(hw) \
-  TIMSK##hw |= _BV(TOIE##hw)
+#define MUOS_HW_CLOCK_PRESCALE_SET_(tm, cm, type, prescale)  \
+  TCCR##tm##B = MUOS_HW_CLOCK##tm##_DIV##prescale
 
-#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(hw, _)       \
-  MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE__(hw)
+#define MUOS_HW_CLOCK_PRESCALE_SET(hw)                \
+  MUOS_HW_CLOCK_PRESCALE_SET_ hw
+
+#define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_(tm, cm, type, prescale) \
+  TIMSK##tm |= _BV(TOIE##tm)
 
 #define MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE(hw)   \
   MUOS_HW_CLOCK_ISR_OVERFLOW_ENABLE_ hw
 
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(tmhw, cmhw, at)   \
-  OCR##tmhw##cmhw = at;                                        \
-  TIMSK##tmhw |= _BV(OCIE##tmhw##cmhw)
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_REG_(tm, cm, type, prescale)       \
+  OCR##tm##cm
 
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(hw, at)     \
-  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE__(hw, at)
-
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(hw, at)              \
-  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(MUOS_PP_BOTH hw, at)
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_REG(hw)              \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_REG_ hw
 
 
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tm, cm, type, prescale)    \
+  TIMSK##tm |= _BV(OCIE##tm##cm)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE(hw)                  \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_ hw
 
 
-
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)       \
-  TIMSK##tmhw &= ~_BV(OCIE##tmhw##cmhw)
-
-#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tmhw, cmhw)        \
-  MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE__(tmhw, cmhw)
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_(tm, cm, type, prescale)      \
+  TIMSK##tm &= ~_BV(OCIE##tm##cm)
 
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE(hw) \
   MUOS_HW_CLOCK_ISR_COMPMATCH_DISABLE_ hw
 
+/*
+  serial
+*/
 
 #define UART(hw, txsize, rxsize)                        \
   static inline void                                    \
