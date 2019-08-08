@@ -21,26 +21,37 @@
 #ifndef MUOS_HPT_H
 #define MUOS_HPT_H
 
-/*
-  High precision timer
+#include <muos/clock.h>
 
-  using 2nd compmatch from clock
 
-  only one job can be running
+typedef muos_hwclock (*muos_hpt_fn) (void);
 
-  called at high prio in interrupt context
-
-  returns 0 for stop or hw_clock_type 1..max for rescheduling
-
-  no extra check about missed times
-*/
-
-typedef muos_hwclock (*muos_hpt_function) (uintptr_t);
-
-static inline muos_error
-muos_hpt_register (muos_hwclock when, muos_hpt_function what)
-{
-  return muos_fatal_error;
-}
+//hpt_api:
+//: .Registering a HPT function
+//: ----
+//: typedef muos_hwclock (*muos_hpt_fn) (void);
+//:
+//: muos_error muos_hpt_after (muos_hwclock when, muos_hpt_fn what)
+//: ----
+//:
+//: +when+::
+//:   When to schedule
+//: +what+::
+//:   Function to be called
+//:
+//: 'muos_hpt_after()' schedules the function 'what' to be called
+//: after 'now+when' ticks.
+//:
+//: Returns 'muos_error_hpt_active' when a function is already scheduled.
+//:
+//: 'muos_hpt_fn' functions must return 0 when done or 1 to the max value
+//: of 'muos_hwclock' to schedule the function in that much ticks again.
+//:
+//: Note that thr initial delay when calling 'muos_hpt_after()'can have
+//: some jitter because the call is usually not synchronized with clock
+//: ticks.
+//:
+muos_error
+muos_hpt_after (muos_hwclock when, muos_hpt_fn what);
 
 #endif

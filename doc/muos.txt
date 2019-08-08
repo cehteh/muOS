@@ -177,6 +177,25 @@ PIPADOC:=clock_api
 
 PIPADOC:@clock_config
 
+
+=== High Precision Timer
+
+The High Precision Timer offers a very low level way to schedule a
+single function at short, precise intervals. These functions are
+called at high priority in interrupt context. If possible they should
+push any more work to the RTQ or HPQ.
+
+
+==== API
+
+PIPADOC:=hpt_api
+
+==== configuration
+
+PIPADOC:@hpt_config
+
+
+
 === Error handling
 
 Errors can happen synchronously by returning a error code directly

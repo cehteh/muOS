@@ -4,6 +4,7 @@
     MUOS_FATAL(stack_overflow) /*: {ERRORDEF} stack overflow */                                   \
     MUOS_WARN(sched_depth) /*: {ERRORDEF} recursive scheduler calls exceeded */                   \
     MUOS_WARN(wait_timeout) /*: {ERRORDEF} muos_wait() timed out */                               \
+    MUOS_ERROR(hpt_active) /*: {ERRORDEF} one hpt is already active */                            \
     MUOS_ERROR(clpq_overflow) /*: {ERRORDEF} clock priority queue full */                         \
     MUOS_ERROR(clpq_nounique) /*: {ERRORDEF} uniqueness check failed */                           \
     MUOS_ERROR(clpq_past) /*: {ERRORDEF} time lies in the past */                                 \

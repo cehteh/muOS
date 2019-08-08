@@ -82,6 +82,13 @@
   MUOS_HW_CLOCK_ISR_COMPMATCH_REG_ hw
 
 
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_CLEAR_(tm, cm, type, prescale)    \
+  TIFR##tm |= _BV(OCF##tm##cm)
+
+#define MUOS_HW_CLOCK_ISR_COMPMATCH_CLEAR(hw)                  \
+  MUOS_HW_CLOCK_ISR_COMPMATCH_CLEAR_ hw
+
+
 #define MUOS_HW_CLOCK_ISR_COMPMATCH_ENABLE_(tm, cm, type, prescale)    \
   TIMSK##tm |= _BV(OCIE##tm##cm)
 
